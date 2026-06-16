@@ -2,8 +2,32 @@
 import { getSiteConfig } from '../lib/api';
 
 const siteConfig = await getSiteConfig();
-// Default to Indigo-600 (#4f46e5) if no theme color is set
-const hexColor = siteConfig?.metadata?.theme_color || '#4f46e5';
+
+// 유저가 설정한 색상이 있으면 우선 사용
+let hexColor = siteConfig?.metadata?.theme_color;
+
+// 없으면 사이트 ID나 도메인을 기반으로 고유한 예쁜 컬러를 자동 지정
+if (!hexColor) {
+  const colors = [
+    '#4f46e5', // indigo
+    '#e11d48', // rose
+    '#059669', // emerald
+    '#d97706', // amber
+    '#0284c7', // sky
+    '#7c3aed', // violet
+    '#c026d3', // fuchsia
+    '#ea580c', // orange
+    '#0d9488', // teal
+  ];
+  
+  const seedStr = siteConfig?.id || siteConfig?.domain || 'maza';
+  let hash = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  hexColor = colors[index];
+}
 ---
 
 <style is:inline define:vars={{ hex: hexColor }}>
