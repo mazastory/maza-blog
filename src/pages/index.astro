@@ -3,8 +3,11 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import PostCard from '../components/PostCard.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
+import { useTranslation } from '../lib/i18n';
 
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
+const lang = Astro.locals.lang || 'ko';
+const t = useTranslation(lang);
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig();
 const blogName = siteConfig?.blog_name || "Maza Blog";
@@ -34,32 +37,32 @@ if (featuredPost) {
             {blogDescription}
           </h1>
           <p class="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
-            Welcome to {blogName}. Explore our latest stories, updates, and insights below.
+            {t.welcome}
           </p>
           <div class="mt-8 flex flex-wrap gap-3">
-            <a href="/about" class="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-transform hover:-translate-y-0.5">About</a>
-            <a href="/contact" class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">Contact</a>
-            <a href="/privacy" class="rounded-full border border-transparent px-5 py-3 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Privacy Policy</a>
+            <a href="/about" class="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-transform hover:-translate-y-0.5">{t.about}</a>
+            <a href="/contact" class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">{t.contact}</a>
+            <a href="/privacy" class="rounded-full border border-transparent px-5 py-3 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">{t.privacy}</a>
           </div>
         </div>
 
         {posts.length === 0 && (
           <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             <div class="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur">
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">Publishing flow</p>
-              <p class="mt-2 text-lg font-bold text-slate-900">AI draft → editor review → publish approval</p>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">{t.pubFlow}</p>
+              <p class="mt-2 text-lg font-bold text-slate-900">{t.pubFlowDesc}</p>
             </div>
             <div class="rounded-3xl border border-slate-200/80 bg-slate-950 p-5 text-white shadow-sm">
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">Layout</p>
-              <p class="mt-2 text-lg font-bold">Structured header, hero, cards, and legal pages.</p>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">{t.layout}</p>
+              <p class="mt-2 text-lg font-bold">{t.layoutDesc}</p>
             </div>
             <div class="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm">
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">SEO ready</p>
-              <p class="mt-2 text-lg font-bold text-slate-900">Clear content hierarchy and dedicated post pages.</p>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{t.seo}</p>
+              <p class="mt-2 text-lg font-bold text-slate-900">{t.seoDesc}</p>
             </div>
             <div class="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm">
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Monetization</p>
-              <p class="mt-2 text-lg font-bold text-slate-900">Ad slots and partner disclosures stay visible.</p>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{t.monetization}</p>
+              <p class="mt-2 text-lg font-bold text-slate-900">{t.monetizationDesc}</p>
             </div>
           </div>
         )}
@@ -70,7 +73,7 @@ if (featuredPost) {
     {featuredPost && (
       <section class="mb-20">
         <div class="mb-8 flex items-center justify-between">
-          <h2 class="text-3xl font-black italic tracking-tighter text-slate-900 uppercase">Featured <span class="text-indigo-600">Story</span></h2>
+          <h2 class="text-3xl font-black italic tracking-tighter text-slate-900 uppercase">{t.featured}</h2>
         </div>
         
         <a href={`/${featuredPost.slug}`} class="group relative flex flex-col md:flex-row overflow-hidden rounded-[32px] bg-white border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-100">
@@ -86,7 +89,7 @@ if (featuredPost) {
           <div class="flex w-full md:w-2/5 flex-col justify-center p-10 md:p-12">
             <div class="mb-4 flex items-center gap-2">
               <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-black uppercase tracking-wider text-indigo-700">
-                Latest Pick
+                {t.latestPick}
               </span>
             </div>
             <h3 class="mb-4 text-3xl font-bold leading-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
@@ -96,7 +99,7 @@ if (featuredPost) {
               {featuredPost.content.substring(0, 200)}...
             </p>
             <div class="mt-auto flex items-center justify-between">
-              <span class="text-sm font-bold text-slate-900">Read Article <span class="text-indigo-600">→</span></span>
+              <span class="text-sm font-bold text-slate-900">{t.readArticle} <span class="text-indigo-600">→</span></span>
             </div>
           </div>
         </a>
@@ -107,7 +110,7 @@ if (featuredPost) {
     {recentPosts.length > 0 && (
       <section>
         <div class="mb-8 flex items-center justify-between">
-          <h2 class="text-2xl font-black italic tracking-tighter text-slate-900 uppercase">Recent <span class="text-slate-400">Articles</span></h2>
+          <h2 class="text-2xl font-black italic tracking-tighter text-slate-900 uppercase">{t.recentArticles}</h2>
         </div>
         
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -119,7 +122,7 @@ if (featuredPost) {
         {recentPosts.length > 9 && (
           <div class="mt-12 text-center">
             <a href="/page/2" class="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-8 py-3 text-sm font-bold text-slate-700 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700 hover:shadow-md">
-              더 많은 글 보기
+              {t.loadMore}
             </a>
           </div>
         )}
@@ -131,13 +134,13 @@ if (featuredPost) {
         <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-indigo-100 text-slate-400 shadow-inner">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </div>
-        <h2 class="mb-3 text-2xl font-black tracking-tight text-slate-900">아직 작성된 글이 없습니다.</h2>
+        <h2 class="mb-3 text-2xl font-black tracking-tight text-slate-900">{t.emptyTitle}</h2>
         <p class="mx-auto max-w-xl text-slate-500">
-          Maza Studio에서 포스트를 승인하면 이곳에 표시됩니다. 지금 상태는 비어 있지만, 레이아웃과 정보 구조는 이미 게시형 사이트에 맞게 준비되어 있습니다.
+          {t.emptyDesc}
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
-          <a href="/about" class="rounded-full bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-transform hover:-translate-y-0.5">서비스 소개</a>
-          <a href="/contact" class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">문의하기</a>
+          <a href="/about" class="rounded-full bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-transform hover:-translate-y-0.5">{t.emptyAbout}</a>
+          <a href="/contact" class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">{t.emptyContact}</a>
         </div>
       </div>
     )}

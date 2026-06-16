@@ -6,11 +6,14 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const formattedDate = new Date(post.publish_at || post.created_at).toLocaleDateString('ko-KR', {
+const lang = Astro.locals.lang || 'ko';
+const dateLocales: Record<string, string> = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP' };
+const formattedDate = new Date(post.publish_at || post.created_at).toLocaleDateString(dateLocales[lang] || 'en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric'
 });
+const tArticle = lang === 'ko' ? '아티클' : lang === 'ja' ? '記事' : 'Article';
 
 // 실제 이미지 추출: metadata.data.image1 → metadata.blocks 이미지 → 폴백
 const metaImage = post.metadata?.data?.image1 
@@ -36,7 +39,7 @@ const coverImage = metaImage || fallbackImage;
   <div class="flex flex-1 flex-col p-6">
     <div class="mb-3 flex items-center gap-2">
       <span class="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-600">
-        Article
+        {tArticle}
       </span>
       <span class="text-xs font-medium text-slate-400">
         {formattedDate}

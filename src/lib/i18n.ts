@@ -1,0 +1,76 @@
+export const dict = {
+  ko: {
+    welcome: "최신 스토리와 인사이트를 만나보세요.",
+    about: "소개",
+    contact: "문의하기",
+    privacy: "개인정보처리방침",
+    featured: "주요 기사",
+    latestPick: "최신 픽",
+    readArticle: "글 읽기",
+    recentArticles: "최신 글",
+    loadMore: "더 많은 글 보기",
+    emptyTitle: "아직 작성된 글이 없습니다.",
+    emptyDesc: "Maza Studio에서 포스트를 승인하면 이곳에 표시됩니다. 지금 상태는 비어 있지만, 레이아웃과 정보 구조는 이미 게시형 사이트에 맞게 준비되어 있습니다.",
+    emptyAbout: "서비스 소개",
+    emptyContact: "문의하기",
+    pubFlow: "출판 플로우",
+    pubFlowDesc: "AI 초안 → 에디터 리뷰 → 발행 승인",
+    layout: "레이아웃",
+    layoutDesc: "체계적인 헤더, 히어로, 카드, 그리고 필수 페이지 제공.",
+    seo: "SEO 최적화",
+    seoDesc: "명확한 콘텐츠 구조와 개별 포스트 페이지.",
+    monetization: "수익 창출",
+    monetizationDesc: "광고 슬롯 및 파트너스 고지."
+  },
+  en: {
+    welcome: "Explore our latest stories, updates, and insights below.",
+    about: "About",
+    contact: "Contact",
+    privacy: "Privacy Policy",
+    featured: "Featured Story",
+    latestPick: "Latest Pick",
+    readArticle: "Read Article",
+    recentArticles: "Recent Articles",
+    loadMore: "Load More",
+    emptyTitle: "No posts yet.",
+    emptyDesc: "Posts will appear here once approved in Maza Studio. The layout and information architecture are fully prepared for a publishing site.",
+    emptyAbout: "About Us",
+    emptyContact: "Contact Us",
+    pubFlow: "Publishing flow",
+    pubFlowDesc: "AI draft → editor review → publish approval",
+    layout: "Layout",
+    layoutDesc: "Structured header, hero, cards, and legal pages.",
+    seo: "SEO ready",
+    seoDesc: "Clear content hierarchy and dedicated post pages.",
+    monetization: "Monetization",
+    monetizationDesc: "Ad slots and partner disclosures stay visible."
+  },
+  ja: {
+    welcome: "最新のストーリー、アップデート、インサイトをご覧ください。",
+    about: "概要",
+    contact: "お問い合わせ",
+    privacy: "プライバシーポリシー",
+    featured: "注目記事",
+    latestPick: "最新のピックアップ",
+    readArticle: "記事を読む",
+    recentArticles: "最新記事",
+    loadMore: "もっと見る",
+    emptyTitle: "まだ記事がありません。",
+    emptyDesc: "Maza Studioで承認された記事がここに表示されます。現在は空ですが、公開サイト用のレイアウトと構成は準備完了です。",
+    emptyAbout: "サービス概要",
+    emptyContact: "お問い合わせ",
+    pubFlow: "公開フロー",
+    pubFlowDesc: "AIドラフト → 編集者レビュー → 公開承認",
+    layout: "レイアウト",
+    layoutDesc: "ヘッダー、ヒーロー、カード、法的ページなど。",
+    seo: "SEO対応",
+    seoDesc: "明確なコンテンツ階層と専用の投稿ページ。",
+    monetization: "収益化",
+    monetizationDesc: "広告スロットとパートナーシップの開示。"
+  }
+};
+
+export function useTranslation(lang: string) {
+  // @ts-ignore
+  return dict[lang] || dict.en;
+}
