@@ -43,7 +43,6 @@ export function getRequestDomain(request: Request): string {
   }
 }
 
-// 특정 도메인에 대한 블로그 설정 가져오기
 export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
   const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || '';
   if (!targetDomain) {
@@ -51,11 +50,7 @@ export async function getSiteConfig(domain?: string): Promise<SiteConfig | null>
     return null;
   }
   
-  const { data, error } = await supabase
-    .from('sites')
-    .select('*')
-    .eq('domain', targetDomain)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
 
   if (error) {
     console.error("Error fetching site config:", error);
@@ -65,35 +60,24 @@ export async function getSiteConfig(domain?: string): Promise<SiteConfig | null>
   return data;
 }
 
-// "승인된" 포스트만 가져오기 (특정 도메인 및 언어 필터링 지원)
 export async function getApprovedPosts(domain?: string, locale?: string): Promise<Post[]> {
   const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || '';
   const currentLocale = locale || 'ko';
   
-  let query = supabase
-    .from('posts')
-    .select('*, sites!inner(domain)')
-    .in('status', ['published', 'approved', 'ready_to_publish'])
-    .eq('language', currentLocale)
-    .order('created_at', { ascending: false });
+  const { data, error } = await supabase.rpc('get_public_posts', { target_domain: targetDomain, target_lang: currentLocale });
 
-  if (targetDomain) {
-    query = query.eq('sites.domain', targetDomain);
-  }
-
-  const { data, error } = await query;
   if (error) {
     console.error("Error fetching posts:", error);
     return [];
   }
   
-  return data.map((post: any) => ({
+  return (data || []).map((post: any) => ({
     id: post.id,
     title: post.title,
     content: post.content,
     html_content: post.html_content,
     created_at: post.created_at,
-    publish_at: post.created_at,
+    publish_at: post.publish_at || post.created_at,
     status: post.status,
     metadata: post.metadata,
     slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
