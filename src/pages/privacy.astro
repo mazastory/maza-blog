@@ -7,15 +7,49 @@ const siteConfig = await getSiteConfig();
 const blogName = siteConfig?.blog_name || "Maza Blog";
 ---
 <Layout title="Privacy Policy" description={`${blogName} Privacy Policy`}>
-  <main class="prose mx-auto max-w-3xl py-12 px-6">
-    <h1>Privacy Policy</h1>
-    <p>{blogName}는 방문자와 사용자 데이터를 최소한으로 수집하고, 수집된 데이터는 광고 및 서비스 개선 목적으로만 사용됩니다.</p>
-    <p>수집되는 정보:</p>
-    <ul>
-      <li>IP 주소 (분석용)</li>
-      <li>쿠키 (광고 및 사용자 맞춤화)</li>
-      <li>Google Analytics 및 AdSense 제공 데이터</li>
-    </ul>
-    <p>데이터는 제3자와 공유되지 않으며, 필요 시 사용자 동의를 받습니다.</p>
+  <main class="mx-auto max-w-4xl px-6 py-20 md:py-24 relative">
+    <div class="absolute top-0 right-0 w-full h-96 bg-gradient-to-b from-slate-100 to-transparent -z-10"></div>
+
+    <div class="mb-12 border-b border-slate-200 pb-12">
+      <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-bold uppercase tracking-widest text-slate-600 border border-slate-200">
+        Legal
+      </div>
+      <h1 class="text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl">
+        Privacy Policy
+      </h1>
+      <p class="mt-4 text-slate-500 font-medium">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+    </div>
+
+    <div class="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 hover:prose-a:text-indigo-700">
+      <p class="lead text-xl text-slate-600 font-medium mb-10">
+        <strong>{blogName}</strong>는 방문자와 사용자 데이터를 최소한으로 수집하고, 수집된 데이터는 오직 광고 및 서비스 개선 목적으로만 투명하게 사용됩니다.
+      </p>
+
+      <div class="grid gap-6 md:grid-cols-2 mb-12">
+        <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 m-0 mb-2">수집되는 정보</h3>
+          <ul class="text-sm text-slate-600 m-0 pl-4 space-y-2">
+            <li>접속 IP 주소 (트래픽 분석용)</li>
+            <li>브라우저 쿠키 (광고 및 사용자 경험 맞춤화)</li>
+            <li>Google Analytics 등 서드파티 제공 데이터</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 m-0 mb-2">데이터 보안 및 공유</h3>
+          <p class="text-sm text-slate-600 m-0">
+            수집된 모든 데이터는 엄격하게 보호되며, 법적인 요구가 없는 한 제3자와 무단으로 공유되지 않습니다. 타겟팅 광고 제공을 위해 암호화된 익명 데이터가 파트너사(Google AdSense 등)에 제공될 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <h2>쿠키(Cookies) 사용 안내</h2>
+      <p>우리 사이트는 사용자 경험 향상을 위해 쿠키를 사용합니다. 쿠키는 브라우저 설정에서 언제든지 차단할 수 있으며, 이 경우 일부 서비스 이용에 제한이 있을 수 있습니다.</p>
+    </div>
   </main>
 </Layout>
