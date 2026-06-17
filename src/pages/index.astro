@@ -5,14 +5,22 @@ import PostCard from '../components/PostCard.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
 import { useTranslation } from '../lib/i18n';
 
+// 캐시 설정으로 로딩 속도 대폭 개선
+Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
 const lang = Astro.locals.lang || 'ko';
 const t = useTranslation(lang);
 const domain = getRequestDomain(Astro.request);
-const siteConfig = await getSiteConfig();
+
+// API 병렬 호출로 속도 최적화
+const [siteConfig, posts] = await Promise.all([
+  getSiteConfig(),
+  getApprovedPosts(domain, Astro.locals.lang || 'ko')
+]);
+
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const blogDescription = siteConfig?.blog_description || "Welcome to our blog.";
-const posts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
 const featuredPost = posts.length > 0 ? posts[0] : null;
 const recentPosts = posts.slice(1);
 
@@ -26,23 +34,23 @@ if (featuredPost) {
 ---
 
 <Layout>
-  <div class="mx-auto max-w-5xl px-6 pt-12 pb-10 md:pt-20 md:pb-14">
-    <section class="mb-14 overflow-hidden rounded-[36px] border border-slate-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,250,255,0.95)_45%,_rgba(237,242,255,0.92))] p-8 shadow-[0_24px_80px_-48px_rgba(79,70,229,0.45)] md:p-12">
-      <div class="grid gap-10 lg:grid-cols-[1.35fr_0.85fr] lg:items-center">
+  <div class="mx-auto max-w-5xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
+    <section class="mb-10 md:mb-14 overflow-hidden rounded-3xl md:rounded-[36px] border border-slate-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,250,255,0.95)_45%,_rgba(237,242,255,0.92))] p-6 md:p-12 shadow-[0_24px_80px_-48px_rgba(79,70,229,0.45)]">
+      <div class="grid gap-8 md:gap-10 lg:grid-cols-[1.35fr_0.85fr] lg:items-center">
         <div>
-          <div class="mb-5 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
+          <div class="mb-4 md:mb-5 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
             <span class="rounded-full bg-indigo-600 px-3 py-1 text-white tracking-[0.18em]">{blogName}</span>
           </div>
-          <h1 class="max-w-2xl text-4xl font-black leading-[1.02] tracking-tight text-slate-950 md:text-6xl">
+          <h1 class="max-w-2xl text-3xl font-black leading-[1.1] tracking-tight text-slate-950 md:text-5xl lg:text-6xl break-keep">
             {blogDescription}
           </h1>
-          <p class="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+          <p class="mt-4 md:mt-5 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-lg break-keep">
             {t.welcome}
           </p>
-          <div class="mt-8 flex flex-wrap gap-3">
-            <a href="/about" class="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-transform hover:-translate-y-0.5">{t.about}</a>
-            <a href="/contact" class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">{t.contact}</a>
-            <a href="/privacy" class="rounded-full border border-transparent px-5 py-3 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">{t.privacy}</a>
+          <div class="mt-6 md:mt-8 flex flex-wrap gap-2 md:gap-3">
+            <a href="/about" class="rounded-full bg-slate-950 px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-transform hover:-translate-y-0.5">{t.about}</a>
+            <a href="/contact" class="rounded-full border border-slate-300 bg-white px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">{t.contact}</a>
+            <a href="/privacy" class="rounded-full border border-transparent px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">{t.privacy}</a>
           </div>
         </div>
 
@@ -71,12 +79,12 @@ if (featuredPost) {
 
     <!-- Hero / Featured Post -->
     {featuredPost && (
-      <section class="mb-20">
-        <div class="mb-8 flex items-center justify-between">
-          <h2 class="text-3xl font-black italic tracking-tighter text-slate-900 uppercase">{t.featured}</h2>
+      <section class="mb-14 md:mb-20">
+        <div class="mb-6 md:mb-8 flex items-center justify-between">
+          <h2 class="text-2xl md:text-3xl font-black italic tracking-tighter text-slate-900 uppercase">{t.featured}</h2>
         </div>
         
-        <a href={`/${featuredPost.slug}`} class="group relative flex flex-col md:flex-row overflow-hidden rounded-[32px] bg-white border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-100">
+        <a href={`/${featuredPost.slug}`} class="group relative flex flex-col md:flex-row overflow-hidden rounded-2xl md:rounded-[32px] bg-white border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-100">
           <div class="relative w-full md:w-3/5 overflow-hidden bg-slate-100 min-h-[300px]">
             <img 
               src={featuredImage} 
@@ -86,16 +94,16 @@ if (featuredPost) {
             <div class="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent"></div>
           </div>
           
-          <div class="flex w-full md:w-2/5 flex-col justify-center p-10 md:p-12">
-            <div class="mb-4 flex items-center gap-2">
-              <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-black uppercase tracking-wider text-indigo-700">
+          <div class="flex w-full md:w-2/5 flex-col justify-center p-6 md:p-12">
+            <div class="mb-3 md:mb-4 flex items-center gap-2">
+              <span class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-indigo-700">
                 {t.latestPick}
               </span>
             </div>
-            <h3 class="mb-4 text-3xl font-bold leading-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
+            <h3 class="mb-3 md:mb-4 text-2xl md:text-3xl font-bold leading-tight text-slate-900 group-hover:text-indigo-600 transition-colors break-keep line-clamp-2 md:line-clamp-none">
               {featuredPost.title}
             </h3>
-            <p class="mb-8 text-base text-slate-500 line-clamp-3">
+            <p class="mb-6 md:mb-8 text-sm md:text-base text-slate-500 line-clamp-2 md:line-clamp-3">
               {featuredPost.content.substring(0, 200)}...
             </p>
             <div class="mt-auto flex items-center justify-between">
@@ -109,11 +117,11 @@ if (featuredPost) {
     <!-- Recent Posts Grid -->
     {recentPosts.length > 0 && (
       <section>
-        <div class="mb-8 flex items-center justify-between">
-          <h2 class="text-2xl font-black italic tracking-tighter text-slate-900 uppercase">{t.recentArticles}</h2>
+        <div class="mb-6 md:mb-8 flex items-center justify-between">
+          <h2 class="text-xl md:text-2xl font-black italic tracking-tighter text-slate-900 uppercase">{t.recentArticles}</h2>
         </div>
         
-        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {recentPosts.slice(0, 9).map(post => (
             <PostCard post={post} />
           ))}

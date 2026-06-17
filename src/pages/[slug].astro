@@ -7,6 +7,9 @@ import { getPostBySlug, getSiteConfig, getRequestDomain, getApprovedPosts } from
 import { buildKeywordMap, injectInternalLinks } from '../lib/internalLinks';
 import { splitHtmlForAd } from '../lib/adManager';
 
+// 캐시 설정으로 로딩 속도 대폭 개선
+Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+
 // SSR 렌더링: 접속 도메인과 URL 파라미터(slug)로 동적 조회
 const domain = getRequestDomain(Astro.request);
 const { slug } = Astro.params;
@@ -15,7 +18,13 @@ if (!slug) {
   return Astro.redirect('/404');
 }
 
-const post = await getPostBySlug(slug, domain, Astro.locals.lang || 'ko');
+// 성능 최적화: API 중복 호출 제거 및 병렬 처리
+const [siteConfig, allPosts] = await Promise.all([
+  getSiteConfig(domain),
+  getApprovedPosts(domain, Astro.locals.lang || 'ko')
+]);
+
+const post = allPosts.find((p: any) => p.slug === slug);
 
 if (!post) {
   return Astro.redirect('/404');
@@ -28,14 +37,12 @@ if (!adVariant) {
   Astro.cookies.set('ad_variant', adVariant, { path: '/', maxAge: 60 * 60 * 24 * 30 }); // 30 days
 }
 
-const allPosts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
 const keywordMap = buildKeywordMap(allPosts, post.slug);
 const linkedHtmlContent = injectInternalLinks(post.html_content || post.content, keywordMap);
 
 // A/B 테스트 B군(본문 중간 삽입)
 const [part1, part2] = adVariant === 'B' ? splitHtmlForAd(linkedHtmlContent) : [linkedHtmlContent, ''];
 
-const siteConfig = await getSiteConfig(domain);
 const profileName = siteConfig?.blog_name || "Maza Editor";
 ---
 
@@ -47,22 +54,22 @@ const profileName = siteConfig?.blog_name || "Maza Editor";
   authorName={profileName}
   datePublished={post.created_at}
 >
-  <div class="mx-auto max-w-4xl px-6 pt-12 pb-20 md:pt-20">
+  <div class="mx-auto max-w-4xl px-4 pt-8 pb-16 md:px-6 md:pt-20 md:pb-20">
     
     <!-- 뒤로가기 / 카테고리 -->
-    <a href="/" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[var(--color-indigo-600)] mb-10 transition-colors">
+    <a href="/" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[var(--color-indigo-600)] mb-8 md:mb-10 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="m15 18-6-6 6-6"/></svg>
       목록으로 돌아가기
     </a>
 
     <!-- 포스트 헤더 -->
-    <header class="mb-14 text-center">
+    <header class="mb-10 md:mb-14 text-center">
       {post.metadata?.category && (
-        <a href={`/category/${encodeURIComponent(post.metadata.category)}`} class="mb-6 inline-flex cursor-pointer items-center gap-2 rounded-full bg-[var(--color-indigo-50)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-indigo-600)] border border-[var(--color-indigo-100)] transition-colors hover:bg-[var(--color-indigo-100)]">
+        <a href={`/category/${encodeURIComponent(post.metadata.category)}`} class="mb-4 md:mb-6 inline-flex cursor-pointer items-center gap-2 rounded-full bg-[var(--color-indigo-50)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-indigo-600)] border border-[var(--color-indigo-100)] transition-colors hover:bg-[var(--color-indigo-100)]">
           {post.metadata.category}
         </a>
       )}
-      <h1 class="mb-6 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl md:leading-tight lg:text-6xl break-keep">
+      <h1 class="mb-6 text-3xl font-black leading-[1.2] tracking-tight text-slate-900 md:text-5xl md:leading-tight lg:text-6xl break-keep">
         {post.title}
       </h1>
       
