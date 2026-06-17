@@ -6,7 +6,8 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const lang = Astro.locals.lang || 'ko';
+// Default language for formatted dates; can be extended to accept a prop later.
+const lang = 'ko';
 const dateLocales: Record<string, string> = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP' };
 const formattedDate = new Date(post.publish_at || post.created_at).toLocaleDateString(dateLocales[lang] || 'en-US', {
   year: 'numeric',
@@ -23,6 +24,16 @@ const metaImage = post.metadata?.data?.image1
 // 고정된 폴백 이미지 대신 picsum.photos를 사용하여 포스트마다 고유한 랜덤 이미지 제공
 const fallbackImage = `https://picsum.photos/seed/${post.id}/800/450`;
 const coverImage = metaImage || fallbackImage;
+
+// srcset for picsum fallback images
+let coverSrcSet = undefined;
+if (coverImage && coverImage.includes('picsum.photos')) {
+  const seedMatch = coverImage.match(/seed\/([^/]+)\/(\d+)\/(\d+)/);
+  if (seedMatch) {
+    const seed = seedMatch[1];
+    coverSrcSet = `https://picsum.photos/seed/${seed}/400/225 400w, https://picsum.photos/seed/${seed}/800/450 800w, https://picsum.photos/seed/${seed}/1200/675 1200w`;
+  }
+}
 ---
 
 <a href={`/${post.slug}`} class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-50 hover:border-indigo-100">
@@ -33,6 +44,8 @@ const coverImage = metaImage || fallbackImage;
       class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
       loading="lazy"
       decoding="async"
+      srcset={coverSrcSet}
+      sizes={coverSrcSet ? '(max-width: 768px) 100vw, 33vw' : undefined}
     />
     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
   </div>

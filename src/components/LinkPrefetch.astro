@@ -1,0 +1,47 @@
+---
+// Client-side lightweight prefetcher for internal links
+---
+
+<script is:inline>
+  // Run in browser only
+  (function(){
+    if (typeof window === 'undefined') return;
+
+    function isInternal(href){
+      try{
+        const u = new URL(href, location.href);
+        return u.origin === location.origin;
+      }catch(e){ return false }
+    }
+
+    function prefetch(url){
+      if (!url || document.querySelector(`link[rel=\"prefetch\"][href=\"${url}\"]`)) return;
+      const l = document.createElement('link');
+      l.rel = 'prefetch';
+      l.href = url;
+      l.as = 'document';
+      document.head.appendChild(l);
+    }
+
+    function observeLinks(){
+      const links = Array.from(document.querySelectorAll('a[href]')).filter(a => isInternal(a.href));
+      if ('IntersectionObserver' in window){
+        const obs = new IntersectionObserver((entries)=>{
+          entries.forEach(e => {
+            if (e.isIntersecting){
+              const href = e.target.getAttribute('href');
+              if (href) prefetch(href);
+            }
+          });
+        }, {rootMargin: '200px'});
+        links.forEach(a => obs.observe(a));
+      } else {
+        // Fallback: prefetch first N links
+        links.slice(0,6).forEach(a => prefetch(a.getAttribute('href')));
+      }
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') observeLinks();
+    else document.addEventListener('DOMContentLoaded', observeLinks);
+  })();
+</script>

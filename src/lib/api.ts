@@ -44,20 +44,24 @@ export function getRequestDomain(request: Request): string {
 }
 
 export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
-  const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || '';
-  if (!targetDomain) {
-    console.warn("[Maza Blog] No site domain configured. Using fallback.");
-    return null;
-  }
-  
-  const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
+  const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
 
-  if (error) {
-    console.error("Error fetching site config:", error);
+  // If no domain is configured at build/prerender time, avoid making network calls.
+  if (!targetDomain) {
     return null;
   }
-  
-  return data;
+
+  try {
+    const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
+    if (error) {
+      console.error("Error fetching site config:", error);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    console.error("getSiteConfig RPC failed:", e);
+    return null;
+  }
 }
 
 export async function getApprovedPosts(domain?: string, locale?: string): Promise<Post[]> {
@@ -77,7 +81,7 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
     .filter((post: any) => {
       // Exclude posts with active generation statuses
       if (post.status && ['QUEUED', 'STARTING', 'TAB_OPENING', 'SCHEDULED', 'ON_HOLD'].includes(post.status.toUpperCase())) return false;
-      const publishTime = new Date(post.published_at || post.created_at).getTime();
+      const publishTime = new Date(post.publish_at || post.created_at).getTime();
       return publishTime <= now;
     })
     .map((post: any) => ({
@@ -86,11 +90,12 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
       content: post.content,
       html_content: post.html_content,
       created_at: post.created_at,
-      published_at: post.published_at || post.created_at,
+      publish_at: post.publish_at || post.created_at,
       status: post.status,
       metadata: post.metadata,
       slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
-    }));
+    }))
+    .sort((a, b) => new Date(b.publish_at).getTime() - new Date(a.publish_at).getTime());
 }
 
 export async function getPostBySlug(slug: string, domain?: string, locale?: string): Promise<Post | null> {

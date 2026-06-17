@@ -1,30 +1,64 @@
 ---
-import { getSiteConfig } from '../lib/api';
-
 interface Props {
+  siteConfig?: any;
   format?: 'auto' | 'fluid' | 'rectangle';
   slotId?: string;
   className?: string;
   style?: string;
 }
 
-const { format = 'auto', slotId = 'XXXXXXXXXX', className = '', style = 'display:block' } = Astro.props;
+const { siteConfig = null, format = 'auto', slotId = 'XXXXXXXXXX', className = '', style = 'display:block' } = Astro.props;
 
-const siteConfig = await getSiteConfig();
 const pubId = siteConfig?.adsense_pub;
 const isApproved = siteConfig?.adsense_status === 'approved';
 ---
 
 {isApproved && pubId && (
-  <div class={`ad-slot-wrapper bg-slate-50 border border-slate-100 flex items-center justify-center my-8 mx-auto w-full max-w-full overflow-hidden rounded-xl ${className}`} style="min-height: 250px;">
+  <div class={`ad-slot-wrapper bg-slate-50 border border-slate-100 flex items-center justify-center my-8 mx-auto w-full max-w-full overflow-hidden rounded-xl ${className}`} style="min-height: 250px;" data-ad-client={pubId} data-ad-slot={slotId} data-ad-format={format}>
     <ins class="adsbygoogle"
       style={style}
       data-ad-client={pubId}
       data-ad-slot={slotId}
       data-ad-format={format}
       data-full-width-responsive="true"></ins>
+
     <script is:inline>
-      (adsbygoogle = window.adsbygoogle || []).push({});
+      (function(){
+        const wrapper = document.currentScript && document.currentScript.parentElement;
+        if (!wrapper) return;
+
+        function loadAds(){
+          if (window.__adsbygoogle_loading) return;
+          window.__adsbygoogle_loading = true;
+          // Read pubId from DOM attribute to avoid template injection
+          const pub = wrapper.getAttribute('data-ad-client');
+          if (!pub) return;
+          // Inject Google Ads script
+          const s = document.createElement('script');
+          s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + pub;
+          s.async = true;
+          s.crossOrigin = 'anonymous';
+          s.onload = function(){
+            try{ (adsbygoogle = window.adsbygoogle || []).push({}); }catch(e){}
+          };
+          document.head.appendChild(s);
+        }
+
+        if ('IntersectionObserver' in window) {
+          const obs = new IntersectionObserver((entries)=>{
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                loadAds();
+                obs.disconnect();
+              }
+            });
+          }, { rootMargin: '200px' });
+          obs.observe(wrapper);
+        } else {
+          // Fallback: load after slight delay
+          setTimeout(loadAds, 1000);
+        }
+      })();
     </script>
   </div>
 )}

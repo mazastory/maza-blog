@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+export const prerender = false;
 import { supabase } from '../../lib/supabase';
 import { getRequestDomain } from '../../lib/api';
 

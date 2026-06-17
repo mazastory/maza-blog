@@ -12,7 +12,7 @@ const siteUrl = domain ? `https://${domain}` : (process.env.URL || 'https://exam
 // https://astro.build/config
 export default defineConfig({
   site: siteUrl,
-  output: 'server',
+  output: 'static',
   adapter: netlify(),
   i18n: {
     defaultLocale: "ko",
