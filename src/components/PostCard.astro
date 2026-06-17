@@ -21,32 +21,25 @@ const metaImage = post.metadata?.data?.image1
   || post.metadata?.blocks?.find((b: any) => b.type === 'image')?.url
   || null;
 
-// 고정된 폴백 이미지 대신 picsum.photos를 사용하여 포스트마다 고유한 랜덤 이미지 제공
-const fallbackImage = `https://picsum.photos/seed/${post.id}/800/450`;
-const coverImage = metaImage || fallbackImage;
-
-// srcset for picsum fallback images
-let coverSrcSet = undefined;
-if (coverImage && coverImage.includes('picsum.photos')) {
-  const seedMatch = coverImage.match(/seed\/([^/]+)\/(\d+)\/(\d+)/);
-  if (seedMatch) {
-    const seed = seedMatch[1];
-    coverSrcSet = `https://picsum.photos/seed/${seed}/400/225 400w, https://picsum.photos/seed/${seed}/800/450 800w, https://picsum.photos/seed/${seed}/1200/675 1200w`;
-  }
-}
+// 고정된 폴백 이미지 대신 CSS 그라디언트를 사용 (가짜 이미지 요청을 방지하여 속도 대폭 개선)
+const coverImage = metaImage || null;
 ---
 
 <a href={`/${post.slug}`} class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-50 hover:border-indigo-100">
   <div class="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-    <img 
-      src={coverImage} 
-      alt={post.title}
-      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-      loading="lazy"
-      decoding="async"
-      srcset={coverSrcSet}
-      sizes={coverSrcSet ? '(max-width: 768px) 100vw, 33vw' : undefined}
-    />
+    {coverImage ? (
+      <img 
+        src={coverImage} 
+        alt={post.title}
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <div class="h-full w-full bg-gradient-to-br from-indigo-100 to-purple-50 flex items-center justify-center">
+        <span class="text-indigo-300 font-bold text-4xl opacity-50">{post.title.substring(0, 1)}</span>
+      </div>
+    )}
     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
   </div>
   

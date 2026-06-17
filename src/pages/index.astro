@@ -26,23 +26,12 @@ const blogDescription = siteConfig?.niche || "Welcome to our blog.";
 const featuredPost = posts.length > 0 ? posts[0] : null;
 const recentPosts = posts.slice(1);
 
-// Featured Post 대표 이미지 추출
-let featuredImage = featuredPost ? `https://picsum.photos/seed/${featuredPost.id}/1200/600` : 'https://picsum.photos/seed/featured/1200/600';
+// Featured Post 대표 이미지 추출 (가짜 이미지 로딩 방지)
+let featuredImage = null;
 if (featuredPost) {
   const metaImg = featuredPost.metadata?.data?.image1 
     || featuredPost.metadata?.blocks?.find((b: any) => b.type === 'image')?.url;
   if (metaImg) featuredImage = metaImg;
-}
-
-// Build a basic srcset for picsum fallback images (if using picsum seed pattern)
-let featuredSrcSet = undefined;
-if (featuredImage && featuredImage.includes('picsum.photos')) {
-  // create small/medium/large variants using same seed
-  const seedMatch = featuredImage.match(/seed\/([^/]+)\/(\d+)\/(\d+)/);
-  if (seedMatch) {
-    const seed = seedMatch[1];
-    featuredSrcSet = `https://picsum.photos/seed/${seed}/600/300 600w, https://picsum.photos/seed/${seed}/1200/600 1200w, https://picsum.photos/seed/${seed}/1800/900 1800w`;
-  }
 }
 
 ---
@@ -99,25 +88,29 @@ if (featuredImage && featuredImage.includes('picsum.photos')) {
         </div>
         
         <a href={`/${featuredPost.slug}`} class="group relative flex flex-col md:flex-row overflow-hidden rounded-2xl md:rounded-[32px] bg-white border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-100">
-          <div class="relative w-full md:w-3/5 overflow-hidden bg-slate-100 min-h-[300px]">
-            <img 
-              src={featuredImage} 
-              alt={featuredPost.title}
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              loading="eager"
-              srcset={featuredSrcSet}
-              sizes={featuredSrcSet ? '(max-width: 768px) 100vw, 50vw' : undefined}
-            />
-            <div class="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent"></div>
-          </div>
-          
-          <div class="flex w-full md:w-2/5 flex-col justify-center p-6 md:p-12">
+          <div class="relative aspect-[16/9] w-full overflow-hidden md:aspect-[2/1] lg:aspect-[2.5/1]">
+            {featuredImage ? (
+              <img 
+                src={featuredImage} 
+                alt={featuredPost.title}
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="eager"
+                decoding="sync"
+              />
+            ) : (
+              <div class="absolute inset-0 h-full w-full bg-gradient-to-br from-indigo-100 to-purple-50 flex items-center justify-center">
+                <span class="text-indigo-300 font-bold text-6xl opacity-50">{featuredPost.title.substring(0, 1)}</span>
+              </div>
+            )}
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+            
+            <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-10 lg:p-12">
             <div class="mb-3 md:mb-4 flex items-center gap-2">
               <span class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-indigo-700">
                 {t.latestPick}
               </span>
             </div>
-            <h3 class="mb-3 md:mb-4 text-2xl md:text-3xl font-bold leading-tight text-slate-900 group-hover:text-indigo-600 transition-colors break-keep line-clamp-2 md:line-clamp-none">
+            <h3 class="mb-3 md:mb-4 text-2xl md:text-3xl font-bold leading-tight text-white transition-colors break-keep line-clamp-2 md:line-clamp-none">
               {featuredPost.title}
             </h3>
             <p class="mb-6 md:mb-8 text-sm md:text-base text-slate-500 line-clamp-2 md:line-clamp-3">
