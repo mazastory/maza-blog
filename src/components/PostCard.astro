@@ -23,6 +23,10 @@ const metaImage = post.metadata?.data?.image1
 
 // 고정된 폴백 이미지 대신 CSS 그라디언트를 사용 (가짜 이미지 요청을 방지하여 속도 대폭 개선)
 const coverImage = metaImage || null;
+
+// 안전한 텍스트 추출 (content가 null일 경우 html_content에서 태그 제거)
+const plainText = post.content || (post.html_content ? post.html_content.replace(/<[^>]*>?/gm, '') : '');
+const excerpt = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
 ---
 
 <a href={`/${post.slug}`} class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-50 hover:border-indigo-100">
@@ -58,7 +62,7 @@ const coverImage = metaImage || null;
     </h3>
     
     <p class="text-sm text-slate-500 line-clamp-3">
-      {post.content.substring(0, 150)}...
+      {excerpt}
     </p>
   </div>
 </a>
