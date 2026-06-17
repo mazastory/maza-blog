@@ -76,8 +76,8 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
   return (data || [])
     .filter((post: any) => {
       // Exclude posts with active generation statuses
-      if (post.status && ['QUEUED', 'STARTING', 'TAB_OPENING', 'SCHEDULED', 'ON_HOLD'].includes(post.status)) return false;
-      const publishTime = new Date(post.publish_at || post.created_at).getTime();
+      if (post.status && ['QUEUED', 'STARTING', 'TAB_OPENING', 'SCHEDULED', 'ON_HOLD'].includes(post.status.toUpperCase())) return false;
+      const publishTime = new Date(post.published_at || post.created_at).getTime();
       return publishTime <= now;
     })
     .map((post: any) => ({
@@ -86,7 +86,7 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
       content: post.content,
       html_content: post.html_content,
       created_at: post.created_at,
-      publish_at: post.publish_at || post.created_at,
+      published_at: post.published_at || post.created_at,
       status: post.status,
       metadata: post.metadata,
       slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
