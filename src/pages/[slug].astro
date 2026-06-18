@@ -49,6 +49,9 @@ const metaImage = post.metadata?.data?.image1
   || post.metadata?.thumbnail_url
   || post.thumbnail_url
   || null;
+
+// Zero-IT 마법사로 자동 생성된 글인지 판별 (HTML 내부에 이미 h1 타이틀과 본문 썸네일이 포함되어 있음)
+const isZeroItPost = post.html_content && post.html_content.includes('max-width:7');
 ---
 
 <Layout 
@@ -68,32 +71,34 @@ const metaImage = post.metadata?.data?.image1
     </a>
 
     <!-- 포스트 헤더 -->
-    <header class="mb-8 md:mb-12">
-      {post.metadata?.category && (
-        <a href={`/category/${encodeURIComponent(post.metadata.category)}`} class="mb-3 md:mb-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[var(--color-indigo-50)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-indigo-600)] border border-[var(--color-indigo-100)] transition-colors hover:bg-[var(--color-indigo-100)]">
-          {post.metadata.category}
-        </a>
-      )}
-      <!-- 모바일: text-2xl, 태블릿: text-4xl, PC: text-5xl -->
-      <h1 class="mb-5 text-2xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl break-keep">
-        {post.title}
-      </h1>
-      
-      <!-- 작성자 정보 -->
-      <div class="flex items-center gap-3 text-sm text-slate-500">
-        <div class="flex items-center gap-2">
-          <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-indigo-100)] to-slate-100 text-[var(--color-indigo-600)] font-bold text-xs shadow-inner">
-            {profileName.charAt(0).toUpperCase()}
+    {!isZeroItPost && (
+      <header class="mb-8 md:mb-12">
+        {post.metadata?.category && (
+          <a href={`/category/${encodeURIComponent(post.metadata.category)}`} class="mb-3 md:mb-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[var(--color-indigo-50)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-indigo-600)] border border-[var(--color-indigo-100)] transition-colors hover:bg-[var(--color-indigo-100)]">
+            {post.metadata.category}
+          </a>
+        )}
+        <!-- 모바일: text-2xl, 태블릿: text-4xl, PC: text-5xl -->
+        <h1 class="mb-5 text-2xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl break-keep">
+          {post.title}
+        </h1>
+        
+        <!-- 작성자 정보 -->
+        <div class="flex items-center gap-3 text-sm text-slate-500">
+          <div class="flex items-center gap-2">
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-indigo-100)] to-slate-100 text-[var(--color-indigo-600)] font-bold text-xs shadow-inner">
+              {profileName.charAt(0).toUpperCase()}
+            </div>
+            <span class="font-semibold text-slate-700">{profileName}</span>
           </div>
-          <span class="font-semibold text-slate-700">{profileName}</span>
+          <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+          <time datetime={post.created_at}>{dateStr}</time>
         </div>
-        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
-        <time datetime={post.created_at}>{dateStr}</time>
-      </div>
-    </header>
+      </header>
+    )}
 
     <!-- 썸네일: 모바일에서 aspect-[16/9], PC에서 aspect-[21/9] -->
-    {metaImage && (
+    {!isZeroItPost && metaImage && (
       <figure class="mb-8 md:mb-14 overflow-hidden rounded-2xl md:rounded-3xl border border-slate-100 shadow-lg md:shadow-2xl">
         <img 
           src={metaImage} 
