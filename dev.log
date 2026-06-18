@@ -1,0 +1,65 @@
+
+> maza-blog@0.0.1 dev
+> astro dev
+
+01:55:49 [@astrojs/netlify] Enabling sessions with Netlify Blobs
+[vite] connected.
+01:55:49 [vite] Environment loaded
+01:55:49 [vite] Middleware loaded. Emulating features: aiGateway, blobs, database, edgeFunctions, functions, geolocation, headers, images, redirects, static.
+01:55:49 [vite] 💭 Linking this project to a Netlify site lets you deploy your site, use any environment variables defined on your team and site and much more. Run npx netlify init to get started.
+01:55:49 [types] Generated 11ms
+[vite] connected.
+01:55:49 [vite] Re-optimizing dependencies because vite config has changed
+ astro  v6.4.7 ready in 1557 ms
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+01:55:49 watching for file changes...
+01:55:58 [200] / 1856ms
+02:35:08 Configuration file updated. Restarting...
+[vite] program reload
+[vite] An error happened during full reload
+Failed to load url astro:server-app.js (resolved id: astro:server-app.js). Does the file exist?
+Error: Failed to load url astro:server-app.js (resolved id: astro:server-app.js). Does the file exist?
+    at loadAndTransform (file:///Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/vite/dist/node/chunks/config.js:22739:33)
+02:35:09 [@astrojs/netlify] Enabling sessions with Netlify Blobs
+[vite] connected.
+02:35:09 [WARN] [vite] ⚠ Warning: Multiple instances of @netlify/vite-plugin have been loaded. This may cause unexpected behavior if the plugin is configured differently in each instance. If you have one instance of this plugin in your Vite config, you may safely remove it.
+02:35:10 [vite] Environment loaded
+02:35:10 [vite] Middleware loaded. Emulating features: aiGateway, blobs, database, edgeFunctions, functions, geolocation, headers, images, redirects, static.
+02:35:10 [vite] 💭 Linking this project to a Netlify site lets you deploy your site, use any environment variables defined on your team and site and much more. Run npx netlify init to get started.
+[vite] connected.
+02:35:10 [vite] Re-optimizing dependencies because vite config has changed
+02:35:10 [vite] server restarted.
+03:55:20 [200] / 1787ms
+03:55:37 [200] / 1602ms
+04:24:37 [200] / 1613ms
+10:37:12 [302] /2026년-내-텅장-살린-챗gpt-블로그-수익-학자금-탈출-찐후기-92015582 2195ms
+10:58:19 [302] HEAD /post/9d5970c8-f13e-4d12-83bb-a7857932ec7c 669ms
+10:58:20 [404] HEAD /404 448ms
+10:58:20 [302] /post/9d5970c8-f13e-4d12-83bb-a7857932ec7c 193ms
+10:58:21 [404] /404 481ms
+10:59:57 [302] HEAD /undefined 1821ms
+10:59:57 [404] HEAD /404 446ms
+10:59:59 [302] /undefined 1575ms
+11:00:00 [404] /404 428ms
+11:01:42 [302] HEAD /9d5970c8-f13e-4d12-83bb-a7857932ec7c 2858ms
+11:01:42 [404] HEAD /404 424ms
+11:01:45 [302] /9d5970c8-f13e-4d12-83bb-a7857932ec7c 1802ms
+11:01:45 [404] /404 433ms
+11:02:24 [302] /4ff0eb1f-cd4c-4cec-93a3-0cffb4a66d70 2271ms
+11:02:37 [302] /4ff0eb1f-cd4c-4cec-93a3-0cffb4a66d70 1985ms
+11:06:09 [vite] .env changed, restarting server...
+[vite] connected.
+11:06:10 [vite] Environment loaded
+11:06:10 [vite] Middleware loaded. Emulating features: aiGateway, blobs, database, edgeFunctions, functions, geolocation, headers, images, redirects, static.
+11:06:10 [vite] 💭 Linking this project to a Netlify site lets you deploy your site, use any environment variables defined on your team and site and much more. Run npx netlify init to get started.
+[vite] connected.
+11:06:10 [vite] server restarted.
+11:06:10 [ERROR] [vite] error while updating dependencies:
+Error: ENOTEMPTY: directory not empty, rename '/Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/.vite/deps_temp_02d7e7a5' -> '/Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/.vite/deps'
+    at Object.renameSync (node:fs:1019:11)
+    at Object.commit (file:///Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/vite/dist/node/chunks/config.js:32058:8)
+    at commitProcessing (file:///Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/vite/dist/node/chunks/config.js:34267:28)
+    at runOptimizer (file:///Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/vite/dist/node/chunks/config.js:34289:11)
+    at onCrawlEnd (file:///Users/m/Downloads/MazaWorkspace/maza-blog/node_modules/vite/dist/node/chunks/config.js:34409:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
