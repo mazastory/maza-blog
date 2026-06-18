@@ -30,7 +30,10 @@ const recentPosts = posts.slice(1);
 let featuredImage = null;
 if (featuredPost) {
   const metaImg = featuredPost.metadata?.data?.image1 
-    || featuredPost.metadata?.blocks?.find((b: any) => b.type === 'image')?.url;
+    || featuredPost.metadata?.blocks?.find((b: any) => b.type === 'image')?.url
+    || featuredPost.metadata?.thumbnail_url
+    || featuredPost.thumbnail_url
+    || null;
   if (metaImg) featuredImage = metaImg;
 }
 
