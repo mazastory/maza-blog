@@ -1,0 +1,211 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="게시글 에디터 - Maza Blog">
+  <!-- Load Marked for live preview -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <div class="mx-auto max-w-7xl px-4 py-8">
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <a href="/admin" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <h1 id="page-title" class="text-2xl font-black text-slate-900 tracking-tight">새 글 작성</h1>
+      </div>
+      <button id="save-btn" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        <span>저장 및 발행</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
+      <!-- Editor Column -->
+      <div class="flex flex-col gap-4 h-full">
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm shrink-0">
+          <input 
+            type="text" 
+            id="title" 
+            placeholder="제목을 입력하세요" 
+            class="w-full text-2xl font-black text-slate-900 bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-slate-300"
+          />
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm shrink-0 flex gap-4">
+          <div class="flex-1">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">URL 슬러그 (Slug)</label>
+            <input 
+              type="text" 
+              id="slug" 
+              placeholder="my-awesome-post" 
+              class="w-full text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <div class="w-32 shrink-0">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">상태</label>
+            <select id="status" class="w-full text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-indigo-500">
+              <option value="published">발행됨</option>
+              <option value="draft">임시저장</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex-1 flex flex-col">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex justify-between">
+            <span>본문 (Markdown)</span>
+            <span class="text-indigo-500">Live Preview &rarr;</span>
+          </label>
+          <textarea 
+            id="content" 
+            class="w-full flex-1 bg-transparent border-none focus:outline-none focus:ring-0 font-mono text-sm leading-relaxed text-slate-700 resize-none"
+            placeholder="# 제목&#10;&#10;마크다운 문법으로 글을 작성하세요..."
+          ></textarea>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm shrink-0">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">해시태그 (쉼표로 구분)</label>
+          <input 
+            type="text" 
+            id="tags" 
+            placeholder="예: IT, 개발, 마케팅" 
+            class="w-full text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+      </div>
+
+      <!-- Preview Column -->
+      <div class="hidden lg:flex flex-col bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden h-full">
+        <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">미리보기 (Preview)</span>
+        </div>
+        <div class="p-8 overflow-y-auto flex-1">
+          <h1 id="preview-title" class="text-4xl font-black text-slate-900 mb-8 break-keep leading-tight"></h1>
+          <article id="preview-content" class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 prose-img:rounded-2xl"></article>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  // Auth Check
+  supabase.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = '/admin/login';
+    } else {
+      initEditor();
+    }
+  });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = urlParams.get('id');
+  
+  const titleInput = document.getElementById('title') as HTMLInputElement;
+  const slugInput = document.getElementById('slug') as HTMLInputElement;
+  const statusSelect = document.getElementById('status') as HTMLSelectElement;
+  const contentInput = document.getElementById('content') as HTMLTextAreaElement;
+  const tagsInput = document.getElementById('tags') as HTMLInputElement;
+  
+  const previewTitle = document.getElementById('preview-title');
+  const previewContent = document.getElementById('preview-content');
+  const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+  const pageTitle = document.getElementById('page-title');
+
+  let currentSiteId: string | null = null;
+
+  async function initEditor() {
+    // 자동 생성 슬러그 로직
+    titleInput.addEventListener('input', () => {
+      previewTitle!.textContent = titleInput.value;
+      if (!postId && !slugInput.value) { // 새 글일 때만 자동 슬러그
+        // 영문, 숫자, 하이픈만 허용 (한글 제외)
+        // 한글 제목일 경우 사용자가 직접 슬러그를 입력하도록 유도
+      }
+    });
+
+    contentInput.addEventListener('input', () => {
+      if ((window as any).marked) {
+        previewContent!.innerHTML = (window as any).marked.parse(contentInput.value);
+      }
+    });
+
+    // 도메인 기반 Site ID 조회 (수동 저장 시 필수)
+    const domain = window.location.hostname;
+    const { data: site } = await supabase.from('sites').select('id').eq('domain', domain).single();
+    if (site) currentSiteId = site.id;
+
+    if (postId) {
+      pageTitle!.textContent = '글 수정';
+      saveBtn.innerHTML = '수정 완료';
+      
+      const { data: post, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('id', postId)
+        .single();
+        
+      if (error) {
+        alert('글을 불러오지 못했습니다.');
+        return;
+      }
+      
+      titleInput.value = post.title || '';
+      slugInput.value = post.slug || '';
+      statusSelect.value = post.status || 'draft';
+      contentInput.value = post.content || '';
+      
+      if (post.metadata?.hashtags) {
+        tagsInput.value = post.metadata.hashtags.join(', ');
+      }
+
+      // 강제 프리뷰 트리거
+      titleInput.dispatchEvent(new Event('input'));
+      contentInput.dispatchEvent(new Event('input'));
+    }
+  }
+
+  saveBtn?.addEventListener('click', async () => {
+    if (!titleInput.value) return alert('제목을 입력해주세요.');
+    if (!contentInput.value) return alert('본문을 입력해주세요.');
+    
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '저장 중...';
+    
+    try {
+      const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
+      const postData = {
+        title: titleInput.value,
+        slug: slugInput.value || null,
+        content: contentInput.value,
+        html_content: (window as any).marked.parse(contentInput.value),
+        status: statusSelect.value,
+        site_id: currentSiteId,
+        metadata: {
+          hashtags: tags,
+          is_manual: true
+        }
+      };
+
+      if (postId) {
+        // 수정
+        const { error } = await supabase.from('posts').update(postData).eq('id', postId);
+        if (error) throw error;
+        alert('성공적으로 수정되었습니다.');
+      } else {
+        // 신규 작성
+        const { error } = await supabase.from('posts').insert(postData);
+        if (error) throw error;
+        alert('새 글이 발행되었습니다.');
+        window.location.href = '/admin';
+      }
+    } catch(err: any) {
+      alert('저장에 실패했습니다: ' + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = postId ? '수정 완료' : '저장 및 발행';
+    }
+  });
+</script>
