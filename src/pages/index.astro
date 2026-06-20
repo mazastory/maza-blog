@@ -5,8 +5,9 @@ import PostCard from '../components/PostCard.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
 import { useTranslation } from '../lib/i18n';
 
-// 캐시 설정으로 로딩 속도 대폭 개선
-Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+// 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
+Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
 
 
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
@@ -41,22 +42,39 @@ if (featuredPost) {
 
 <Layout preloadImage={featuredImage}>
   <div class="mx-auto max-w-5xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
-    <section class="mb-10 md:mb-14 overflow-hidden rounded-3xl md:rounded-[36px] border border-slate-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,250,255,0.95)_45%,_rgba(237,242,255,0.92))] p-6 md:p-12 shadow-[0_24px_80px_-48px_rgba(79,70,229,0.45)]">
-      <div class="grid gap-8 md:gap-10 lg:grid-cols-[1.35fr_0.85fr] lg:items-center">
+    <section class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-slate-900 p-8 md:p-14 lg:p-20 shadow-2xl">
+      <!-- Mesh Gradient Background & Grid -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-[30%] -left-[10%] h-[70%] w-[50%] rounded-full bg-indigo-600/30 blur-[100px]"></div>
+        <div class="absolute top-[20%] -right-[20%] h-[80%] w-[60%] rounded-full bg-purple-600/20 blur-[100px]"></div>
+        <div class="absolute -bottom-[40%] left-[20%] h-[70%] w-[60%] rounded-full bg-blue-600/20 blur-[100px]"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMTAgMEwwIDBMMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvcGF0dGVybj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9InVybCgjc21hbGxHcmlkKSIvPjxwYXRoIGQ9Ik00MCAwTDAgMEwwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
+      </div>
+      
+      <div class="relative z-10 grid gap-10 lg:grid-cols-[1.35fr_auto] lg:items-center">
         <div>
-          <div class="mb-4 md:mb-5 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
-            <span class="rounded-full bg-indigo-600 px-3 py-1 text-white tracking-[0.18em]">{blogName}</span>
+          <div class="mb-5 flex flex-wrap items-center gap-2">
+            <span class="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-indigo-300 backdrop-blur-md">
+              {blogName}
+            </span>
           </div>
-          <h1 class="max-w-2xl text-3xl font-black leading-[1.1] tracking-tight text-slate-950 md:text-5xl lg:text-6xl break-keep">
+          <h1 class="max-w-3xl text-3xl font-black leading-[1.15] tracking-tight text-white md:text-5xl lg:text-6xl break-keep drop-shadow-xl">
             {blogDescription}
           </h1>
-          <p class="mt-4 md:mt-5 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-lg break-keep">
+          <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-300 md:text-xl break-keep font-light">
             {t.welcome}
           </p>
-          <div class="mt-6 md:mt-8 flex flex-wrap gap-2 md:gap-3">
-            <a href="/about" class="rounded-full bg-slate-950 px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-transform hover:-translate-y-0.5">{t.about}</a>
-            <a href="/contact" class="rounded-full border border-slate-300 bg-white px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm font-bold text-slate-700 transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">{t.contact}</a>
-            <a href="/privacy" class="rounded-full border border-transparent px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">{t.privacy}</a>
+          <div class="mt-10 flex flex-wrap gap-3 md:gap-4">
+            <a href="/about" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white px-6 py-3 md:px-8 md:py-4 text-sm font-bold text-slate-900 shadow-xl transition-all hover:scale-105 hover:shadow-indigo-500/25">
+              <span class="absolute inset-0 bg-gradient-to-r from-indigo-100 to-white opacity-0 transition-opacity group-hover:opacity-100"></span>
+              <span class="relative">{t.about}</span>
+            </a>
+            <a href="/contact" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full border border-slate-700 bg-slate-800/50 px-6 py-3 md:px-8 md:py-4 text-sm font-bold text-white backdrop-blur-md transition-all hover:scale-105 hover:border-slate-500 hover:bg-slate-700/50">
+              <span class="relative">{t.contact}</span>
+            </a>
+            <a href="/privacy" class="group relative inline-flex items-center justify-center rounded-full px-4 py-3 md:py-4 text-sm font-bold text-slate-400 transition-colors hover:text-white">
+              {t.privacy}
+            </a>
           </div>
         </div>
 
@@ -105,23 +123,26 @@ if (featuredPost) {
                 <span class="text-indigo-300 font-bold text-6xl opacity-50">{featuredPost.title.substring(0, 1)}</span>
               </div>
             )}
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+            <!-- 1차 오버레이: 무조건 깔리는 50% 어두운 막 (가독성 절대 확보) -->
+            <div class="absolute inset-0 bg-black/50"></div>
+            <!-- 2차 오버레이: 텍스트가 있는 하단부를 위한 강력한 그라데이션 -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
           </div>
             
           <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-10 lg:p-12">
             <div class="mb-3 md:mb-4 flex items-center gap-2">
-              <span class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-indigo-700">
+              <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-indigo-300 border border-indigo-500/30 backdrop-blur-md">
                 {t.latestPick}
               </span>
             </div>
-            <h3 class="mb-3 md:mb-4 text-2xl md:text-3xl font-bold leading-tight text-white transition-colors break-keep line-clamp-2 md:line-clamp-none">
+            <h3 class="mb-3 md:mb-4 text-2xl md:text-3xl font-black leading-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-colors break-keep line-clamp-2 md:line-clamp-none">
               {featuredPost.title}
             </h3>
-            <p class="mb-6 md:mb-8 text-sm md:text-base text-slate-500 line-clamp-2 md:line-clamp-3">
+            <p class="mb-6 md:mb-8 text-sm md:text-base text-slate-200 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3">
               {((featuredPost.content || '') || (featuredPost.html_content || '').replace(/<[^>]*>?/gm, '')).substring(0, 200)}...
             </p>
             <div class="mt-auto flex items-center justify-between">
-              <span class="text-sm font-bold text-slate-900">{t.readArticle} <span class="text-indigo-600">→</span></span>
+              <span class="text-sm font-bold text-white drop-shadow-md">{t.readArticle} <span class="text-indigo-400">→</span></span>
             </div>
           </div>
         </a>
