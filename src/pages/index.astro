@@ -144,7 +144,7 @@ const heroBgUrl = siteConfig?.metadata?.hero_bg_url || '/hero-bg-picasso.png';
               {featuredPost.title}
             </h3>
             <p class="mb-6 md:mb-8 text-sm md:text-base text-slate-200 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3">
-              {((featuredPost.content || '') || (featuredPost.html_content || '').replace(/<[^>]*>?/gm, '')).substring(0, 200)}...
+              {(featuredPost.metadata?.data?.description || featuredPost.metadata?.description || featuredPost.metadata?.data?.summary || `${featuredPost.title}에 대한 상세한 정보를 확인해보세요.`)}
             </p>
             <div class="mt-auto flex items-center justify-between">
               <span class="text-sm font-bold text-white drop-shadow-md">{t.readArticle} <span class="text-indigo-400">→</span></span>
