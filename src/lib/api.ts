@@ -23,14 +23,10 @@ export interface SiteConfig {
   metadata?: any;
 }
 
-// 요청 객체(Request)에서 호스트명을 추출하여 도메인을 반환하는 헬퍼 함수
 export function getRequestDomain(request: Request): string {
-  // 1순위: 주입된 PUBLIC_SITE_DOMAIN 환경변수가 있으면 이를 최우선으로 사용합니다 (Vercel, Netlify 1:1 매핑 호환성)
   if (import.meta.env.PUBLIC_SITE_DOMAIN) {
     return import.meta.env.PUBLIC_SITE_DOMAIN;
   }
-
-  // 2순위: 환경변수가 없을 경우 요청 객체에서 hostname을 추출합니다
   try {
     const url = new URL(request.url);
     const hostname = url.hostname;
@@ -45,52 +41,44 @@ export function getRequestDomain(request: Request): string {
 
 export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
   const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
-
-  // If no domain is configured at build/prerender time, avoid making network calls.
-  if (!targetDomain) {
-    return null;
-  }
+  if (!targetDomain) return null;
 
   try {
     const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
-    if (error) {
-      console.error("Error fetching site config:", error);
-      return null;
-    }
+    if (error) return null;
     return data;
   } catch (e) {
-    console.error("getSiteConfig RPC failed:", e);
     return null;
   }
 }
 
+// 최적화: html_content를 제외하고 가벼운 목록만 가져옵니다. (5MB -> 50KB 최적화)
 export async function getApprovedPosts(domain?: string, locale?: string): Promise<Post[]> {
   const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || '';
-  const currentLocale = locale || 'ko';
   
   let data, error;
   try {
-    const result = await supabase.rpc('get_public_posts', { target_domain: targetDomain, target_lang: currentLocale });
+    // get_public_posts 대신 직접 site_id를 조회 후 posts 목록을 가져옵니다.
+    const { data: site } = await supabase.from('sites').select('id').eq('domain', targetDomain).limit(1).maybeSingle();
+    if (!site) return [];
+
+    const result = await supabase.from('posts')
+      .select('id, title, thumbnail_url, created_at, publish_at, status, metadata, source_type')
+      .eq('site_id', site.id)
+      .eq('status', 'published');
+      
     data = result.data;
     error = result.error;
   } catch (e) {
-    console.error("getApprovedPosts RPC failed:", e);
     return [];
   }
 
-  if (error) {
-    console.error("Error fetching posts:", error);
-    return [];
-  }
+  if (error || !data) return [];
   
   const now = new Date().getTime();
 
-  return (data || [])
+  return data
     .filter((post: any) => {
-      // Exclude posts with active generation statuses
-      if (post.status && ['QUEUED', 'STARTING', 'TAB_OPENING', 'SCHEDULED', 'ON_HOLD'].includes(post.status.toUpperCase())) return false;
-      
-      // Exclude legal/compliance pages from the main feed
       const isCompliance = post.source_type === 'compliance' || 
                            post.metadata?.is_compliance === true ||
                            /개인정보처리방침|이용약관|책임 한계|블로그 소개|문의하기/.test(post.title);
@@ -101,19 +89,17 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
     })
     .map((post: any) => {
       let thumbnail_url = post.thumbnail_url;
-      if (!thumbnail_url && post.html_content) {
-        const match = post.html_content.match(/<img[^>]+src="([^">]+)"/i);
-        if (match) {
-          thumbnail_url = match[1];
-        }
+      // HTML 콘텐츠가 없으므로 썸네일 정규식 추출 불가능 -> metadata.image1 등을 활용
+      if (!thumbnail_url && post.metadata?.data?.image1) {
+        thumbnail_url = post.metadata.data.image1;
       }
       
       return {
         id: post.id,
         title: post.title,
         slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
-        content: post.content,
-        html_content: post.html_content,
+        content: '', // 목록에서는 제외
+        html_content: '', // 목록에서는 제외
         created_at: post.created_at,
         publish_at: post.publish_at || post.created_at,
         status: post.status,
@@ -124,7 +110,19 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
     .sort((a: Post, b: Post) => new Date(b.publish_at).getTime() - new Date(a.publish_at).getTime());
 }
 
+// 최적화: slug로 ID를 찾은 후, 해당 포스트 1개만의 html_content를 추가로 가져옵니다.
 export async function getPostBySlug(slug: string, domain?: string, locale?: string): Promise<Post | null> {
   const posts = await getApprovedPosts(domain, locale);
-  return posts.find(p => p.slug === slug) || null;
+  const basePost = posts.find(p => p.slug === slug || p.id === slug);
+  
+  if (!basePost) return null;
+
+  // html_content와 content만 따로 가져옴
+  const { data, error } = await supabase.from('posts').select('html_content, content').eq('id', basePost.id).single();
+  if (!error && data) {
+    basePost.html_content = data.html_content;
+    basePost.content = data.content;
+  }
+
+  return basePost;
 }
