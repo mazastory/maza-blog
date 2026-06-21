@@ -65,7 +65,7 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
     const nowIso = new Date().toISOString();
 
     const result = await supabase.from('posts')
-      .select('id, title, thumbnail_url, created_at, publish_at, status, metadata, source_type')
+      .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
       .eq('site_id', site.id)
       .eq('status', 'published')
       .or(`publish_at.lte.${nowIso},and(publish_at.is.null,created_at.lte.${nowIso})`)
@@ -94,7 +94,7 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
       return publishTime <= now;
     })
     .map((post: any) => {
-      let thumbnail_url = post.thumbnail_url;
+      let thumbnail_url = post.source_image_url;
       // HTML 콘텐츠가 없으므로 썸네일 정규식 추출 불가능 -> metadata.image1 등을 활용
       if (!thumbnail_url && post.metadata?.data?.image1) {
         thumbnail_url = post.metadata.data.image1;
@@ -150,7 +150,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
   try {
     const { data, error } = await supabase.from('posts')
-      .select('id, title, thumbnail_url, created_at, publish_at, status, metadata, source_type')
+      .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
       .eq('site_id', siteId)
       .eq('status', 'published')
       .gte('id', minUuid)
@@ -163,7 +163,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
     if (!candidate) return null;
     if (isCompliancePost(candidate)) return null;
 
-    let thumbnail_url = candidate.thumbnail_url;
+    let thumbnail_url = candidate.source_image_url;
     if (!thumbnail_url && candidate.metadata?.data?.image1) {
       thumbnail_url = candidate.metadata.data.image1;
     }
