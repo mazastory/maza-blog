@@ -31,8 +31,9 @@ if (!hexColor) {
 }
 ---
 
-<style is:inline define:vars={{ hex: hexColor }}>
+<style is:inline set:html={`
   :root {
+    --hex: ${hexColor};
     /* Override Tailwind v4 indigo scale with the brand color using color-mix for shades */
     --color-indigo-50: color-mix(in srgb, var(--hex) 5%, white);
     --color-indigo-100: color-mix(in srgb, var(--hex) 15%, white);
@@ -51,4 +52,4 @@ if (!hexColor) {
   @media (prefers-color-scheme: dark) {
     /* 추가적인 다크모드 대응이 필요하다면 여기에 작성합니다. */
   }
-</style>
+`} />
