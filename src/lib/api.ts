@@ -39,13 +39,23 @@ export function getRequestDomain(request: Request): string {
   }
 }
 
+// 간단한 인메모리 캐시 구현 (로컬 dev 및 SSR 성능 최적화용)
+const cache: Record<string, { data: any, timestamp: number }> = {};
+const CACHE_TTL = 30000; // 30초
+
 export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
   const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
   if (!targetDomain) return null;
 
+  const cacheKey = `siteConfig_${targetDomain}`;
+  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
+    return cache[cacheKey].data;
+  }
+
   try {
     const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
     if (error) return null;
+    cache[cacheKey] = { data, timestamp: Date.now() };
     return data;
   } catch (e) {
     return null;
@@ -56,6 +66,11 @@ export async function getSiteConfig(domain?: string): Promise<SiteConfig | null>
 export async function getApprovedPosts(domain?: string, locale?: string): Promise<Post[]> {
   const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || '';
   
+  const cacheKey = `posts_${targetDomain}_${locale || 'all'}`;
+  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
+    return cache[cacheKey].data;
+  }
+
   let data, error;
   try {
     // get_public_posts 대신 직접 site_id를 조회 후 posts 목록을 가져옵니다.
@@ -82,7 +97,7 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
   
   const now = new Date().getTime();
 
-  return data
+  const formattedData = data
     .filter((post: any) => {
       const isCompliance = post.source_type === 'compliance' || 
                            post.metadata?.is_compliance === true ||
@@ -113,6 +128,9 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
       };
     })
     .sort((a: Post, b: Post) => new Date(b.publish_at).getTime() - new Date(a.publish_at).getTime());
+
+  cache[cacheKey] = { data: formattedData, timestamp: Date.now() };
+  return formattedData;
 }
 
 // 슬러그를 즉석에서 계산합니다 (DB에 slug 컬럼이 없으므로 title + id 접두사로 파생).
@@ -186,10 +204,17 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
 // 글 본문(html_content, content)만 PK 정확 매칭으로 가져옵니다. 인덱스를 타므로 매우 빠릅니다.
 export async function getPostContent(id: string): Promise<{ content: string; html_content: string } | null> {
+  const cacheKey = `postContent_${id}`;
+  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
+    return cache[cacheKey].data;
+  }
+
   try {
     const { data, error } = await supabase.from('posts').select('html_content, content').eq('id', id).single();
     if (error || !data) return null;
-    return { content: data.content || '', html_content: data.html_content || '' };
+    const result = { content: data.content || '', html_content: data.html_content || '' };
+    cache[cacheKey] = { data: result, timestamp: Date.now() };
+    return result;
   } catch (e) {
     return null;
   }

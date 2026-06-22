@@ -15,8 +15,8 @@
     "vite": "^7"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.18",
     "@astrojs/netlify": "^7.0.0",
+    "@astrojs/rss": "^4.0.18",
     "@supabase/supabase-js": "^2.105.4",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.4.6",
