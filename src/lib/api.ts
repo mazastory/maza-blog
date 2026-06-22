@@ -68,9 +68,8 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
       .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
       .eq('site_id', site.id)
       .eq('status', 'published')
-      .or(`publish_at.lte.${nowIso},and(publish_at.is.null,created_at.lte.${nowIso})`)
-      .order('publish_at', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false })
+      .lte('publish_at', nowIso)
+      .order('publish_at', { ascending: false })
       .limit(60);
       
     data = result.data;
