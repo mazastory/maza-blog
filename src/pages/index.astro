@@ -6,8 +6,8 @@ import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
 import { useTranslation } from '../lib/i18n';
 
 // 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600');
-Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
 
 
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링

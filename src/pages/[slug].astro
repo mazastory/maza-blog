@@ -9,7 +9,8 @@ import { splitHtmlForAd } from '../lib/adManager';
 
 // CDN 캐싱 활성화: 쿠키 의존성 제거로 Cloudflare/Netlify 캐싱이 작동함
 // - 개인 정보(쿠키 등) 없음 → CDN이 페이지를 저장해 전 세계 방문자에게 즉시 제공
-Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
 
 const domain = getRequestDomain(Astro.request);
 const { slug } = Astro.params;

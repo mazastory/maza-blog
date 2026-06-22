@@ -4,6 +4,10 @@ import Layout from '../../layouts/Layout.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getApprovedPosts, getRequestDomain } from '../../lib/api';
 
+// 캐시 설정 (SWR 적용)
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+
 const domain = getRequestDomain(Astro.request);
 const { slug } = Astro.params;
 
