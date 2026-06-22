@@ -4,7 +4,6 @@ import Header from '../components/Header.astro';
 import SEO from '../components/SEO.astro';
 import Schema from '../components/Schema.astro';
 import DynamicTheme from '../components/DynamicTheme.astro';
-import LinkPrefetch from '../components/LinkPrefetch.astro';
 import { getSiteConfig } from '../lib/api';
 
 interface Props {
@@ -115,7 +114,6 @@ const canonicalUrl = Astro.url.href;
 				</p>
 			</div>
 		</footer>
-		<LinkPrefetch />
 	</body>
 </html>
 
