@@ -5,6 +5,7 @@ import SEO from '../components/SEO.astro';
 import Schema from '../components/Schema.astro';
 import DynamicTheme from '../components/DynamicTheme.astro';
 import { getSiteConfig } from '../lib/api';
+import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
 	title?: string;
@@ -51,6 +52,7 @@ const canonicalUrl = Astro.url.href;
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
 		<meta name="generator" content={Astro.generator} />
+		<ViewTransitions />
 			{preloadImage && (
 				<link rel="preload" as="image" href={preloadImage} />
 			)}
