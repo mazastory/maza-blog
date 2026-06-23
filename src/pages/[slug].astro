@@ -3,7 +3,7 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import AnalyticsTracker from '../components/AnalyticsTracker.astro';
-import { getSiteConfig, getRequestDomain, getApprovedPosts, getPostBySlug } from '../lib/api';
+import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
 import { buildKeywordMap, injectInternalLinks } from '../lib/internalLinks';
 import { splitHtmlForAd } from '../lib/adManager';
 

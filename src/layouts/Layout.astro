@@ -70,10 +70,11 @@ const canonicalUrl = Astro.url.href;
 			image={image}
 			authorName={authorName}
 			datePublished={datePublished}
+		/>
 		<DynamicTheme siteConfig={siteConfig} />
 
 		{siteConfig?.adsense_pub && siteConfig?.adsense_status === 'approved' && (
-			<script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsense_pub}`} crossorigin="anonymous"></script>
+			<script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsense_pub}`} crossorigin="anonymous"></script>
 		)}
 
 		{/* 구글 서치콘솔 소유권 인증 메타 태그 — siteConfig.google_site_verification 값이 있을 때만 주입 */}

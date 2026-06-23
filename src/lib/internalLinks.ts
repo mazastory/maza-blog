@@ -56,7 +56,7 @@ export function injectInternalLinks(html: string, keywordMap: KeywordLink[]): st
 
   const regex = /(<a[^>]*>)|(<\/a>)|(<h[1-6][^>]*>)|(<\/h[1-6]>)|(<[^>]*>)|([^<]+)/gi;
 
-  return html.replace(regex, (match, aOpen, aClose, hOpen, hClose, otherTag, text) => {
+  return html.replace(regex, (_match, aOpen, aClose, hOpen, hClose, otherTag, text) => {
     if (aOpen) { inAnchor = true; return aOpen; }
     if (aClose) { inAnchor = false; return aClose; }
     if (hOpen) { inHeading = true; return hOpen; }

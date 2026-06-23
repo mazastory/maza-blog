@@ -67,7 +67,7 @@ import Layout from '../../layouts/Layout.astro';
     const postList = document.getElementById('post-list');
     
     // 현재 접속된 도메인을 기준으로 사이트 조회 (옵션)
-    const domain = window.location.hostname;
+    const _domain = window.location.hostname;
     
     try {
       // 내 DB의 posts 테이블에서 모든 글 가져오기

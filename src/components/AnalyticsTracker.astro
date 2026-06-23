@@ -7,7 +7,7 @@ interface Props {
 const { postId, adVariant } = Astro.props;
 ---
 
-<script define:vars={{ postId, adVariant }}>
+<script is:inline define:vars={{ postId, adVariant }}>
   // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', () => {
     let startTime = Date.now();

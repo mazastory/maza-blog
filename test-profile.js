@@ -51,7 +51,7 @@ async function run() {
   }
   
   if (match) {
-    const { data: content } = await supabase.from('posts').select('html_content, content').eq('id', match.id).single();
+    const { data: _content } = await supabase.from('posts').select('html_content, content').eq('id', match.id).single();
     let t4 = Date.now();
     console.log('4. getPostContent took:', t4 - t3, 'ms');
     console.log('Total DB time:', t4 - t0, 'ms');

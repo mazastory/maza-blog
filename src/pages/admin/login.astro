@@ -65,7 +65,7 @@ import Layout from '../../layouts/Layout.astro';
     submitBtn.innerHTML = '로그인 중...';
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: _data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
