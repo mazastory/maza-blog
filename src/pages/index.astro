@@ -18,7 +18,7 @@ const domain = getRequestDomain(Astro.request);
 
 // API 병렬 호출로 속도 최적화
 const [siteConfig, posts] = await Promise.all([
-  getSiteConfig(),
+  getSiteConfig(domain),
   getApprovedPosts(domain, lang)
 ]);
 

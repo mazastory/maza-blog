@@ -1,9 +1,10 @@
 ---
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
-import { getSiteConfig } from '../lib/api';
+import { getSiteConfig, getRequestDomain } from '../lib/api';
 
-const siteConfig = await getSiteConfig();
+const domain = getRequestDomain(Astro.request);
+const siteConfig = await getSiteConfig(domain);
 const blogName = siteConfig?.blog_name || "Maza Blog";
 ---
 <Layout title="Disclaimer" description={`${blogName} Disclaimer`}>

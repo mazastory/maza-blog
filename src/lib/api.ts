@@ -24,18 +24,15 @@ export interface SiteConfig {
 }
 
 export function getRequestDomain(request: Request): string {
-  if (import.meta.env.PUBLIC_SITE_DOMAIN) {
-    return import.meta.env.PUBLIC_SITE_DOMAIN;
-  }
   try {
     const url = new URL(request.url);
     const hostname = url.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return '';
+      return import.meta.env.PUBLIC_SITE_DOMAIN || '';
     }
     return hostname;
   } catch (e) {
-    return '';
+    return import.meta.env.PUBLIC_SITE_DOMAIN || '';
   }
 }
 

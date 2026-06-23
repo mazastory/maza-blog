@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
 
-import { getSiteConfig } from '../lib/api';
+import { getSiteConfig, getRequestDomain } from '../lib/api';
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
-  const siteConfig = await getSiteConfig();
+export const GET: APIRoute = async ({ request }) => {
+  const domain = getRequestDomain(request);
+  const siteConfig = await getSiteConfig(domain);
   const pubId = siteConfig?.adsense_pub;
 
   if (!pubId) {

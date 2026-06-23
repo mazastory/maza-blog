@@ -1,8 +1,9 @@
 ---
-import { getSiteConfig } from '../lib/api';
+import { getSiteConfig, getRequestDomain } from '../lib/api';
 
 const { siteConfig: propSiteConfig } = Astro.props;
-const siteConfig = propSiteConfig || await getSiteConfig();
+const domain = getRequestDomain(Astro.request);
+const siteConfig = propSiteConfig || await getSiteConfig(domain);
 
 // 유저가 설정한 색상이 있으면 우선 사용
 let hexColor = siteConfig?.metadata?.theme_color;
