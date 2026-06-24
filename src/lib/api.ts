@@ -40,8 +40,14 @@ export function getRequestDomain(request: Request): string {
 const cache: Record<string, { data: any, timestamp: number }> = {};
 const CACHE_TTL = 30000; // 30초
 
+function normalizeDomain(d: string): string {
+  if (!d) return '';
+  return d.replace(/^https?:\/\//, '').replace(/\/$/, '').split(':')[0];
+}
+
 export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
-  const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
+  let targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
+  targetDomain = normalizeDomain(targetDomain);
   if (!targetDomain) return null;
 
   const cacheKey = `siteConfig_${targetDomain}`;
@@ -61,7 +67,9 @@ export async function getSiteConfig(domain?: string): Promise<SiteConfig | null>
 
 // 최적화: html_content를 제외하고 가벼운 목록만 가져옵니다. (5MB -> 50KB 최적화)
 export async function getApprovedPosts(domain?: string, locale?: string): Promise<Post[]> {
-  const targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || '';
+  let targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
+  targetDomain = normalizeDomain(targetDomain);
+  if (!targetDomain) return [];
   
   const cacheKey = `posts_${targetDomain}_${locale || 'all'}`;
   if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
@@ -80,8 +88,8 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
       .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
       .eq('site_id', site.id)
       .eq('status', 'published')
-      .lte('publish_at', nowIso)
-      .order('publish_at', { ascending: false })
+      .or(`publish_at.lte.${nowIso},publish_at.is.null`)
+      .order('created_at', { ascending: false })
       .limit(60);
       
     data = result.data;
