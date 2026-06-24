@@ -56,15 +56,15 @@ const _heroBgUrl = siteConfig?.metadata?.hero_bg_url || '/hero-bg-picasso.webp';
         <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px]"></div>
       </div>
       
-      <div class="relative z-10 grid gap-10 lg:grid-cols-[1.4fr_auto] lg:items-center">
-        <div>
+      <div class="relative z-10 grid gap-10 lg:gap-16 lg:grid-cols-[1.5fr_1fr] lg:items-center">
+        <div class="min-w-0">
           <div class="mb-6 flex flex-wrap items-center gap-3">
             <span class="rounded-full border border-indigo-400/30 bg-indigo-500/20 px-5 py-2 text-xs font-black uppercase tracking-[0.2em] text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.2)] backdrop-blur-md">
               {blogName}
             </span>
             <span class="flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)] animate-pulse"></span>
           </div>
-          <h1 class="max-w-3xl text-4xl font-black leading-[1.15] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 md:text-6xl lg:text-7xl break-keep drop-shadow-sm">
+          <h1 class="text-4xl font-black leading-[1.25] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 md:text-5xl lg:text-6xl break-keep drop-shadow-sm">
             {blogDescription}
           </h1>
           <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-300/90 md:text-2xl break-keep font-medium drop-shadow-sm">
