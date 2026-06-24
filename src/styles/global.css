@@ -45,57 +45,181 @@ body {
   letter-spacing: normal;
 }
 
-/* Academy Manual Markdown Overrides (Does not affect Zero-IT generated posts) */
-.academy-prose p {
+/* Premium Academy Manual Markdown Overrides (Notion-style) */
+.academy-prose {
+  color: #37352f;
+  font-size: 1.05rem;
   line-height: 1.8;
-  margin-bottom: 1.5em;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
 }
 
-.academy-prose h2, .academy-prose h3 {
+.academy-prose p {
+  margin-bottom: 1.8em;
+  color: #3f3f46;
+  font-weight: 400;
+}
+
+.academy-prose h1, .academy-prose h2, .academy-prose h3, .academy-prose h4 {
+  color: #0f172a;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+}
+
+.academy-prose h1 {
+  font-size: 2.25rem;
   margin-top: 2.5em;
   margin-bottom: 1em;
   padding-bottom: 0.5em;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid #e2e8f0;
 }
 
+.academy-prose h2 {
+  font-size: 1.6rem;
+  margin-top: 2.5em;
+  margin-bottom: 1.2em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.academy-prose h3 {
+  font-size: 1.25rem;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+/* Callout blocks / Blockquotes (Notion style) */
 .academy-prose blockquote {
-  background-color: var(--bg-secondary);
-  border-left: 4px solid var(--primary);
+  background-color: #f8fafc;
+  border-left: 4px solid var(--primary, #6366f1);
   padding: 1.25rem 1.5rem;
-  margin: 1.5rem 0;
-  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 2rem 0;
+  border-radius: 0 8px 8px 0;
   font-style: normal;
-  color: var(--text-main);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .academy-prose blockquote p {
   margin: 0;
+  font-weight: 500;
 }
 
+/* Inline Code */
+.academy-prose code {
+  background-color: #f1f5f9;
+  color: #e11d48;
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+  font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Code blocks */
+.academy-prose pre {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 2rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+}
+
+.academy-prose pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+/* Strong accents with highlight effect */
+.academy-prose strong {
+  color: #0f172a;
+  font-weight: 700;
+  background: linear-gradient(180deg, transparent 65%, rgba(99, 102, 241, 0.25) 65%);
+  padding: 0 0.1em;
+}
+
+/* Links */
+.academy-prose a {
+  color: var(--primary, #6366f1);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+}
+.academy-prose a:hover {
+  border-bottom-color: var(--primary, #6366f1);
+}
+
+/* Lists */
+.academy-prose ul {
+  list-style-type: none;
+  padding-left: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.academy-prose ul li {
+  position: relative;
+  margin-bottom: 0.6em;
+  padding-left: 0.5rem;
+}
+
+.academy-prose ul li::before {
+  content: '■';
+  position: absolute;
+  left: -1rem;
+  top: 0.15em;
+  font-size: 0.6em;
+  color: var(--primary, #6366f1);
+}
+
+.academy-prose ol {
+  padding-left: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.academy-prose ol li {
+  margin-bottom: 0.6em;
+  padding-left: 0.5rem;
+}
+
+/* Tables */
 .academy-prose table {
   width: 100%;
   border-collapse: collapse;
   margin: 2.5rem 0;
   background-color: white;
-  border-radius: var(--radius);
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  border: 1px solid var(--border);
+  border: 1px solid #e2e8f0;
 }
 
 .academy-prose th, .academy-prose td {
-  border: 1px solid var(--border);
+  border: 1px solid #e2e8f0;
   padding: 1rem 1.25rem;
   text-align: left;
 }
 
 .academy-prose th {
-  background-color: var(--bg-secondary);
+  background-color: #f8fafc;
   font-weight: 700;
-  color: var(--text-main);
+  color: #334155;
+  font-size: 0.95em;
 }
 
-.academy-prose tr:nth-child(even) {
-  background-color: #fafafa;
+.academy-prose tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Images */
+.academy-prose img {
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  margin: 3rem auto;
 }
