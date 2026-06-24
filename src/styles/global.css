@@ -44,3 +44,58 @@ body {
   text-transform: none;
   letter-spacing: normal;
 }
+
+/* Academy Manual Markdown Overrides (Does not affect Zero-IT generated posts) */
+.academy-prose p {
+  line-height: 1.8;
+  margin-bottom: 1.5em;
+}
+
+.academy-prose h2, .academy-prose h3 {
+  margin-top: 2.5em;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid var(--border);
+}
+
+.academy-prose blockquote {
+  background-color: var(--bg-secondary);
+  border-left: 4px solid var(--primary);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-style: normal;
+  color: var(--text-main);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.academy-prose blockquote p {
+  margin: 0;
+}
+
+.academy-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2.5rem 0;
+  background-color: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+
+.academy-prose th, .academy-prose td {
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  text-align: left;
+}
+
+.academy-prose th {
+  background-color: var(--bg-secondary);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.academy-prose tr:nth-child(even) {
+  background-color: #fafafa;
+}

@@ -131,13 +131,13 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
 
     <!-- 포스트 본문: 모바일은 prose(base), PC는 prose-lg -->
     <!-- prose-h1:hidden 으로 본문 안의 중복 h1 숨김 -->
-    <article class="prose prose-slate max-w-none md:prose-lg
+    <article class={`prose prose-slate max-w-none md:prose-lg
       prose-headings:font-bold prose-headings:tracking-tight prose-headings:break-keep
       prose-h1:hidden prose-h2:text-xl prose-h2:md:text-2xl prose-h3:text-lg prose-h3:md:text-xl
       prose-p:leading-relaxed prose-p:break-keep
       prose-a:text-[var(--color-indigo-600)] hover:prose-a:text-[var(--color-indigo-700)]
       prose-img:rounded-xl prose-img:md:rounded-2xl prose-img:shadow-md prose-img:mx-auto
-      prose-li:break-keep">
+      prose-li:break-keep ${isZeroItPost ? '' : 'academy-prose'}`}>
       <Fragment set:html={part1} />
 
       <!-- 광고 B: 본문 중간 삽입 (클라이언트 JS가 A/B 배정 후 숨김 처리) -->
