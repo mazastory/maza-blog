@@ -75,7 +75,7 @@ const canonicalUrl = Astro.url.href;
 		/>
 		<DynamicTheme siteConfig={siteConfig} />
 
-		{siteConfig?.adsense_pub && siteConfig?.adsense_status === 'approved' && (
+		{siteConfig?.adsense_pub && (
 			<script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsense_pub}`} crossorigin="anonymous"></script>
 		)}
 
