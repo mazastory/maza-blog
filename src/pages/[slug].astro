@@ -59,7 +59,8 @@ const linkedHtmlContent = injectInternalLinks(post.html_content || post.content,
 const [part1, part2] = splitHtmlForAd(linkedHtmlContent);
 
 const profileName = siteConfig?.blog_name || "Maza Editor";
-const dateStr = new Date(post.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+const publishDate = post.publish_at || post.created_at;
+const dateStr = new Date(publishDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
 // 실제 이미지 추출 (PostCard와 동일한 로직 적용)
 const metaImage = post.metadata?.data?.image1 
@@ -78,7 +79,7 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
 	image={metaImage}
 	type="article"
 	authorName={profileName}
-	datePublished={post.created_at}
+	datePublished={publishDate}
   siteConfig={siteConfig}
 >
   <div class="mx-auto max-w-3xl px-4 pt-6 pb-12 md:px-6 md:pt-16 md:pb-20">
@@ -111,7 +112,7 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
             <span class="font-semibold text-slate-700">{profileName}</span>
           </div>
           <span class="h-1 w-1 rounded-full bg-slate-300"></span>
-          <time datetime={post.created_at}>{dateStr}</time>
+          <time datetime={publishDate}>{dateStr}</time>
         </div>
       </header>
     )}

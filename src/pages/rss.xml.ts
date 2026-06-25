@@ -40,7 +40,7 @@ export async function GET(context: APIContext) {
 
       return {
         title: post.title,
-        pubDate: new Date(post.created_at),
+        pubDate: new Date(post.publish_at || post.created_at),
         description: summary,
         content: richContent,
         link: `/${post.slug}/`,
