@@ -40,9 +40,10 @@ export function getRequestDomain(request: Request): string {
 const cache: Record<string, { data: any, timestamp: number }> = {};
 const SITE_CONFIG_TTL = 5 * 60 * 1000;   // 5분
 const POSTS_TTL       = 2 * 60 * 1000;   // 2분
+const CACHE_TTL       = 5 * 60 * 1000;   // 범용 (postContent 등)
 
 // In-flight 중복 요청 방지 (캐시 스탬피드 예방)
-const inflight: Record<string, Promise<any>> = {};
+const inflight: Record<string, Promise<any> | undefined> = {};
 
 function normalizeDomain(d: string): string {
   if (!d) return '';
