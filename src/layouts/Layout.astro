@@ -23,8 +23,8 @@ interface Props {
 // static prerender.
 const envDomain = import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
 const siteConfig = Astro.props.siteConfig || (envDomain ? await getSiteConfig(envDomain) : null);
-// Set CDN-friendly cache control for pages rendered with this layout
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+// CDN 캐시 강화: 1시간 CDN + 24시간 stale-while-revalidate
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
 const siteDesc = siteConfig?.niche || "MazaStudio Subdomain Blog - High Quality AI Content";
 
@@ -48,9 +48,19 @@ const canonicalUrl = Astro.url.href;
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+		{/* Google Fonts — 비동기 로드 (렌더 블로킹 제거) */}
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap"
+			rel="stylesheet"
+			media="print"
+			onload="this.media='all'"
+		/>
+		<noscript>
+			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+		</noscript>
 		<meta name="generator" content={Astro.generator} />
 		<ClientRouter />
 			{preloadImage && (

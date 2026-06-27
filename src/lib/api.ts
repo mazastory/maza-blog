@@ -36,9 +36,13 @@ export function getRequestDomain(request: Request): string {
   }
 }
 
-// 간단한 인메모리 캐시 구현 (로컬 dev 및 SSR 성능 최적화용)
+// 캐시: siteConfig 5분, posts 2분 (Netlify Edge 인스턴스별 인메모리)
 const cache: Record<string, { data: any, timestamp: number }> = {};
-const CACHE_TTL = 30000; // 30초
+const SITE_CONFIG_TTL = 5 * 60 * 1000;   // 5분
+const POSTS_TTL       = 2 * 60 * 1000;   // 2분
+
+// In-flight 중복 요청 방지 (캐시 스탬피드 예방)
+const inflight: Record<string, Promise<any>> = {};
 
 function normalizeDomain(d: string): string {
   if (!d) return '';
@@ -51,18 +55,27 @@ export async function getSiteConfig(domain?: string): Promise<SiteConfig | null>
   if (!targetDomain) return null;
 
   const cacheKey = `siteConfig_${targetDomain}`;
-  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
+  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < SITE_CONFIG_TTL) {
     return cache[cacheKey].data;
   }
 
-  try {
-    const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
-    if (error) return null;
-    cache[cacheKey] = { data, timestamp: Date.now() };
-    return data;
-  } catch (e) {
-    return null;
-  }
+  // 동시 요청 중복 방지
+  if (inflight[cacheKey]) return inflight[cacheKey];
+
+  inflight[cacheKey] = (async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
+      if (error) return cache[cacheKey]?.data ?? null;
+      cache[cacheKey] = { data, timestamp: Date.now() };
+      return data;
+    } catch (e) {
+      return cache[cacheKey]?.data ?? null;
+    } finally {
+      delete inflight[cacheKey];
+    }
+  })();
+
+  return inflight[cacheKey];
 }
 
 // 최적화: html_content를 제외하고 가벼운 목록만 가져옵니다. (5MB -> 50KB 최적화)
@@ -72,70 +85,72 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
   if (!targetDomain) return [];
   
   const cacheKey = `posts_${targetDomain}_${locale || 'all'}`;
-  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
+  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < POSTS_TTL) {
     return cache[cacheKey].data;
   }
 
-  let data, error;
-  try {
-    // get_public_posts 대신 직접 site_id를 조회 후 posts 목록을 가져옵니다.
-    const { data: site } = await supabase.from('sites').select('id').eq('domain', targetDomain).limit(1).maybeSingle();
-    if (!site) return [];
+  // 동시 요청 중복 방지
+  if (inflight[cacheKey]) return inflight[cacheKey];
 
-    const nowIso = new Date().toISOString();
+  inflight[cacheKey] = (async () => {
+    try {
+      // get_public_posts 대신 직접 site_id를 조회 후 posts 목록을 가져옵니다.
+      const { data: site } = await supabase.from('sites').select('id').eq('domain', targetDomain).limit(1).maybeSingle();
+      if (!site) return cache[cacheKey]?.data ?? [];
 
-    const result = await supabase.from('posts')
-      .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
-      .eq('site_id', site.id)
-      .eq('status', 'published')
-      .or(`publish_at.lte.${nowIso},publish_at.is.null`)
-      .order('created_at', { ascending: false })
-      .limit(60);
-      
-    data = result.data;
-    error = result.error;
-  } catch (e) {
-    return [];
-  }
+      const nowIso = new Date().toISOString();
 
-  if (error || !data) return [];
-  
-  const now = new Date().getTime();
+      const result = await supabase.from('posts')
+        .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
+        .eq('site_id', site.id)
+        .eq('status', 'published')
+        .or(`publish_at.lte.${nowIso},publish_at.is.null`)
+        .order('publish_at', { ascending: false })  // created_at → publish_at 정렬로 더 정확한 순서
+        .limit(60);
 
-  const formattedData = data
-    .filter((post: any) => {
-      const isCompliance = post.source_type === 'compliance' || 
-                           post.metadata?.is_compliance === true ||
-                           /개인정보처리방침|이용약관|책임 한계|블로그 소개|문의하기/.test(post.title);
-      if (isCompliance) return false;
+      const { data, error } = result;
+      if (error || !data) return cache[cacheKey]?.data ?? [];
 
-      const publishTime = new Date(post.publish_at || post.created_at).getTime();
-      return publishTime <= now;
-    })
-    .map((post: any) => {
-      let thumbnail_url = post.source_image_url;
-      // HTML 콘텐츠가 없으므로 썸네일 정규식 추출 불가능 -> metadata.image1 등을 활용
-      if (!thumbnail_url && post.metadata?.data?.image1) {
-        thumbnail_url = post.metadata.data.image1;
-      }
-      
-      return {
-        id: post.id,
-        title: post.title,
-        slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
-        content: '', // 목록에서는 제외
-        html_content: '', // 목록에서는 제외
-        created_at: post.created_at,
-        publish_at: post.publish_at || post.created_at,
-        status: post.status,
-        metadata: post.metadata,
-        thumbnail_url
-      };
-    })
-    .sort((a: Post, b: Post) => new Date(b.publish_at).getTime() - new Date(a.publish_at).getTime());
+      const now = new Date().getTime();
 
-  cache[cacheKey] = { data: formattedData, timestamp: Date.now() };
-  return formattedData;
+      const formattedData = data
+        .filter((post: any) => {
+          const isCompliance = post.source_type === 'compliance' ||
+                               post.metadata?.is_compliance === true ||
+                               /개인정보처리방침|이용약관|책임 한계|블로그 소개|문의하기/.test(post.title);
+          if (isCompliance) return false;
+          const publishTime = new Date(post.publish_at || post.created_at).getTime();
+          return publishTime <= now;
+        })
+        .map((post: any) => {
+          let thumbnail_url = post.source_image_url;
+          if (!thumbnail_url && post.metadata?.data?.image1) {
+            thumbnail_url = post.metadata.data.image1;
+          }
+          return {
+            id: post.id,
+            title: post.title,
+            slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
+            content: '',
+            html_content: '',
+            created_at: post.created_at,
+            publish_at: post.publish_at || post.created_at,
+            status: post.status,
+            metadata: post.metadata,
+            thumbnail_url
+          };
+        });
+
+      cache[cacheKey] = { data: formattedData, timestamp: Date.now() };
+      return formattedData;
+    } catch (e) {
+      return cache[cacheKey]?.data ?? [];
+    } finally {
+      delete inflight[cacheKey];
+    }
+  })();
+
+  return inflight[cacheKey];
 }
 
 // 슬러그를 즉석에서 계산합니다 (DB에 slug 컬럼이 없으므로 title + id 접두사로 파생).
