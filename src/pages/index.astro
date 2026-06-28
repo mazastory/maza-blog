@@ -64,7 +64,7 @@ const _heroBgUrl = siteConfig?.metadata?.hero_bg_url || '/hero-bg-picasso.png';
             </span>
             <span class="flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)] animate-pulse"></span>
           </div>
-          <h1 class="text-4xl font-black leading-[1.25] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 md:text-5xl lg:text-6xl break-keep drop-shadow-sm">
+          <h1 class={`${blogDescription.length > 40 ? 'text-2xl md:text-3xl lg:text-4xl leading-[1.4]' : blogDescription.length > 20 ? 'text-3xl md:text-4xl lg:text-5xl leading-[1.3]' : 'text-4xl md:text-5xl lg:text-6xl leading-[1.25]'} font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 break-keep drop-shadow-sm`} style="word-break: keep-all; overflow-wrap: break-word;">
             {blogDescription}
           </h1>
           <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-300/90 md:text-2xl break-keep font-medium drop-shadow-sm">

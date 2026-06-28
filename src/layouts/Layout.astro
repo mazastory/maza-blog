@@ -4,7 +4,7 @@ import Header from '../components/Header.astro';
 import SEO from '../components/SEO.astro';
 import Schema from '../components/Schema.astro';
 import DynamicTheme from '../components/DynamicTheme.astro';
-import { getSiteConfig } from '../lib/api';
+import { getSiteConfig, getRequestDomain } from '../lib/api';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
@@ -18,11 +18,8 @@ interface Props {
   siteConfig?: any;
 }
 
-// Prefer an explicit domain from environment when prerendering. Only call
-// the Supabase RPC when a domain is available to avoid network calls during
-// static prerender.
-const envDomain = import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
-const siteConfig = Astro.props.siteConfig || (envDomain ? await getSiteConfig(envDomain) : null);
+const domain = getRequestDomain(Astro.request);
+const siteConfig = Astro.props.siteConfig || await getSiteConfig(domain);
 // CDN 캐시 강화: 1시간 CDN + 24시간 stale-while-revalidate
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
