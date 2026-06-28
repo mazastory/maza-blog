@@ -67,6 +67,16 @@ export async function getSiteConfig(domain?: string): Promise<SiteConfig | null>
     try {
       const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
       if (error) return cache[cacheKey]?.data ?? null;
+      
+      // Fetch missing fields that RPC doesn't return (sc_verification, metadata)
+      if (data) {
+        const { data: siteExtras } = await supabase.from('sites').select('sc_verification, metadata').eq('domain', targetDomain).single();
+        if (siteExtras) {
+          data.sc_verification = siteExtras.sc_verification;
+          data.metadata = siteExtras.metadata;
+        }
+      }
+      
       cache[cacheKey] = { data, timestamp: Date.now() };
       return data;
     } catch (e) {
