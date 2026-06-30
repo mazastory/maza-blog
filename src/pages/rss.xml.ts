@@ -18,11 +18,12 @@ export async function GET(context: APIContext) {
   const config = await getSiteConfig(domain);
   const siteTitle = config?.blog_name || 'Maza Blog';
   const siteDesc = config?.niche || 'A blog powered by Maza Studio';
+  const siteUrl = config?.domain ? `https://${config.domain}` : `https://${domain}`;
 
   return rss({
     title: siteTitle,
     description: siteDesc,
-    site: context.site || 'https://example.com',
+    site: siteUrl,
     items: posts.map((post) => {
       // 썸네일과 요약본을 포함한 리치 콘텐츠 생성 (SNS 연동 툴에서 추출하기 매우 좋음)
       const thumb = post.metadata?.thumbnail_url ? `<p><img src="${post.metadata.thumbnail_url}" alt="thumbnail" /></p>` : '';
