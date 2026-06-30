@@ -47,7 +47,7 @@ const inflight: Record<string, Promise<any> | undefined> = {};
 
 function normalizeDomain(d: string): string {
   if (!d) return '';
-  return d.replace(/^https?:\/\//, '').replace(/\/$/, '').split(':')[0];
+  return d.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '').split(':')[0];
 }
 
 export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
