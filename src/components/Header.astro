@@ -3,9 +3,10 @@ import { Search } from 'lucide-astro';
 
 interface Props {
   siteConfig?: any;
+  categories?: string[];
 }
 
-const { siteConfig = null } = Astro.props;
+const { siteConfig = null, categories = [] } = Astro.props;
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const currentLang = siteConfig?.metadata?.lang || 'ko';
 ---
@@ -23,6 +24,9 @@ const currentLang = siteConfig?.metadata?.lang || 'ko';
 
     <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
       <a href="/" class="hover:text-[var(--color-indigo-600)] transition-colors">Home</a>
+      {categories.map((cat: string) => (
+        <a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)] transition-colors uppercase">{cat}</a>
+      ))}
       <a href="/about" class="hover:text-[var(--color-indigo-600)] transition-colors">About</a>
     </nav>
 
