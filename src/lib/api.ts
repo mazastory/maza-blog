@@ -50,13 +50,13 @@ function normalizeDomain(d: string): string {
   return d.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '').split(':')[0];
 }
 
-export async function getSiteConfig(domain?: string): Promise<SiteConfig | null> {
+export async function getSiteConfig(domain?: string, options?: { bypassCache?: boolean }): Promise<SiteConfig | null> {
   let targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
   targetDomain = normalizeDomain(targetDomain);
   if (!targetDomain) return null;
 
   const cacheKey = `siteConfig_${targetDomain}`;
-  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < SITE_CONFIG_TTL) {
+  if (!options?.bypassCache && cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < SITE_CONFIG_TTL) {
     return cache[cacheKey].data;
   }
 

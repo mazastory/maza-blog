@@ -14,11 +14,13 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-ma
 // Use a simple default language; localization can be improved later.
 const lang = 'ko';
 const t = useTranslation(lang);
+const url = new URL(Astro.request.url);
 const domain = getRequestDomain(Astro.request);
+const bypassCache = url.searchParams.has('_bust');
 
 // API 병렬 호출로 속도 최적화
 const [siteConfig, posts] = await Promise.all([
-  getSiteConfig(domain),
+  getSiteConfig(domain, { bypassCache }),
   getApprovedPosts(domain, lang)
 ]);
 
