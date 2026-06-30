@@ -66,14 +66,21 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
   inflight[cacheKey] = (async () => {
     try {
       const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
-      if (error) return cache[cacheKey]?.data ?? null;
+      if (error) {
+        console.error('Supabase RPC Error:', error, 'Target Domain:', targetDomain, 'Supabase URL:', import.meta.env.PUBLIC_SUPABASE_URL);
+        return { blog_name: 'Debug: RPC Error', metadata: { error: JSON.stringify(error), domain: targetDomain } };
+      }
+      if (!data) {
+        return { blog_name: 'Debug: No Data', metadata: { domain: targetDomain, url: import.meta.env.PUBLIC_SUPABASE_URL } };
+      }
       
       // get_public_site_config RPC now returns sc_verification and ga_measurement_id
       
       cache[cacheKey] = { data, timestamp: Date.now() };
       return data;
     } catch (e) {
-      return cache[cacheKey]?.data ?? null;
+      console.error('Supabase Exception:', e);
+      return { blog_name: 'Debug: Exception', metadata: { error: String(e), domain: targetDomain } };
     } finally {
       delete inflight[cacheKey];
     }
