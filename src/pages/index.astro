@@ -11,18 +11,19 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-ma
 
 
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
-// Use a simple default language; localization can be improved later.
-const lang = 'ko';
-const t = useTranslation(lang);
+// 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
+// 1. Astro.locals.lang (미들웨어) 2. siteConfig의 캠페인 언어 3. 기본값 'ko'
 const url = new URL(Astro.request.url);
 const domain = getRequestDomain(Astro.request);
 const bypassCache = url.searchParams.has('_bust');
 
-// API 병렬 호출로 속도 최적화
-const [siteConfig, posts] = await Promise.all([
-  getSiteConfig(domain, { bypassCache }),
-  getApprovedPosts(domain, lang)
-]);
+// API 병렬 호출로 속도 최적화 (단, siteConfig는 lang 결정에 사용되므로 await Promise.all 대신 순차 호출이 필요할 수 있으나, 
+// 성능을 위해 그대로 두고 posts 가져오는 곳에 lang을 넘기기 위해 약간 수정)
+const siteConfig = await getSiteConfig(domain, { bypassCache });
+const lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
+const t = useTranslation(lang);
+
+const posts = await getApprovedPosts(domain, lang);
 
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const blogDescription = siteConfig?.niche || "Welcome to our blog.";
