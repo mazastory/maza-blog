@@ -26,7 +26,14 @@ const t = useTranslation(lang);
 const posts = await getApprovedPosts(domain, lang);
 
 const blogName = siteConfig?.blog_name || "Maza Blog";
-const blogDescription = siteConfig?.niche || "Welcome to our blog.";
+let blogDescription = siteConfig?.niche || "Welcome to our blog.";
+
+if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
+  blogDescription = siteConfig.metadata.primary_topic_en;
+} else if (lang === 'ja' && siteConfig?.metadata?.primary_topic_ja) {
+  blogDescription = siteConfig.metadata.primary_topic_ja;
+}
+
 const featuredPost = posts.length > 0 ? posts[0] : null;
 const recentPosts = posts.slice(1);
 
