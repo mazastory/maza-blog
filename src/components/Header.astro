@@ -4,11 +4,11 @@ import { Search } from 'lucide-astro';
 interface Props {
   siteConfig?: any;
   categories?: string[];
+  currentLang?: string;
 }
 
-const { siteConfig = null, categories = [] } = Astro.props;
+const { siteConfig = null, categories = [], currentLang = 'ko' } = Astro.props;
 const blogName = siteConfig?.blog_name || "Maza Blog";
-const currentLang = siteConfig?.metadata?.lang || 'ko';
 ---
 
 <header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md transition-all">

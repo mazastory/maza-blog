@@ -111,10 +111,12 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
 
       const nowIso = new Date().toISOString();
 
+      const targetLanguage = locale || 'ko';
       const result = await supabase.from('posts')
         .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
         .eq('site_id', site.id)
         .eq('status', 'published')
+        .or(`language.eq.${targetLanguage},language.is.null`)
         .or(`publish_at.lte.${nowIso},publish_at.is.null`)
         .order('publish_at', { ascending: false })  // created_at → publish_at 정렬로 더 정확한 순서
         .limit(60);
