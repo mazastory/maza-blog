@@ -6,7 +6,7 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
   const domain = getRequestDomain(request);
-  const posts = await getApprovedPosts(domain);
+  const posts = await getApprovedPosts(domain, undefined, 5000);
   const siteConfig = await getSiteConfig(domain);
   const siteUrl = siteConfig?.domain ? `https://${siteConfig.domain}` : new URL(request.url).origin;
 

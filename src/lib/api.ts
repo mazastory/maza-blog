@@ -90,12 +90,12 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
 }
 
 // 최적화: html_content를 제외하고 가벼운 목록만 가져옵니다. (5MB -> 50KB 최적화)
-export async function getApprovedPosts(domain?: string, locale?: string): Promise<Post[]> {
+export async function getApprovedPosts(domain?: string, locale?: string, limitCount: number = 60): Promise<any[]> {
   let targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
   targetDomain = normalizeDomain(targetDomain);
   if (!targetDomain) return [];
   
-  const cacheKey = `posts_${targetDomain}_${locale || 'all'}`;
+  const cacheKey = `posts_${targetDomain}_${locale || 'all'}_${limitCount}`;
   if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < POSTS_TTL) {
     return cache[cacheKey].data;
   }
@@ -119,7 +119,7 @@ export async function getApprovedPosts(domain?: string, locale?: string): Promis
         .or(`language.eq.${targetLanguage},language.is.null`)
         .or(`publish_at.lte.${nowIso},publish_at.is.null`)
         .order('publish_at', { ascending: false })  // created_at → publish_at 정렬로 더 정확한 순서
-        .limit(60);
+        .limit(limitCount);
 
       const { data, error } = result;
       if (error || !data) return cache[cacheKey]?.data ?? [];

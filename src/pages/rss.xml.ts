@@ -10,7 +10,7 @@ export async function GET(context: APIContext) {
   
   let posts: any[] = [];
   try {
-    posts = await getApprovedPosts(domain, locale);
+    posts = await getApprovedPosts(domain, locale, 5000);
   } catch (e) {
     console.warn("Could not fetch blog posts for RSS", e);
   }
