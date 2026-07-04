@@ -16,5 +16,6 @@ if (error || !post) {
 	return Astro.redirect('/404');
 }
 
-return Astro.redirect(`/${post.slug}`);
+const targetPath = post.slug ? `/${post.slug}` : `/${id}`;
+return Astro.redirect(targetPath);
 ---
