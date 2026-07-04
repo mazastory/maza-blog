@@ -25,8 +25,10 @@ const metaImage = post.metadata?.data?.image1
 // 고정된 폴백 이미지 대신 CSS 그라디언트를 사용 (가짜 이미지 요청을 방지하여 속도 대폭 개선)
 const coverImage = metaImage || null;
 
-// 안전한 텍스트 추출 (content가 null일 경우 html_content에서 태그 제거)
-const plainText = post.content || (post.html_content ? post.html_content.replace(/<[^>]*>?/gm, '') : '');
+// 안전한 텍스트 추출 (metadata.summary 우선 사용, 없으면 content에서 마크다운 제거, 둘 다 없으면 html_content에서 태그 제거)
+const summaryFromMeta = post.metadata?.data?.summary || post.metadata?.summary || '';
+const cleanContent = post.content ? post.content.replace(/[#*`>\[\]\(\)-]/g, '').replace(/\n+/g, ' ').trim() : '';
+const plainText = summaryFromMeta || cleanContent || (post.html_content ? post.html_content.replace(/<[^>]*>?/gm, '').replace(/\n+/g, ' ').trim() : '');
 const excerpt = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
 ---
 
