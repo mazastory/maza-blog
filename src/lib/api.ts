@@ -189,6 +189,42 @@ export function findPostMetaInList(posts: Post[], slug: string): Post | null {
 // 61번째 이후의 과거 글처럼 최근 60건 목록에 없는 경우를 위한 안전망(fallback) 쿼리.
 // slug 맨 끝의 id 접두사를 단서로 UUID 범위를 계산하여 인덱스를 타고 빠르게 조회합니다.
 export async function findPostMetaByIdHintFallback(slug: string, siteId: string): Promise<Post | null> {
+  // If slug is a full UUID, query it directly to allow direct previews of ANY post (even scheduled/future)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+  
+  if (isUuid) {
+    try {
+      const { data, error } = await supabase.from('posts')
+        .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
+        .eq('site_id', siteId)
+        .eq('id', slug)
+        .single();
+        
+      if (error || !data) return null;
+      if (isCompliancePost(data)) return null;
+      
+      let thumbnail_url = data.source_image_url;
+      if (!thumbnail_url && data.metadata?.data?.image1) {
+        thumbnail_url = data.metadata.data.image1;
+      }
+      
+      return {
+        id: data.id,
+        title: data.title,
+        slug,
+        content: '',
+        html_content: '',
+        created_at: data.created_at,
+        publish_at: data.publish_at || data.created_at,
+        status: data.status,
+        metadata: data.metadata,
+        thumbnail_url,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
   const idHint = slug.includes('-') ? slug.substring(slug.lastIndexOf('-') + 1) : slug;
   if (!idHint || idHint.length < 4) return null; // 너무 짧은 토큰은 신뢰하지 않음
 
