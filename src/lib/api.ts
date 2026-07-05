@@ -65,16 +65,22 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
 
   inflight[cacheKey] = (async () => {
     try {
-      const { data, error } = await supabase.rpc('get_public_site_config', { target_domain: targetDomain });
+      const { data, error } = await supabase
+        .from('sites')
+        .select('id, blog_name, domain, niche, adsense_pub, adsense_status, metadata')
+        .eq('domain', targetDomain)
+        .maybeSingle();
+
       if (error) {
-        console.error('Supabase RPC Error:', error, 'Target Domain:', targetDomain, 'Supabase URL:', import.meta.env.PUBLIC_SUPABASE_URL);
-        return { blog_name: 'Debug: RPC Error', metadata: { error: JSON.stringify(error), domain: targetDomain } };
+        console.error('Supabase Query Error:', error, 'Target Domain:', targetDomain);
+        return { blog_name: 'Debug: Query Error', metadata: { error: JSON.stringify(error), domain: targetDomain } };
       }
       if (!data) {
-        return { blog_name: 'Debug: No Data', metadata: { domain: targetDomain, url: import.meta.env.PUBLIC_SUPABASE_URL } };
+        return { blog_name: 'Debug: No Data', metadata: { domain: targetDomain } };
       }
       
-      // get_public_site_config RPC now returns sc_verification and ga_measurement_id
+      // The RPC used to return sc_verification and ga_measurement_id.
+      // Layout.astro handles fallback to metadata.google_site_verification so this direct query is compatible.
       
       cache[cacheKey] = { data, timestamp: Date.now() };
       return data;
