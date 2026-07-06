@@ -2,13 +2,14 @@
 export interface Props {
   blogName: string;
   blogDescription: string;
+  heroBgUrl?: string | null;
   t: any;
   posts: any[];
 }
-const { blogName, blogDescription, t, posts } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
 
-let bgImg = '/hero-bg-picasso.png';
-if (posts.length > 0) {
+let bgImg = heroBgUrl || '/hero-bg-picasso.png';
+if (!heroBgUrl && posts.length > 0) {
   const metaImg = posts[0].metadata?.data?.image1 
     || posts[0].metadata?.blocks?.find((b: any) => b.type === 'image')?.url
     || posts[0].metadata?.thumbnail_url

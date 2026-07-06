@@ -2,13 +2,20 @@
 export interface Props {
   blogName: string;
   blogDescription: string;
+  heroBgUrl?: string | null;
   t: any;
   posts: any[];
 }
-const { blogName, blogDescription, t, posts } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
 ---
 
 <section class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-white border border-slate-200 p-8 md:p-14 lg:p-20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+  {heroBgUrl && (
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <img src={heroBgUrl} alt="" class="absolute inset-0 w-full h-full object-cover" loading="eager" />
+      <div class="absolute inset-0 bg-white/80 backdrop-blur-sm"></div>
+    </div>
+  )}
   <div class="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
     <div class="mb-6 flex items-center justify-center">
       <span class="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">

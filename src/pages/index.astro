@@ -55,19 +55,19 @@ if (featuredPost) {
 }
 
 // 사용자 설정 대문(Hero) 배경 이미지 및 템플릿
-const _heroBgUrl = siteConfig?.metadata?.hero_bg_url || '/hero-bg-picasso.png';
+const heroBgUrl = siteConfig?.metadata?.hero_bg_url || null;
 const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
 
 ---
 
 <Layout preloadImage={featuredImage} siteConfig={siteConfig}>
   <div class="mx-auto max-w-5xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
-    {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} t={t} posts={posts} />}
-    {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} t={t} posts={posts} />}
-    {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} t={t} posts={posts} />}
-    {heroTemplate === 'minimal' && <HeroMinimal blogName={blogName} blogDescription={blogDescription} t={t} posts={posts} />}
-    {heroTemplate === 'split' && <HeroSplit blogName={blogName} blogDescription={blogDescription} t={t} posts={posts} />}
-    {heroTemplate === 'app' && <HeroApp blogName={blogName} blogDescription={blogDescription} t={t} posts={posts} />}
+    {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
+    {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
+    {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
+    {heroTemplate === 'minimal' && <HeroMinimal blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
+    {heroTemplate === 'split' && <HeroSplit blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
+    {heroTemplate === 'app' && <HeroApp blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
 
     <!-- Hero / Featured Post -->
     {featuredPost && heroTemplate !== 'app' && (
