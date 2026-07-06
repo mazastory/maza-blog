@@ -19,6 +19,30 @@ export const GET: APIRoute = async ({ request }) => {
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
       </url>
+      <url>
+        <loc>${siteUrl}/about</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+      </url>
+      <url>
+        <loc>${siteUrl}/contact</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+      </url>
+      <url>
+        <loc>${siteUrl}/privacy</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+      </url>
+      <url>
+        <loc>${siteUrl}/disclaimer</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+      </url>
       ${posts.map(post => `
         <url>
           <loc>${siteUrl}/${post.slug}</loc>

@@ -140,6 +140,25 @@ const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
       </section>
     )}
 
+    <!-- Category Explore Section (AdSense Internal Linking) -->
+    {posts.length > 0 && (
+      <section class="mt-16 md:mt-24 border-t border-slate-200 pt-16">
+        <div class="mb-8 text-center">
+          <h2 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 mb-4">{lang === 'ko' ? '주제별로 탐색하기' : (lang === 'ja' ? 'カテゴリーで探す' : 'Explore by Category')}</h2>
+          <p class="text-slate-500 max-w-2xl mx-auto">
+            {lang === 'ko' ? '관심 있는 분야의 심도 깊은 인사이트와 가이드를 만나보세요.' : (lang === 'ja' ? '興味のある分野の深い洞察とガイドをご覧ください。' : 'Find deep insights and guides in your areas of interest.')}
+          </p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4">
+          {Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))).slice(0, 8).map(category => (
+            <a href={`/category/${category}`} class="px-6 py-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-slate-700 hover:text-indigo-700 font-bold transition-colors">
+              <span class="capitalize">{category}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
     {posts.length === 0 && (
       <div class="overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/90 px-8 py-14 text-center shadow-sm md:px-12">
         <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-indigo-100 text-slate-400 shadow-inner">

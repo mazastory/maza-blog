@@ -6,8 +6,25 @@ import { getSiteConfig, getRequestDomain } from '../lib/api';
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
 const blogName = siteConfig?.blog_name || "Maza Blog";
+const niche = siteConfig?.niche || '';
+const aboutContent = siteConfig?.metadata?.about_content || '';
+const foundedYear = siteConfig?.metadata?.founded_year || new Date().getFullYear();
+const authorName = siteConfig?.metadata?.author_name || '';
+const authorBio = siteConfig?.metadata?.author_bio || '';
+const missionStatement = siteConfig?.metadata?.mission_statement || '';
+
+// niche 기반 동적 설명 생성 (aboutContent가 없을 때 fallback)
+const nicheDesc = niche
+  ? `${blogName}은 <strong>${niche}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. ${niche}에 관심 있는 독자들에게 실용적이고 깊이 있는 정보를 제공하는 것을 목표로 합니다.`
+  : `${blogName}은 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`;
+
+const pageDescription = aboutContent
+  ? aboutContent.substring(0, 160)
+  : niche
+    ? `${blogName} — ${niche} 전문 블로그. 실용적이고 깊이 있는 콘텐츠를 제공합니다.`
+    : `${blogName} 소개 페이지`;
 ---
-<Layout title={`About ${blogName}`} description={`About ${blogName}`}>
+<Layout title={`About | ${blogName}`} description={pageDescription} siteConfig={siteConfig}>
   <main class="mx-auto max-w-4xl px-6 py-20 md:py-32 relative">
     <!-- Background Decorators -->
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-200/30 rounded-full blur-[100px] -z-10"></div>
@@ -18,24 +35,81 @@ const blogName = siteConfig?.blog_name || "Maza Blog";
         About Us
       </div>
       
-      <h1 class="mb-10 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl lg:text-6xl break-keep">
-        Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>
+      <h1 class="mb-6 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl lg:text-6xl break-keep">
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>에 대하여
       </h1>
+
+      {niche && (
+        <p class="mb-10 text-lg font-semibold text-indigo-600 border-l-4 border-indigo-300 pl-4">
+          {niche} 전문 콘텐츠 블로그 · {domain}
+        </p>
+      )}
       
       <div class="prose prose-lg md:prose-xl prose-slate max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 hover:prose-a:text-indigo-700 prose-p:leading-relaxed">
-        <p class="text-xl font-medium text-slate-600">
-          <strong>{blogName}</strong>는 독자에게 정확하고 신뢰할 수 있는 정보를 제공하기 위해 운영되는 전문 콘텐츠 블로그입니다. 각 분야의 전문 지식과 실제 경험을 바탕으로 깊이 있는 콘텐츠를 발행합니다.
+        
+        {aboutContent ? (
+          <p class="text-xl font-medium text-slate-600" set:html={aboutContent} />
+        ) : (
+          <p class="text-xl font-medium text-slate-600" set:html={nicheDesc} />
+        )}
+
+        <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+        {missionStatement && (
+          <blockquote class="border-l-4 border-indigo-400 pl-6 italic text-slate-600 my-8">
+            "{missionStatement}"
+          </blockquote>
+        )}
+
+        <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">우리의 콘텐츠 원칙</h2>
+        <ul class="space-y-3 text-slate-700 not-prose list-none pl-0">
+          <li class="flex items-start gap-3">
+            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
+            <span><strong>독창적 관점:</strong> 인터넷에서 흔히 볼 수 있는 정보를 단순 재조합하지 않습니다. {niche ? `${niche} 분야에서` : ''} 독자적인 시각과 실용적인 인사이트를 제공합니다.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
+            <span><strong>사실 기반 서술:</strong> 검증되지 않은 수치나 통계를 사실처럼 제시하지 않습니다. 불확실한 정보는 "일반적으로", "많은 경우" 등 정성적으로 표현합니다.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
+            <span><strong>독자 우선:</strong> 광고보다 콘텐츠가 항상 우선입니다. 독자의 시간을 소중히 여기며, 실질적으로 도움이 되는 정보만 발행합니다.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
+            <span><strong>투명한 운영:</strong> 광고 수익 및 제휴 링크 활용 사실을 명확히 공개합니다. <a href="/disclaimer">면책 조항</a>에서 자세한 내용을 확인하실 수 있습니다.</span>
+          </li>
+        </ul>
+
+        {authorName && (
+          <>
+            <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+            <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">에디터 소개</h2>
+            <div class="flex items-start gap-5 not-prose">
+              <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-200 to-sky-200 flex items-center justify-center text-indigo-700 font-black text-xl">
+                {authorName.charAt(0)}
+              </div>
+              <div>
+                <p class="font-black text-lg text-slate-900">{authorName}</p>
+                {authorBio && <p class="text-slate-600 mt-1 leading-relaxed">{authorBio}</p>}
+              </div>
+            </div>
+          </>
+        )}
+
+        <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+        <p class="text-sm text-slate-500">
+          © {foundedYear} {blogName}. 본 사이트는 {domain} 도메인에서 운영됩니다.
+          일부 콘텐츠 작성 과정에서 AI가 보조 도구로 활용되며, 발행 전 편집자 검수를 거칩니다.
         </p>
-        <div class="my-12 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-        <p>
-          본 사이트는 독자 여러분께 가장 정확하고 가치 있는 정보를 전달하기 위해 운영됩니다. 광고 수익(구글 애드센스 등)과 자체 콘텐츠를 제공하며, 모든 콘텐츠는 <strong>전문 편집자의 엄격한 검수와 팩트체크</strong>를 거쳐 발행됩니다.
-        </p>
-        <p class="mt-6">
-          저희는 독자의 시간을 소중히 여깁니다. 불필요한 과장 없이, 실질적으로 도움이 되는 정보만을 선별하여 제공하는 것이 {blogName}의 원칙입니다.
-        </p>
-        <div class="mt-12 flex flex-wrap gap-4">
+
+        <div class="mt-10 flex flex-wrap gap-4">
           <a href="/contact" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:bg-indigo-600">
             Contact Us
+          </a>
+          <a href="/disclaimer" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-700 transition-all hover:-translate-y-1 hover:border-indigo-200 hover:text-indigo-700">
+            면책 조항 보기
           </a>
         </div>
       </div>

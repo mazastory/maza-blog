@@ -6,9 +6,15 @@ import { getSiteConfig, getRequestDomain } from '../lib/api';
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
 const blogName = siteConfig?.blog_name || "Maza Blog";
-const contactEmail = `contact@${domain || 'example.com'}`;
+const niche = siteConfig?.niche || '';
+const contactEmail = siteConfig?.metadata?.contact_email || `contact@${domain || 'example.com'}`;
+
+// niche 기반 문의 안내 문구
+const contactDesc = niche
+  ? `${niche} 관련 제보, 협업 제안, 또는 콘텐츠 관련 문의가 있으신가요? ${blogName} 팀이 빠르게 답변드리겠습니다.`
+  : `문의 사항이나 협업 제안이 있으신가요? ${blogName} 팀은 언제나 여러분의 연락을 환영합니다.`;
 ---
-<Layout title={`Contact ${blogName}`} description={`Contact ${blogName}`}>
+<Layout title={`문의하기 | ${blogName}`} description={`${blogName}(${domain}) 문의 페이지. ${niche ? niche + ' 관련 ' : ''}제보, 협업, 광고 문의를 환영합니다.`} siteConfig={siteConfig}>
   <main class="mx-auto max-w-4xl px-6 py-20 md:py-32 relative">
     <div class="absolute -top-24 -right-24 w-96 h-96 bg-fuchsia-200/30 rounded-full blur-[100px] -z-10"></div>
 
@@ -17,12 +23,18 @@ const contactEmail = `contact@${domain || 'example.com'}`;
         Contact Us
       </div>
       
-      <h1 class="mb-6 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl lg:text-6xl break-keep">
-        Get in touch
+      <h1 class="mb-4 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl lg:text-6xl break-keep">
+        {blogName}에 문의하기
       </h1>
+
+      {niche && (
+        <p class="mb-4 text-sm font-semibold text-indigo-500">
+          {niche} 전문 블로그 · {domain}
+        </p>
+      )}
       
       <p class="mb-12 text-lg text-slate-500 max-w-2xl mx-auto">
-        문의 사항이나 제휴 제안이 있으신가요? {blogName} 팀은 언제나 여러분의 연락을 환영합니다. 아래 이메일로 편하게 연락해 주세요.
+        {contactDesc}
       </p>
       
       <div class="inline-block p-1 rounded-3xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-xl">
@@ -37,6 +49,15 @@ const contactEmail = `contact@${domain || 'example.com'}`;
             </a>
           </div>
         </div>
+      </div>
+
+      <div class="mt-10 flex flex-wrap justify-center gap-3 text-sm text-slate-500">
+        <span class="flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          평균 1~2일 내 답변
+        </span>
+        <span class="text-slate-300">·</span>
+        <span>광고 문의, 콘텐츠 제보, 협업 모두 환영합니다</span>
       </div>
     </div>
   </main>
