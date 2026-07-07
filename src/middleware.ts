@@ -8,11 +8,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   console.log('[MIDDLEWARE] original url:', url.href, 'pathname:', path);
 
   if (path === '/debug-maza') {
+    const headers: Record<string, string> = {};
+    context.request.headers.forEach((val, key) => headers[key] = val);
     return new Response(JSON.stringify({
       url: url.href,
       path: path,
-      domain: context.request.headers.get('host'),
-      xVercelId: context.request.headers.get('x-vercel-id')
+      headers: headers
     }), { status: 200 });
   }
 
