@@ -17,6 +17,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }), { status: 200 });
   }
 
+  if (path === '/' && url.hostname === 'maza.ai.kr') {
+    return new Response(JSON.stringify({
+      intercepted: true,
+      url: url.href,
+      path: path
+    }), { status: 200 });
+  }
+
   // 1. rewrite를 통해 전달된 커스텀 헤더가 있는지 확인
   const forwardedLang = context.request.headers.get('x-maza-lang');
   if (forwardedLang) {
