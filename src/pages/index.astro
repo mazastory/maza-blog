@@ -1,6 +1,8 @@
 ---
-return Astro.redirect('/about?from=index_start');
 export const prerender = false;
+if (Astro.url.pathname === '/debug-index') {
+  return new Response(JSON.stringify({ path: Astro.url.pathname }), { status: 200 });
+}
 import Layout from '../layouts/Layout.astro';
 import PostCard from '../components/PostCard.astro';
 import HeroModern from '../components/hero/HeroModern.astro';

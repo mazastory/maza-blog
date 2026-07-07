@@ -7,6 +7,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const path = url.pathname;
   console.log('[MIDDLEWARE] original url:', url.href, 'pathname:', path);
 
+  if (path === '/debug-maza') {
+    return new Response(JSON.stringify({
+      url: url.href,
+      path: path,
+      domain: context.request.headers.get('host'),
+      xVercelId: context.request.headers.get('x-vercel-id')
+    }), { status: 200 });
+  }
+
   // 1. rewrite를 통해 전달된 커스텀 헤더가 있는지 확인
   const forwardedLang = context.request.headers.get('x-maza-lang');
   if (forwardedLang) {
