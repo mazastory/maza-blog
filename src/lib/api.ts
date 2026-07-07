@@ -139,7 +139,7 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
                                /개인정보처리방침|이용약관|책임 한계|블로그 소개|문의하기/.test(post.title);
           if (isCompliance) return false;
           const publishTime = new Date(post.publish_at || post.created_at).getTime();
-          return publishTime <= now;
+          return post.title && publishTime <= now;
         })
         .map((post: any) => {
           let thumbnail_url = post.source_image_url;
