@@ -79,6 +79,14 @@ const pageDescription = aboutContent
             <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
             <span><strong>투명한 운영:</strong> 광고 수익 및 제휴 링크 활용 사실을 명확히 공개합니다. <a href="/disclaimer">면책 조항</a>에서 자세한 내용을 확인하실 수 있습니다.</span>
           </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">✓</span>
+            <span><strong>AI 보조 + 편집자 검수:</strong> 일부 콘텐츠 작성에 AI를 발행 보조 도구로 활용하며, 모든 글은 <strong>발행 전 편집자의 사실 확인 및 체계적 수정 과정</strong>을 거칩니다. 아무 콘텐츠도 미검수 상태로 발행되지 않습니다.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-bold">✓</span>
+            <span><strong>콘텐츠 업데이트 정책:</strong> 특정 분야의 정보가 변경될 경우, 기존 글을 주기적으로 갱신하여 정확성을 유지합니다.</span>
+          </li>
         </ul>
 
         {authorName && (
@@ -99,9 +107,11 @@ const pageDescription = aboutContent
 
         <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
-        <p class="text-sm text-slate-500">
-          © {foundedYear} {blogName}. 본 사이트는 {domain} 도메인에서 운영됩니다.
-          일부 콘텐츠 작성 과정에서 AI가 보조 도구로 활용되며, 발행 전 편집자 검수를 거칩니다.
+        <p class="text-sm text-slate-500 leading-relaxed">
+          &copy; {foundedYear} {blogName}. 본 사이트는 {domain} 도메인에서 운영됩니다.<br />
+          일부 콘텐츠 작성 과정에서 AI를 <strong>아이디어 생성 보조 도구</strong>로 활용하며,
+          작성된 모든 콘텐츠는 편집자가 <strong>실제로 검토하고 수정하여 발행합니다.</strong>
+          AI가 생성한 콘텐츠를 미검수 상태로 바로 게시하지 않습니다. 오류나 부정확한 정보를 발견하시면 <a href="/contact" class="underline">연락하여</a> 알려주세요.
         </p>
 
         <div class="mt-10 flex flex-wrap gap-4">

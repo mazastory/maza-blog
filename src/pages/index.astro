@@ -11,21 +11,19 @@ import HeroApp from '../components/hero/HeroApp.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
 import { useTranslation } from '../lib/i18n';
 
+import { generateThemeVars } from '../lib/theme';
+
 // 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=604800');
 Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=604800');
 
-
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
-// 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
-// 1. Astro.locals.lang (미들웨어) 2. siteConfig의 캠페인 언어 3. 기본값 'ko'
 const url = new URL(Astro.request.url);
 const domain = getRequestDomain(Astro.request);
 const bypassCache = url.searchParams.has('_bust');
 
-// API 병렬 호출로 속도 최적화 (단, siteConfig는 lang 결정에 사용되므로 await Promise.all 대신 순차 호출이 필요할 수 있으나, 
-// 성능을 위해 그대로 두고 posts 가져오는 곳에 lang을 넘기기 위해 약간 수정)
 const siteConfig = await getSiteConfig(domain, { bypassCache });
+const theme = generateThemeVars(siteConfig);
 const lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
 const t = useTranslation(lang);
 
@@ -43,7 +41,7 @@ if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
 const featuredPost = posts.length > 0 ? posts[0] : null;
 const recentPosts = posts.slice(1);
 
-// Featured Post 대표 이미지 추출 (가짜 이미지 로딩 방지)
+// Featured Post 대표 이미지 추출
 let featuredImage = null;
 if (featuredPost) {
   const metaImg = featuredPost.metadata?.data?.image1 
@@ -54,14 +52,17 @@ if (featuredPost) {
   if (metaImg) featuredImage = metaImg;
 }
 
-// 사용자 설정 대문(Hero) 배경 이미지 및 템플릿
 const heroBgUrl = siteConfig?.metadata?.hero_bg_url || null;
 const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
+
+const feedClass = theme.feedStyle === 'list' 
+  ? 'flex flex-col gap-8 max-w-4xl mx-auto' 
+  : (theme.feedStyle === 'masonry' ? 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6' : 'grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3');
 
 ---
 
 <Layout preloadImage={featuredImage} siteConfig={siteConfig}>
-  <div class="mx-auto max-w-5xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
+  <div class="mx-auto max-w-7xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
     {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
     {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
     {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
@@ -71,12 +72,12 @@ const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
 
     <!-- Hero / Featured Post -->
     {featuredPost && heroTemplate !== 'app' && (
-      <section class="mb-14 md:mb-20">
+      <section class="mb-14 md:mb-20 max-w-5xl mx-auto">
         <div class="mb-6 md:mb-8 flex items-center justify-between">
           <h2 class="text-2xl md:text-3xl font-black italic tracking-tighter text-slate-900 uppercase">{t.featured}</h2>
         </div>
         
-        <a href={`/${featuredPost.slug || featuredPost.id}`} class="group relative flex flex-col md:flex-row overflow-hidden rounded-2xl md:rounded-[32px] bg-white border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-100">
+        <a href={`/${featuredPost.slug || featuredPost.id}`} class={`group relative flex flex-col md:flex-row overflow-hidden ${theme.borderRadius} bg-white border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-100`}>
           <div class="relative aspect-[16/9] w-full overflow-hidden md:aspect-[2/1] lg:aspect-[2.5/1]">
             {featuredImage ? (
               <img 
@@ -91,15 +92,13 @@ const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
                 <span class="text-indigo-300 font-bold text-6xl opacity-50">{featuredPost.title.substring(0, 1)}</span>
               </div>
             )}
-            <!-- 1차 오버레이: 전체적으로 살짝만 어둡게 (이미지 보존) -->
             <div class="absolute inset-0 bg-black/20"></div>
-            <!-- 2차 오버레이: 텍스트가 있는 하단부에만 부드러운 그라데이션 -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
           </div>
             
           <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-10 lg:p-12">
             <div class="mb-3 md:mb-4 flex items-center gap-2">
-              <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-indigo-300 border border-indigo-500/30 backdrop-blur-md">
+              <span class={`rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-indigo-300 border border-indigo-500/30 backdrop-blur-md`}>
                 {t.latestPick}
               </span>
             </div>
@@ -124,9 +123,11 @@ const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
           <h2 class="text-xl md:text-2xl font-black italic tracking-tighter text-slate-900 uppercase">{t.recentArticles}</h2>
         </div>
         
-        <div class="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class={feedClass}>
           {recentPosts.slice(0, 9).map(post => (
-            <PostCard post={post} />
+            <div class="break-inside-avoid">
+              <PostCard post={post} />
+            </div>
           ))}
         </div>
         

@@ -1,40 +1,20 @@
 ---
 import { getSiteConfig, getRequestDomain } from '../lib/api';
+import { generateThemeVars } from '../lib/theme';
 
 const { siteConfig: propSiteConfig } = Astro.props;
 const domain = getRequestDomain(Astro.request);
 const siteConfig = propSiteConfig || await getSiteConfig(domain);
 
-// 유저가 설정한 색상이 있으면 우선 사용
-let hexColor = siteConfig?.metadata?.theme_color;
-
-// 없으면 사이트 ID나 도메인을 기반으로 고유한 예쁜 컬러를 자동 지정
-if (!hexColor) {
-  const colors = [
-    '#4f46e5', // indigo
-    '#e11d48', // rose
-    '#059669', // emerald
-    '#d97706', // amber
-    '#0284c7', // sky
-    '#7c3aed', // violet
-    '#c026d3', // fuchsia
-    '#ea580c', // orange
-    '#0d9488', // teal
-  ];
-  
-  const seedStr = siteConfig?.id || siteConfig?.domain || 'maza';
-  let hash = 0;
-  for (let i = 0; i < seedStr.length; i++) {
-    hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % colors.length;
-  hexColor = colors[index];
-}
+const theme = generateThemeVars(siteConfig);
 ---
+
+<link rel="stylesheet" href={theme.fontUrl} />
 
 <style is:inline set:html={`
   :root {
-    --hex: ${hexColor};
+    --hex: ${theme.color};
+    --font-family-base: ${theme.fontFamily};
     /* Override Tailwind v4 indigo scale with the brand color using color-mix for shades */
     --color-indigo-50: color-mix(in srgb, var(--hex) 5%, white);
     --color-indigo-100: color-mix(in srgb, var(--hex) 15%, white);
@@ -49,8 +29,8 @@ if (!hexColor) {
     --color-indigo-950: color-mix(in srgb, var(--hex) 40%, black);
   }
   
-  /* 다크 모드 프리퍼런스 대응 (System Dark Mode) */
-  @media (prefers-color-scheme: dark) {
-    /* 추가적인 다크모드 대응이 필요하다면 여기에 작성합니다. */
+  html {
+    font-family: var(--font-family-base);
   }
 `} />
+
