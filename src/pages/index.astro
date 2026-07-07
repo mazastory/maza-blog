@@ -35,6 +35,12 @@ const posts = await getApprovedPosts(domain, lang);
 const blogName = siteConfig?.blog_name || "Maza Blog";
 let blogDescription = siteConfig?.niche || "Welcome to our blog.";
 
+return new Response(JSON.stringify({ 
+  msg: 'END_OF_FRONTMATTER', 
+  posts_length: posts.length,
+  domain: domain
+}), { status: 200 });
+
 if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
   blogDescription = siteConfig.metadata.primary_topic_en;
 } else if (lang === 'ja' && siteConfig?.metadata?.primary_topic_ja) {
