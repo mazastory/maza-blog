@@ -25,12 +25,12 @@ const url = new URL(Astro.request.url);
 const domain = getRequestDomain(Astro.request);
 const bypassCache = url.searchParams.has('_bust');
 
-const siteConfig = await getSiteConfig(domain, { bypassCache });
-const theme = generateThemeVars(siteConfig);
-const lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
-const t = useTranslation(lang);
+return new Response(JSON.stringify({ 
+  msg: 'TOP_OF_FRONTMATTER',
+  domain: domain
+}), { status: 200 });
 
-const posts = await getApprovedPosts(domain, lang);
+const siteConfig = await getSiteConfig(domain, { bypassCache });
 
 const blogName = siteConfig?.blog_name || "Maza Blog";
 let blogDescription = siteConfig?.niche || "Welcome to our blog.";
