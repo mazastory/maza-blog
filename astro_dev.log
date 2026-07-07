@@ -1,0 +1,12 @@
+
+> maza-blog@0.0.1 dev
+> astro dev
+
+[vite] connected.
+19:44:08 [types] Generated 0ms
+[vite] connected.
+ astro  v6.4.7 ready in 722 ms
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+19:44:08 watching for file changes...
+19:44:20 [200] / 2101ms
