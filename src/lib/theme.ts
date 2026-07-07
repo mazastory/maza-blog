@@ -31,13 +31,16 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
   const feedStyles: ('list' | 'grid' | 'masonry')[] = ['list', 'grid', 'masonry'];
 
   // Use different parts of the hash to ensure variety doesn't always group together
+  // Math.abs is required AFTER bitwise operations because bitwise ops cast to 32-bit signed ints
+  const getIndex = (shift: number, len: number) => Math.abs((absHash >> shift)) % len;
+
   return {
     color: siteConfig?.metadata?.theme_color || colors[absHash % colors.length],
-    fontFamily: fonts[(absHash >> 1) % fonts.length].family,
-    fontUrl: fonts[(absHash >> 1) % fonts.length].url,
-    headerStyle: headerStyles[(absHash >> 2) % headerStyles.length],
-    layoutWidth: widths[(absHash >> 3) % widths.length],
-    borderRadius: radiuses[(absHash >> 4) % radiuses.length],
-    feedStyle: feedStyles[(absHash >> 5) % feedStyles.length],
+    fontFamily: fonts[getIndex(1, fonts.length)].family,
+    fontUrl: fonts[getIndex(1, fonts.length)].url,
+    headerStyle: headerStyles[getIndex(2, headerStyles.length)],
+    layoutWidth: widths[getIndex(3, widths.length)],
+    borderRadius: radiuses[getIndex(4, radiuses.length)],
+    feedStyle: feedStyles[getIndex(5, feedStyles.length)],
   };
 }

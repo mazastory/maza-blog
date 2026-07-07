@@ -16,21 +16,8 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-ma
 const domain = getRequestDomain(Astro.request);
 const { slug } = Astro.params;
 
-if (slug === 'debug-slug') {
-  return new Response(JSON.stringify({
-    slug: slug,
-    type: typeof slug,
-    url: Astro.request.url
-  }), { status: 200 });
-}
-
 if (!slug) {
-  return new Response(JSON.stringify({
-    error: 'slug_falsy',
-    slug_value: slug,
-    typeof_slug: typeof slug,
-    url: Astro.request.url
-  }), { status: 200, headers: { 'content-type': 'application/json' } });
+  return Astro.redirect(`/404?from=slug&slug=${slug}`);
 }
 
 const [siteConfig, allPosts] = await Promise.all([

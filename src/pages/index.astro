@@ -25,70 +25,42 @@ const url = new URL(Astro.request.url);
 const domain = getRequestDomain(Astro.request);
 const bypassCache = url.searchParams.has('_bust');
 
-let siteConfig: any = null;
-let theme: any = null;
-let lang: string = 'ko';
-let t: any = null;
-let posts: any[] = [];
-let blogName = '';
-let blogDescription = '';
-let featuredPost: any = null;
-let recentPosts: any[] = [];
-let featuredImage: any = null;
-let heroBgUrl: any = null;
-let heroTemplate: any = 'modern';
-let feedClass = '';
+const siteConfig = await getSiteConfig(domain, { bypassCache });
+const theme = generateThemeVars(siteConfig);
+const lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
+const t = useTranslation(lang);
 
-try {
-  siteConfig = await getSiteConfig(domain, { bypassCache });
-  theme = generateThemeVars(siteConfig);
-  lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
-  t = useTranslation(lang);
-  
-  posts = await getApprovedPosts(domain, lang);
-  
-  blogName = siteConfig?.blog_name || "Maza Blog";
-  blogDescription = siteConfig?.niche || "Welcome to our blog.";
-  
-  if (Astro.url.searchParams.has('debug')) {
-    return new Response(JSON.stringify({ status: 'ok', domain }), { status: 200 });
-  }
+const posts = await getApprovedPosts(domain, lang);
 
-  if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
-    blogDescription = siteConfig.metadata.primary_topic_en;
-  } else if (lang === 'ja' && siteConfig?.metadata?.primary_topic_ja) {
-    blogDescription = siteConfig.metadata.primary_topic_ja;
-  }
+let blogName = siteConfig?.blog_name || "Maza Blog";
+let blogDescription = siteConfig?.niche || "Welcome to our blog.";
 
-  featuredPost = posts.length > 0 ? posts[0] : null;
-  recentPosts = posts.slice(1);
-
-  // Featured Post 대표 이미지 추출
-  featuredImage = null;
-  if (featuredPost) {
-    const metaImg = featuredPost.metadata?.data?.image1 
-      || featuredPost.metadata?.blocks?.find((b: any) => b.type === 'image')?.url
-      || featuredPost.metadata?.thumbnail_url
-      || featuredPost.thumbnail_url
-      || null;
-    if (metaImg) featuredImage = metaImg;
-  }
-
-  heroBgUrl = siteConfig?.metadata?.hero_bg_url || null;
-  heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
-
-  feedClass = theme.feedStyle === 'list' 
-    ? 'flex flex-col gap-8 max-w-4xl mx-auto' 
-    : (theme.feedStyle === 'masonry' ? 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6' : 'grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3');
-
-} catch (e: any) {
-  return new Response(JSON.stringify({
-    error: 'index_crash',
-    message: e.message,
-    stack: e.stack,
-    url: Astro.request.url
-  }), { status: 200 });
+if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
+  blogDescription = siteConfig.metadata.primary_topic_en;
+} else if (lang === 'ja' && siteConfig?.metadata?.primary_topic_ja) {
+  blogDescription = siteConfig.metadata.primary_topic_ja;
 }
+
+const featuredPost = posts.length > 0 ? posts[0] : null;
+const recentPosts = posts.slice(1);
+
+// Featured Post 대표 이미지 추출
+let featuredImage = null;
+if (featuredPost) {
+  const metaImg = featuredPost.metadata?.data?.image1 
+    || featuredPost.metadata?.blocks?.find((b: any) => b.type === 'image')?.url
+    || featuredPost.metadata?.thumbnail_url
+    || featuredPost.thumbnail_url
+    || null;
+  if (metaImg) featuredImage = metaImg;
+}
+
+const heroBgUrl = siteConfig?.metadata?.hero_bg_url || null;
+const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
+
+const feedClass = theme.feedStyle === 'list' 
+  ? 'flex flex-col gap-8 max-w-4xl mx-auto' 
+  : (theme.feedStyle === 'masonry' ? 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6' : 'grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3');
 
 ---
 

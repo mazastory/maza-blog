@@ -7,16 +7,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const path = url.pathname;
   console.log('[MIDDLEWARE] original url:', url.href, 'pathname:', path);
 
-  if (path === '/debug-maza') {
-    const headers: Record<string, string> = {};
-    context.request.headers.forEach((val, key) => headers[key] = val);
-    return new Response(JSON.stringify({
-      url: url.href,
-      path: path,
-      headers: headers
-    }), { status: 200 });
-  }
-
   // 1. rewrite를 통해 전달된 커스텀 헤더가 있는지 확인
   const forwardedLang = context.request.headers.get('x-maza-lang');
   if (forwardedLang) {
