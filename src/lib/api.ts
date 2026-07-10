@@ -25,14 +25,26 @@ export interface SiteConfig {
 
 export function getRequestDomain(request: Request): string {
   try {
-    const url = new URL(request.url);
-    const hostname = url.hostname;
+    let hostname = '';
+    
+    // 1. 헤더에서 추출 시도 (Netlify/Vercel alias 도메인 문제 해결)
+    const hostHeader = request.headers.get('x-forwarded-host') || request.headers.get('host');
+    if (hostHeader) {
+      hostname = hostHeader.split(':')[0]; // 포트 제거
+    }
+    
+    // 2. 헤더에 없으면 request.url에서 추출
+    if (!hostname) {
+      const url = new URL(request.url);
+      hostname = url.hostname;
+    }
+    
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return import.meta.env.PUBLIC_SITE_DOMAIN || '';
+      return import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || '';
     }
     return hostname;
   } catch (e) {
-    return import.meta.env.PUBLIC_SITE_DOMAIN || '';
+    return import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || '';
   }
 }
 
@@ -132,7 +144,7 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
 
       const now = new Date().getTime();
 
-      const formattedData = data
+      let formattedData = data
         .filter((post: any) => {
           const isCompliance = post.source_type === 'compliance' ||
                                post.metadata?.is_compliance === true ||
@@ -159,6 +171,25 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
             thumbnail_url
           };
         });
+
+      // Inject mock posts if the blog is empty so it looks good as a sample
+      if (formattedData.length === 0) {
+        formattedData = Object.keys(SAMPLE_POSTS_MOCK).map(mockId => {
+          const mock = SAMPLE_POSTS_MOCK[mockId];
+          return {
+            id: mockId,
+            title: mock.title,
+            slug: mock.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + mockId.split('-')[0],
+            content: mock.content,
+            html_content: mock.content,
+            created_at: new Date().toISOString(),
+            publish_at: new Date().toISOString(),
+            status: 'published',
+            metadata: {},
+            thumbnail_url: mock.image
+          };
+        });
+      }
 
       cache[cacheKey] = { data: formattedData, timestamp: Date.now() };
       return formattedData;
@@ -195,6 +226,24 @@ export function findPostMetaInList(posts: Post[], slug: string): Post | null {
 // 61번째 이후의 과거 글처럼 최근 60건 목록에 없는 경우를 위한 안전망(fallback) 쿼리.
 // slug 맨 끝의 id 접두사를 단서로 UUID 범위를 계산하여 인덱스를 타고 빠르게 조회합니다.
 export async function findPostMetaByIdHintFallback(slug: string, siteId: string): Promise<Post | null> {
+  // Check mock posts first
+  const mockId = Object.keys(SAMPLE_POSTS_MOCK).find(id => slug.includes(id.split('-')[0]) || slug === id);
+  if (mockId) {
+    const mock = SAMPLE_POSTS_MOCK[mockId];
+    return {
+      id: mockId,
+      title: mock.title,
+      slug: mock.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + mockId.split('-')[0],
+      content: mock.content,
+      html_content: mock.content,
+      created_at: new Date().toISOString(),
+      publish_at: new Date().toISOString(),
+      status: 'published',
+      metadata: {},
+      thumbnail_url: mock.image
+    };
+  }
+
   // If slug is a full UUID, query it directly to allow direct previews of ANY post (even scheduled/future)
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
   
@@ -279,6 +328,11 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
 // 글 본문(html_content, content)만 PK 정확 매칭으로 가져옵니다. 인덱스를 타므로 매우 빠릅니다.
 export async function getPostContent(id: string): Promise<{ content: string; html_content: string } | null> {
+  if (SAMPLE_POSTS_MOCK[id]) {
+    const mock = SAMPLE_POSTS_MOCK[id];
+    return { content: mock.content, html_content: mock.content };
+  }
+
   const cacheKey = `postContent_${id}`;
   if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
     return cache[cacheKey].data;
@@ -319,3 +373,29 @@ export async function getPostBySlug(slug: string, domain?: string, locale?: stri
     return null;
   }
 }
+export const SAMPLE_POSTS_MOCK: Record<string, { title: string, content: string, image: string, category: string }> = {
+  '43e05f1f-a779-4ff5-8b97-6f996ae770c5': {
+    title: "2026년 한국 편의점 먹방, 글로벌 유튜브 메가 트렌드가 된 이유",
+    content: "<p>한국의 편의점 먹방이 전 세계적인 유튜브 트렌드로 자리 잡았습니다. 이 글에서는 그 이유와 문화적 배경을 심도 있게 분석합니다.</p><br/><h2>1. 먹방의 진화</h2><p>단순히 많이 먹는 것을 넘어, 편의점이라는 친숙한 공간에서의 조합이 세계인들의 호기심을 자극하고 있습니다.</p>",
+    image: "https://images.pexels.com/photos/35786296/pexels-photo-35786296.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    category: "푸드/문화",
+  },
+  'f141ad21-1623-49fd-9fc7-2ff781641434': {
+    title: "2026년, 감성 지능(EQ) 발달을 위한 디지털 콘텐츠: 단순한 스크린 넘어선 몰입형 학습의 힘",
+    content: "<p>에듀테크의 발전으로 아이들의 감성 지능(EQ) 발달을 돕는 몰입형 학습 콘텐츠가 각광받고 있습니다.</p><br/><h2>몰입형 학습이란?</h2><p>단순한 시청각 자료를 넘어 상호작용을 통해 감성적 반응을 이끌어내는 차세대 교육 방식입니다.</p>",
+    image: "https://images.pexels.com/photos/32694156/pexels-photo-32694156.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    category: "에듀테크",
+  },
+  '5c0f7cbe-c176-42b7-bfc1-83208778c045': {
+    title: "2026년 만성 피로야 가라! 지친 당신을 위한 에너지 부스팅 습관",
+    content: "<p>현대인의 고질병인 만성 피로. 이를 극복하기 위한 5가지 검증된 에너지 부스팅 습관을 소개합니다.</p><br/><h2>핵심 습관</h2><p>수면, 식단, 짧은 휴식의 타이밍이 당신의 하루 에너지를 결정합니다.</p>",
+    image: "https://images.pexels.com/photos/36942632/pexels-photo-36942632.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    category: "건강/웰니스",
+  },
+  'eaf5eab2-307c-48c8-8411-140bc4e717a0': {
+    title: "2026년 스마트 시티 교통 혁명: 해외 성공 사례에서 배우는 미래 모빌리티 전략",
+    content: "<p>전 세계 스마트 시티들의 미래 모빌리티 성공 전략을 분석하고 우리의 나아갈 방향을 제시합니다.</p><br/><h2>자율주행과 대중교통의 결합</h2><p>끊김 없는 이동 경험(MaaS)이 도시의 효율성을 극대화합니다.</p>",
+    image: "https://images.pexels.com/photos/3767027/pexels-photo-3767027.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    category: "모빌리티",
+  }
+};
