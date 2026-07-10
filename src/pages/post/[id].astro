@@ -5,10 +5,10 @@ export const prerender = false;
 
 const { id } = Astro.params;
 
-// Fetch the post's slug and redirect to the canonical slug page
+// Fetch the post's title and slug to compute the canonical path
 const { data: post, error } = await supabase
 	.from('posts')
-	.select('slug')
+	.select('slug, title')
 	.eq('id', id)
 	.single();
 
@@ -16,6 +16,16 @@ if (error || !post) {
 	return Astro.redirect('/404');
 }
 
-const targetPath = post.slug ? `/${post.slug}` : `/${id}`;
-return Astro.redirect(targetPath);
+// If slug exists in DB, use it. Otherwise derive it from title + id prefix (same as api.ts computeSlug)
+let targetSlug = post.slug;
+if (!targetSlug && post.title) {
+	targetSlug = post.title
+		.toLowerCase()
+		.replace(/[^a-z0-9가-힣]+/g, '-')
+		.replace(/(^-|-$)+/g, '')
+		+ '-' + (id as string).split('-')[0];
+}
+
+const targetPath = targetSlug ? `/${targetSlug}` : `/${id}`;
+return Astro.redirect(targetPath, 302);
 ---
