@@ -116,11 +116,11 @@ if (rawSc) {
 		{/* RSS 자동 검색(autodiscovery)용 링크 */}
 		<link rel="alternate" type="application/rss+xml" title={`${siteTitle} RSS Feed`} href="/rss.xml" />
 	</head>
-	<body class="relative overflow-x-hidden bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+	<body class="relative overflow-x-hidden bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 flex flex-col min-h-screen">
 		<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.12),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.1),_transparent_28%),linear-gradient(to_bottom,_rgba(255,255,255,0.92),_rgba(248,250,252,1))]"></div>
 		<Header siteConfig={siteConfig} categories={uniqueCategories} currentLang={Astro.locals.lang || 'ko'} />
 		
-		<main class="relative z-10 min-h-screen">
+		<main class="relative z-10 flex-1">
 			<slot />
 		</main>
 

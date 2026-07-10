@@ -1,9 +1,18 @@
 ---
 import { supabase } from '../../lib/supabase';
 
+import { SAMPLE_POSTS_MOCK } from '../../lib/api';
+
 export const prerender = false;
 
 const { id } = Astro.params;
+
+// Handle Dashboard Sample Posts
+if (id && SAMPLE_POSTS_MOCK[id as string]) {
+	const mock = SAMPLE_POSTS_MOCK[id as string];
+	const slug = mock.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + (id as string).split('-')[0];
+	return Astro.redirect(`/${slug}`, 302);
+}
 
 // Fetch the post's title and slug to compute the canonical path
 const { data: post, error } = await supabase
