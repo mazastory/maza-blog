@@ -14,10 +14,11 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, st
 Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=604800');
 
 const domain = getRequestDomain(Astro.request);
-const { slug } = Astro.params;
+const { slug: rawSlug } = Astro.params;
+const slug = rawSlug ? decodeURIComponent(rawSlug) : undefined;
 
 if (!slug) {
-  return Astro.redirect(`/404?from=slug&slug=${slug}`);
+  return Astro.redirect(`/404?from=slug&slug=${encodeURIComponent(String(slug))}`);
 }
 
 const [siteConfig, allPosts] = await Promise.all([
@@ -33,7 +34,7 @@ if (!postMeta) {
 }
 
 if (!postMeta) {
-  return Astro.redirect(`/404?from=slug2&slug=${slug}`);
+  return Astro.redirect(`/404?from=slug2&slug=${encodeURIComponent(slug)}`);
 }
 
 const fullContent = await getPostContent(postMeta.id);
@@ -44,7 +45,7 @@ if (!post) {
   if (allPosts.length > 0) {
     console.log('First post ID:', allPosts[0].id);
   }
-  return Astro.redirect(`/404?from=slug3&slug=${slug}`);
+  return Astro.redirect(`/404?from=slug3&slug=${encodeURIComponent(slug)}`);
 }
 
 // SEO 내부 링크 (이전글/다음글) 계산
