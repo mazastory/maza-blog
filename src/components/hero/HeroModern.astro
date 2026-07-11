@@ -5,8 +5,9 @@ export interface Props {
   heroBgUrl?: string | null;
   t: any;
   posts: any[];
+  heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
 ---
 
 <section class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-slate-950 p-8 md:p-14 lg:p-20 shadow-2xl group">
@@ -15,7 +16,7 @@ const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
     {heroBgUrl ? (
       <!-- Custom BG Image with overlay -->
       <img src={heroBgUrl} alt="" class="absolute inset-0 w-full h-full object-cover" loading="eager" />
-      <div class="absolute inset-0 bg-slate-950/70"></div>
+      <div class="absolute inset-0 bg-slate-950/20"></div>
     ) : (
       <!-- Default Animated Mesh Gradient -->
       <div class="absolute -top-[30%] -left-[10%] h-[70%] w-[50%] rounded-full bg-indigo-600/40 blur-[120px] transition-transform duration-1000 group-hover:scale-110 group-hover:translate-x-5"></div>
@@ -24,7 +25,7 @@ const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
     )}
     <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMTAgMEwwIDBMMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvcGF0dGVybj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9InVybCgjc21hbGxHcmlkKSIvPjxwYXRoIGQ9Ik00MCAwTDAgMEwwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-40"></div>
     <!-- Glass overlay -->
-    <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px]"></div>
+    <div class="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px]"></div>
   </div>
   
   <div class="relative z-10 grid gap-10 lg:gap-16 lg:grid-cols-[1.5fr_1fr] lg:items-center">
@@ -35,13 +36,13 @@ const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
         </span>
         <span class="flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)] animate-pulse"></span>
       </div>
-      <h1 class={`${blogDescription.length > 40 ? 'text-2xl md:text-3xl lg:text-4xl leading-[1.4]' : blogDescription.length > 20 ? 'text-3xl md:text-4xl lg:text-5xl leading-[1.3]' : 'text-4xl md:text-5xl lg:text-6xl leading-[1.25]'} font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 break-keep drop-shadow-sm`} style="word-break: keep-all; overflow-wrap: break-word;">
+      <h1 class={`${blogDescription.length > 40 ? 'text-3xl md:text-4xl lg:text-5xl leading-tight' : blogDescription.length > 20 ? 'text-4xl md:text-5xl lg:text-6xl leading-[1.15]' : 'text-5xl md:text-6xl lg:text-7xl leading-[1.1]'} font-black tracking-tight text-white break-keep drop-shadow-sm`} style="word-break: keep-all; overflow-wrap: break-word;">
         {blogDescription}
       </h1>
-      <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-300/90 md:text-2xl break-keep font-medium drop-shadow-sm">
-        {t.welcome}
+      <p class="mt-8 max-w-2xl text-lg md:text-xl text-slate-300 font-medium break-keep leading-relaxed drop-shadow-sm">
+        {heroSubtitle}
       </p>
-      <div class="mt-12 flex flex-wrap gap-4 md:gap-5">
+      <div class="mt-10 flex flex-wrap items-center gap-4">
         <a href="/about" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-indigo-500 px-8 py-4 text-sm font-black tracking-wide text-white shadow-[0_8px_30px_-8px_rgba(99,102,241,0.6)] transition-all duration-300 hover:scale-105 hover:bg-indigo-400 hover:shadow-[0_10px_40px_-10px_rgba(99,102,241,0.8)]">
           <span class="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.2),transparent)] -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
           <span class="relative flex items-center gap-2">

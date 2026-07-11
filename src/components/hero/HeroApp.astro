@@ -5,8 +5,9 @@ export interface Props {
   heroBgUrl?: string | null;
   t: any;
   posts: any[];
+  heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
 
 let bgImg = heroBgUrl || '/hero-bg-picasso.png';
 if (!heroBgUrl && posts.length > 0) {
@@ -40,7 +41,7 @@ const carouselPosts = posts.slice(0, 5);
         {blogDescription}
       </h1>
       <p class="text-white/70 font-medium text-lg max-w-xl break-keep">
-        {t.welcome}
+        {heroSubtitle}
       </p>
     </div>
   </div>

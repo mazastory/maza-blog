@@ -5,8 +5,9 @@ export interface Props {
   heroBgUrl?: string | null;
   t: any;
   posts: any[];
+  heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
 ---
 
 <section class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-white border border-slate-200 p-8 md:p-14 lg:p-20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
@@ -27,7 +28,7 @@ const { blogName, blogDescription, heroBgUrl, t, posts } = Astro.props;
     </h1>
     <div class="w-24 h-1 bg-slate-900 mx-auto mt-8 mb-8 rounded-full"></div>
     <p class="max-w-2xl text-lg md:text-xl leading-relaxed text-slate-500 font-medium break-keep">
-      {t.welcome}
+      {heroSubtitle}
     </p>
     <div class="mt-10 flex flex-wrap justify-center gap-4">
       <a href="/about" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3.5 text-sm font-bold tracking-wide text-white transition-colors hover:bg-slate-800">

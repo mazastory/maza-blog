@@ -34,11 +34,18 @@ const posts = await getApprovedPosts(domain, lang);
 
 let blogName = siteConfig?.blog_name || "Maza Blog";
 let blogDescription = siteConfig?.niche || "Welcome to our blog.";
+let heroSubtitle = siteConfig?.metadata?.hero_subtitle || t.welcome;
 
 if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
   blogDescription = siteConfig.metadata.primary_topic_en;
 } else if (lang === 'ja' && siteConfig?.metadata?.primary_topic_ja) {
   blogDescription = siteConfig.metadata.primary_topic_ja;
+}
+
+if (lang === 'en' && siteConfig?.metadata?.hero_subtitle_en) {
+  heroSubtitle = siteConfig.metadata.hero_subtitle_en;
+} else if (lang === 'ja' && siteConfig?.metadata?.hero_subtitle_ja) {
+  heroSubtitle = siteConfig.metadata.hero_subtitle_ja;
 }
 
 const featuredPost = posts.length > 0 ? posts[0] : null;
@@ -66,12 +73,12 @@ const feedClass = theme.feedStyle === 'list'
 
 <Layout preloadImage={featuredImage} siteConfig={siteConfig}>
   <div class="mx-auto max-w-7xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
-    {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
-    {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
-    {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
-    {heroTemplate === 'minimal' && <HeroMinimal blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
-    {heroTemplate === 'split' && <HeroSplit blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
-    {heroTemplate === 'app' && <HeroApp blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} />}
+    {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'minimal' && <HeroMinimal blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'split' && <HeroSplit blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'app' && <HeroApp blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
 
     <!-- Hero / Featured Post -->
     {featuredPost && heroTemplate !== 'app' && (
