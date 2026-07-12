@@ -20,7 +20,7 @@ export async function GET(context: APIContext) {
   const siteDesc = config?.niche || 'A blog powered by Maza Studio';
   const siteUrl = config?.domain ? `https://${config.domain}` : `https://${domain}`;
 
-  return rss({
+  const response = await rss({
     title: siteTitle,
     description: siteDesc,
     site: siteUrl,
@@ -50,4 +50,6 @@ export async function GET(context: APIContext) {
     }),
     customData: `<language>${locale}</language>`,
   });
+  response.headers.set('Vary', 'Host');
+  return response;
 }
