@@ -26,6 +26,7 @@ export const GET: APIRoute = async ({ request }) => {
     headers: {
       'Content-Type': 'text/plain',
       'Cache-Control': 'public, max-age=3600',
+      'Vary': 'Host',
     },
   });
 };
