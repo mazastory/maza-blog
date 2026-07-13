@@ -62,7 +62,7 @@ if (featuredPost) {
   if (metaImg) featuredImage = metaImg;
 }
 
-const heroBgUrl = siteConfig?.metadata?.hero_bg_url || null;
+const heroBgUrl = siteConfig?.metadata?.hero_bg_url || siteConfig?.metadata?.hero_image_url || null;
 const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
 
 const feedClass = theme.feedStyle === 'list' 

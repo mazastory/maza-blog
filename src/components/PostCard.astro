@@ -22,8 +22,21 @@ const metaImage = post.metadata?.data?.image1
   || post.thumbnail_url
   || null;
 
+const curatedFallbacks = [
+  "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1432821596592-e2c18b78144f?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80"
+];
+
+// Determine fallback index based on post title length to make it deterministic but varied
+const fallbackIndex = post.title.length % curatedFallbacks.length;
+
 // 고정된 폴백 이미지 대신 CSS 그라디언트를 사용 (가짜 이미지 요청을 방지하여 속도 대폭 개선)
-const coverImage = metaImage || null;
+// -> 사용자 피드백(모든 사이트 썸네일 누락처럼 보임)을 반영하여, 이미지가 없을 시 고품질 Fallback 이미지를 사용하도록 변경
+const coverImage = metaImage || curatedFallbacks[fallbackIndex];
 
 // 안전한 텍스트 추출 (metadata.summary 우선 사용, 없으면 content에서 마크다운 제거, 둘 다 없으면 html_content에서 태그 제거)
 const summaryFromMeta = post.metadata?.data?.summary || post.metadata?.summary || '';
