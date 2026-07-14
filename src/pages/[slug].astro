@@ -84,13 +84,14 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
 	datePublished={publishDate}
   siteConfig={siteConfig}
 >
-  <div class="mx-auto max-w-3xl px-4 pt-6 pb-12 md:px-6 md:pt-16 md:pb-20">
+  <div class={`mx-auto px-4 pt-6 pb-12 md:px-6 md:pt-16 md:pb-20 ${siteConfig?.purpose === 'monetization' ? 'max-w-6xl grid grid-cols-1 lg:grid-cols-4 gap-8' : 'max-w-3xl'}`}>
     
-    <!-- 뒤로가기 -->
-    <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 hover:text-[var(--color-indigo-600)] mb-6 md:mb-10 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      목록으로
-    </a>
+    <div class={siteConfig?.purpose === 'monetization' ? 'lg:col-span-3' : ''}>
+      <!-- 뒤로가기 -->
+      <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 hover:text-[var(--color-indigo-600)] mb-6 md:mb-10 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        목록으로
+      </a>
 
     <!-- 포스트 헤더 -->
     {!isZeroItPost && (
@@ -207,9 +208,32 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
           </a>
         ) : <div class="hidden md:block w-full"></div>}
         </div>
+        </div>
       </div>
     </div>
   </div>
+
+  {siteConfig?.purpose === 'monetization' && (
+    <aside class="hidden lg:block lg:col-span-1">
+      <div class="sticky top-24 space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="aspect-[3/4] bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            쿠팡 파트너스 배너<br/>(우측 고정 1단)
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="aspect-square bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            추천 상품 위젯<br/>(우측 고정 2단)
+          </div>
+        </div>
+      </div>
+    </aside>
+  )}
+</div>
 
   <!-- 리딩 프로그레스 바 -->
   <div class="fixed top-0 left-0 h-0.5 md:h-1 bg-[var(--color-indigo-600)] z-[60] transition-all duration-100" id="reading-progress"></div>
