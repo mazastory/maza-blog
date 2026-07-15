@@ -5,7 +5,7 @@ import AdSlot from '../components/AdSlot.astro';
 import AnalyticsTracker from '../components/AnalyticsTracker.astro';
 import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
 import { buildKeywordMap, injectInternalLinks } from '../lib/internalLinks';
-import { splitHtmlForAd } from '../lib/adManager';
+import { splitHtmlForAd, injectImagesIntoHtml } from '../lib/adManager';
 
 // CDN 캐싱 활성화: 쿠키 의존성 제거로 Cloudflare/Netlify 캐싱이 작동함
 // - 개인 정보(쿠키 등) 없음 → CDN이 페이지를 저장해 전 세계 방문자에게 즉시 제공
@@ -54,22 +54,33 @@ const postIndex = allPosts.findIndex((p: any) => p.slug === slug || p.id === slu
 const prevPost = postIndex < allPosts.length - 1 ? allPosts[postIndex + 1] : null;
 const nextPost = postIndex > 0 ? allPosts[postIndex - 1] : null;
 
-// A/B 테스트: 서버 쿠키 대신 클라이언트(localStorage) 기반으로 전환
-// → 서버는 항상 두 광고 슬롯을 모두 렌더링하고, 클라이언트 JS가 하나를 숨김
-const keywordMap = buildKeywordMap(allPosts, post.slug);
-const linkedHtmlContent = injectInternalLinks(post.html_content || post.content, keywordMap);
-const [part1, part2] = splitHtmlForAd(linkedHtmlContent);
-
-const profileName = siteConfig?.blog_name || "Maza Editor";
-const publishDate = post.publish_at || post.created_at;
-const dateStr = new Date(publishDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
-
 // 실제 이미지 추출 (PostCard와 동일한 로직 적용)
 const metaImage = post.metadata?.data?.image1 
   || post.metadata?.blocks?.find((b: any) => b.type === 'image')?.url
   || post.metadata?.thumbnail_url
   || post.thumbnail_url
   || null;
+
+// 본문에 삽입할 서브 이미지 추출 (썸네일 제외)
+const subImages = (post.metadata?.blocks || [])
+  .filter((b: any) => b.type === 'image' && b.url !== metaImage)
+  .map((b: any) => ({ url: b.url, alt: b.alt }));
+
+// A/B 테스트: 서버 쿠키 대신 클라이언트(localStorage) 기반으로 전환
+// → 서버는 항상 두 광고 슬롯을 모두 렌더링하고, 클라이언트 JS가 하나를 숨김
+const keywordMap = buildKeywordMap(allPosts, post.slug);
+let linkedHtmlContent = injectInternalLinks(post.html_content || post.content, keywordMap);
+
+// 구글봇 SEO 방어: 본문 내 이미지 하이드레이션
+if (subImages.length > 0) {
+  linkedHtmlContent = injectImagesIntoHtml(linkedHtmlContent, subImages);
+}
+
+const [part1, part2] = splitHtmlForAd(linkedHtmlContent);
+
+const profileName = siteConfig?.blog_name || "Maza Editor";
+const publishDate = post.publish_at || post.created_at;
+const dateStr = new Date(publishDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
 // Zero-IT 마법사로 자동 생성된 글인지 판별 (HTML 내부에 이미 h1 타이틀과 본문 썸네일이 포함되어 있음)
 const isZeroItPost = post.html_content && post.html_content.includes('max-width:7');

@@ -40,3 +40,57 @@ export function splitHtmlForAd(html: string): [string, string] {
 
   return [html, ''];
 }
+
+/**
+ * HTML 본문 중간에 이미지 배열을 균등하게 강제 주입(Hydration)합니다.
+ * 구글봇이 본문 텍스트만 보고 "Wall of Text"로 인식하는 것을 방지하기 위한 용도입니다.
+ */
+export function injectImagesIntoHtml(html: string, images: {url: string, alt?: string}[]): string {
+  if (!html || !images || images.length === 0) return html;
+  if (html.includes('max-width:740px') || html.includes('template-wrapper')) return html;
+
+  let resultHtml = html;
+  
+  // 1순위: <h2> 태그 앞에 삽입
+  const h2Matches = Array.from(resultHtml.matchAll(/<h2/g));
+  if (h2Matches.length >= images.length) {
+    // 이미지를 넣을 <h2> 태그의 인덱스를 균등하게 선택
+    const step = Math.floor(h2Matches.length / images.length);
+    let injectedCount = 0;
+    // 뒤에서부터 치환해야 인덱스가 꼬이지 않음
+    for (let i = images.length - 1; i >= 0; i--) {
+      const matchIndex = i * step + Math.floor(step / 2);
+      if (matchIndex < h2Matches.length) {
+        const match = h2Matches[matchIndex];
+        const img = images[i];
+        const imgTag = `<figure class="my-8 md:my-12 overflow-hidden rounded-xl shadow-lg border border-slate-100"><img src="${img.url}" alt="${img.alt || ''}" class="w-full object-cover" loading="lazy" /></figure>`;
+        resultHtml = resultHtml.substring(0, match.index!) + imgTag + resultHtml.substring(match.index!);
+        injectedCount++;
+      }
+    }
+    if (injectedCount === images.length) return resultHtml;
+  }
+
+  // 2순위: <h2>가 부족하면 </p> 태그 뒤에 균등 삽입
+  const pMatches = Array.from(resultHtml.matchAll(/<\/p>/g));
+  if (pMatches.length >= images.length) {
+    let resultHtmlP = html;
+    const step = Math.floor(pMatches.length / images.length);
+    for (let i = images.length - 1; i >= 0; i--) {
+      // 첫 문단과 마지막 문단은 피하도록 약간 안쪽으로
+      const matchIndex = Math.min(Math.max((i * step) + 1, 1), pMatches.length - 2);
+      if (matchIndex < pMatches.length && matchIndex >= 0) {
+        const match = pMatches[matchIndex];
+        const img = images[i];
+        const imgTag = `<figure class="my-8 md:my-12 overflow-hidden rounded-xl shadow-lg border border-slate-100"><img src="${img.url}" alt="${img.alt || ''}" class="w-full object-cover" loading="lazy" /></figure>`;
+        const insertPos = match.index! + 4; // </p> 뒤
+        resultHtmlP = resultHtmlP.substring(0, insertPos) + imgTag + resultHtmlP.substring(insertPos);
+      }
+    }
+    return resultHtmlP;
+  }
+
+  // 만약 <p> 조차 부족하면 (거의 불가능) 최상단/최하단에 대충 붙임
+  const fallbackHtml = images.map(img => `<figure class="my-8 md:my-12 overflow-hidden rounded-xl shadow-lg border border-slate-100"><img src="${img.url}" alt="${img.alt || ''}" class="w-full object-cover" loading="lazy" /></figure>`).join('');
+  return html + fallbackHtml;
+}
