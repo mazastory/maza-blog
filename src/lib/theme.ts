@@ -2,73 +2,27 @@ export interface ThemeVars {
   color: string;
   fontFamily: string;
   fontUrl: string;
-  headerStyle: 'left' | 'center' | 'banner';
   layoutWidth: 'max-w-4xl' | 'max-w-5xl' | 'max-w-6xl' | 'max-w-7xl';
   borderRadius: 'rounded-none' | 'rounded-md' | 'rounded-xl' | 'rounded-2xl';
   feedStyle: 'list' | 'grid' | 'masonry';
+  
+  // Header Builder
+  headerLogoPos: 'left' | 'center' | 'right';
+  headerMenuPos: 'inline' | 'bottom' | 'right';
+  headerTopBar: boolean;
+  headerDarkMode: boolean;
+
+  // Footer Builder
+  footerCols: 1 | 2 | 3 | 4;
+  footerAlign: 'left' | 'center';
+  footerBg: 'white' | 'light' | 'dark' | 'black';
+
+  // Micro-Jitter
+  paddingY: string;
 }
 
 export function generateThemeVars(siteConfig: any): ThemeVars {
   const domain = siteConfig?.domain || '';
-  
-  // Custom curated themes for specific domains
-  if (domain === 'mazastory.com') {
-    return {
-      color: '#ec4899', // Vibrant Pink for K-pop/Hallyu
-      fontFamily: '"Outfit", "Nanum Gothic", sans-serif',
-      fontUrl: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&family=Nanum+Gothic:wght@400;700;800&display=swap',
-      headerStyle: 'center',
-      layoutWidth: 'max-w-6xl',
-      borderRadius: 'rounded-2xl',
-      feedStyle: 'masonry',
-    };
-  }
-  if (domain === 'nextinsightlab.com') {
-    return {
-      color: '#0ea5e9', // Trustworthy Sky Blue for Education
-      fontFamily: '"Inter", "Noto Sans KR", sans-serif',
-      fontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap',
-      headerStyle: 'left',
-      layoutWidth: 'max-w-5xl',
-      borderRadius: 'rounded-md',
-      feedStyle: 'list',
-    };
-  }
-  if (domain === 'wiseoriginlab.com') {
-    return {
-      color: '#10b981', // Calming Emerald Green for Health/Wellness
-      fontFamily: '"Roboto", "Pretendard", sans-serif',
-      fontUrl: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap',
-      headerStyle: 'banner',
-      layoutWidth: 'max-w-4xl',
-      borderRadius: 'rounded-xl',
-      feedStyle: 'grid',
-    };
-  }
-  if (domain === 'maza.ai.kr') {
-    return {
-      color: '#6366f1', // Indigo/Neon Blue for AI/Tech
-      fontFamily: '"Outfit", "Nanum Gothic", sans-serif',
-      fontUrl: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&family=Nanum+Gothic:wght@400;700;800&display=swap',
-      headerStyle: 'center',
-      layoutWidth: 'max-w-7xl',
-      borderRadius: 'rounded-none',
-      feedStyle: 'grid',
-    };
-  }
-  if (domain === 'autosite.kr') {
-    return {
-      color: '#dc2626', // Aggressive Red for Cars/Mobility
-      fontFamily: '"Inter", "Noto Sans KR", sans-serif',
-      fontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap',
-      headerStyle: 'banner',
-      layoutWidth: 'max-w-6xl',
-      borderRadius: 'rounded-md',
-      feedStyle: 'masonry',
-    };
-  }
-
-  // Fallback hash-based logic for any other domains
   const seedStr = siteConfig?.id || domain || 'maza';
   let hash = 0;
   for (let i = 0; i < seedStr.length; i++) {
@@ -85,10 +39,19 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
     { family: '"Outfit", "Nanum Gothic", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&family=Nanum+Gothic:wght@400;700;800&display=swap' },
   ];
 
-  const headerStyles: ('left' | 'center' | 'banner')[] = ['left', 'center', 'banner'];
   const widths: ('max-w-4xl' | 'max-w-5xl' | 'max-w-6xl' | 'max-w-7xl')[] = ['max-w-4xl', 'max-w-5xl', 'max-w-6xl', 'max-w-7xl'];
   const radiuses: ('rounded-none' | 'rounded-md' | 'rounded-xl' | 'rounded-2xl')[] = ['rounded-none', 'rounded-md', 'rounded-xl', 'rounded-2xl'];
   const feedStyles: ('list' | 'grid' | 'masonry')[] = ['list', 'grid', 'masonry'];
+  
+  const logoPos: ('left' | 'center' | 'right')[] = ['left', 'center', 'right'];
+  const menuPos: ('inline' | 'bottom' | 'right')[] = ['inline', 'bottom', 'right'];
+  const topBars = [true, false];
+  const darkModes = [true, false];
+  
+  const footCols: (1 | 2 | 3 | 4)[] = [1, 2, 3, 4];
+  const footAlign: ('left' | 'center')[] = ['left', 'center'];
+  const footBg: ('white' | 'light' | 'dark' | 'black')[] = ['white', 'light', 'dark', 'black'];
+  const paddings = ['py-4', 'py-6', 'py-8', 'py-10'];
 
   const getIndex = (shift: number, len: number) => Math.abs((absHash >> shift)) % len;
 
@@ -96,9 +59,18 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
     color: siteConfig?.metadata?.theme_color || colors[absHash % colors.length],
     fontFamily: fonts[getIndex(1, fonts.length)].family,
     fontUrl: fonts[getIndex(1, fonts.length)].url,
-    headerStyle: headerStyles[getIndex(2, headerStyles.length)],
-    layoutWidth: widths[getIndex(3, widths.length)],
-    borderRadius: radiuses[getIndex(4, radiuses.length)],
-    feedStyle: feedStyles[getIndex(5, feedStyles.length)],
+    layoutWidth: widths[getIndex(2, widths.length)],
+    borderRadius: radiuses[getIndex(3, radiuses.length)],
+    feedStyle: feedStyles[getIndex(4, feedStyles.length)],
+    
+    headerLogoPos: logoPos[getIndex(5, logoPos.length)],
+    headerMenuPos: menuPos[getIndex(6, menuPos.length)],
+    headerTopBar: topBars[getIndex(7, topBars.length)],
+    headerDarkMode: darkModes[getIndex(8, darkModes.length)],
+    
+    footerCols: footCols[getIndex(9, footCols.length)],
+    footerAlign: footAlign[getIndex(10, footAlign.length)],
+    footerBg: footBg[getIndex(11, footBg.length)],
+    paddingY: paddings[getIndex(12, paddings.length)],
   };
 }

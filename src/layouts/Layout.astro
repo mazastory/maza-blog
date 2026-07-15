@@ -5,6 +5,7 @@ import SEO from '../components/SEO.astro';
 import Schema from '../components/Schema.astro';
 import DynamicTheme from '../components/DynamicTheme.astro';
 import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
+import { generateThemeVars } from '../lib/theme';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = Astro.props.siteConfig || await getSiteConfig(domain);
+const theme = generateThemeVars(siteConfig);
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang);
 const uniqueCategories = Array.from(new Set(allPosts.map(p => p.metadata?.category).filter(Boolean)));
 // CDN 캐시 강화: 1시간 CDN + 24시간 stale-while-revalidate
@@ -124,28 +126,65 @@ if (rawSc) {
 			<slot />
 		</main>
 
-		<footer class="relative z-10 mt-20 border-t border-slate-200/80 bg-white/80 py-12 text-center backdrop-blur-sm">
-			<div class="mx-auto max-w-5xl px-6">
-				<div class="mb-6 flex justify-center items-center gap-2">
-					<div class="flex h-6 w-6 items-center justify-center rounded bg-slate-900 text-[10px] text-white font-bold">
-						{siteTitle.charAt(0).toUpperCase()}
-					</div>
-					<span class="text-sm font-black italic tracking-tight text-slate-900">{siteTitle.toUpperCase()}</span>
-				</div>
-				<nav class="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
-					<a href="/about" class="hover:text-indigo-600 transition-colors">About</a>
-					<a href="/contact" class="hover:text-indigo-600 transition-colors">Contact</a>
-					<a href="/privacy" class="hover:text-indigo-600 transition-colors">Privacy Policy</a>
-					<a href="/disclaimer" class="hover:text-indigo-600 transition-colors">Disclaimer</a>
-					<a href="/rss.xml" class="hover:text-indigo-600 transition-colors">RSS</a>
-				</nav>
-				<p class="text-xs text-slate-500 font-medium">
-					© {new Date().getFullYear()} {siteTitle}. All rights reserved. 
-					<br class="md:hidden" />
-					Powered by Astro & Supabase.
-				</p>
-			</div>
-		</footer>
-	</body>
-</html>
+		
+    <!-- Dynamic Footer -->
+    <footer class={`relative z-10 border-t ${theme.footerBg === 'black' ? 'bg-black text-slate-400 border-black' : theme.footerBg === 'dark' ? 'bg-slate-900 text-slate-400 border-slate-800' : theme.footerBg === 'light' ? 'bg-slate-50 text-slate-500 border-slate-200' : 'bg-white text-slate-500 border-slate-100'} ${theme.paddingY} mt-16`}>
+      <div class={`mx-auto px-6 ${theme.layoutWidth} ${theme.footerCols > 1 ? 'grid gap-8' : 'flex flex-col'} ${theme.footerCols === 2 ? 'grid-cols-1 md:grid-cols-2' : theme.footerCols === 3 ? 'grid-cols-1 md:grid-cols-3' : theme.footerCols === 4 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' : ''} ${theme.footerAlign === 'center' ? 'text-center items-center' : 'text-left'}`}>
+        
+        {/* Col 1: Brand */}
+        <div class={`flex flex-col ${theme.footerAlign === 'center' ? 'items-center' : 'items-start'}`}>
+          <h3 class="text-xl font-black mb-4">{siteTitle}</h3>
+          <p class="text-sm opacity-80 mb-6 max-w-xs">{siteDesc}</p>
+          <p class="text-xs opacity-60">© {new Date().getFullYear()} {siteTitle}. All rights reserved.</p>
+        </div>
 
+        {/* Col 2: Quick Links */}
+        {theme.footerCols >= 2 && (
+          <div class={`flex flex-col ${theme.footerAlign === 'center' ? 'items-center' : 'items-start'}`}>
+            <h4 class="font-bold mb-4 uppercase text-sm tracking-wider">Quick Links</h4>
+            <ul class="space-y-2 text-sm opacity-80">
+              <li><a href="/about" class="hover:text-[var(--color-indigo-600)] transition-colors">About Us</a></li>
+              <li><a href="/contact" class="hover:text-[var(--color-indigo-600)] transition-colors">Contact</a></li>
+            </ul>
+          </div>
+        )}
+
+        {/* Col 3: Legal */}
+        {theme.footerCols >= 3 && (
+          <div class={`flex flex-col ${theme.footerAlign === 'center' ? 'items-center' : 'items-start'}`}>
+            <h4 class="font-bold mb-4 uppercase text-sm tracking-wider">Legal</h4>
+            <ul class="space-y-2 text-sm opacity-80">
+              <li><a href="/privacy" class="hover:text-[var(--color-indigo-600)] transition-colors">Privacy Policy</a></li>
+              <li><a href="/disclaimer" class="hover:text-[var(--color-indigo-600)] transition-colors">Disclaimer</a></li>
+              <li><a href="/rss.xml" class="hover:text-[var(--color-indigo-600)] transition-colors">RSS Feed</a></li>
+            </ul>
+          </div>
+        )}
+
+        {/* Col 4: Categories */}
+        {theme.footerCols >= 4 && (
+          <div class={`flex flex-col ${theme.footerAlign === 'center' ? 'items-center' : 'items-start'}`}>
+            <h4 class="font-bold mb-4 uppercase text-sm tracking-wider">Categories</h4>
+            <ul class="space-y-2 text-sm opacity-80">
+              {uniqueCategories.slice(0, 3).map((cat: string) => (
+                <li><a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)] uppercase">{cat}</a></li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+      </div>
+      
+      {theme.footerCols === 1 && (
+        <div class="w-full border-t border-current opacity-20 mt-8 pt-8">
+          <nav class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-semibold">
+            <a href="/about" class="hover:text-[var(--color-indigo-600)] transition-colors">About</a>
+            <a href="/contact" class="hover:text-[var(--color-indigo-600)] transition-colors">Contact</a>
+            <a href="/privacy" class="hover:text-[var(--color-indigo-600)] transition-colors">Privacy</a>
+            <a href="/disclaimer" class="hover:text-[var(--color-indigo-600)] transition-colors">Disclaimer</a>
+          </nav>
+        </div>
+      )}
+    </footer>
+  </body>
+</html>
