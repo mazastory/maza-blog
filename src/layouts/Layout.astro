@@ -23,7 +23,10 @@ const domain = getRequestDomain(Astro.request);
 const siteConfig = Astro.props.siteConfig || await getSiteConfig(domain);
 const theme = generateThemeVars(siteConfig);
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang);
-const uniqueCategories = Array.from(new Set(allPosts.map(p => p.metadata?.category).filter(Boolean)));
+let uniqueCategories = Array.from(new Set(allPosts.map(p => p.metadata?.category).filter(Boolean)));
+if (uniqueCategories.length === 0) {
+  uniqueCategories.push(siteConfig?.metadata?.primary_topic_ko || 'Trend');
+}
 // CDN 캐시 강화: 1시간 CDN + 24시간 stale-while-revalidate
 Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
