@@ -79,7 +79,7 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
     try {
       const { data, error } = await supabase
         .from('sites')
-        .select('id, blog_name, domain, niche, adsense_pub, adsense_status, metadata')
+        .select('id, blog_name, domain, niche, adsense_pub, adsense_status, sc_verification, ga_measurement_id, metadata')
         .eq('domain', targetDomain)
         .maybeSingle();
 
