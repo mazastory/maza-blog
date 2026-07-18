@@ -19,7 +19,7 @@ export function buildKeywordMap(posts: Post[], currentSlug: string): KeywordLink
     // 아주 간단한 형태: 제목 전체를 키워드로 쓰기엔 너무 기니까, 해시태그를 적극 활용합니다.
     const url = `/${post.slug}`;
     
-    // 해시태그 기반 키워드
+    // 1. 해시태그 기반 키워드 (가장 정확도가 높음)
     if (post.metadata?.hashtags && Array.isArray(post.metadata.hashtags)) {
       post.metadata.hashtags.forEach((tag: string) => {
         const cleanTag = tag.replace(/^#/, '').trim();
@@ -27,6 +27,17 @@ export function buildKeywordMap(posts: Post[], currentSlug: string): KeywordLink
           map.set(cleanTag.toLowerCase(), url);
         }
       });
+    }
+
+    // 2. 카테고리 기반 키워드 (해당 주제를 언급할 때 링크)
+    if (post.category && post.category.length > 1) {
+      map.set(post.category.toLowerCase().trim(), url);
+    }
+
+    // 3. 시리즈명(Blueprint Title) 기반 키워드 (시리즈물 연결)
+    if (post.metadata?.blueprint_title && post.metadata.blueprint_title.length > 3) {
+      // "아이폰 15 프로 리뷰" 같은 제목을 통째로 매칭
+      map.set(post.metadata.blueprint_title.toLowerCase().trim(), url);
     }
   });
 
