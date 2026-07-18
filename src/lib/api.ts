@@ -10,6 +10,7 @@ export interface Post {
   created_at: string;
   publish_at: string;
   status: string;
+  category?: string;
   metadata?: any;
 }
 
@@ -20,6 +21,7 @@ export interface SiteConfig {
   niche?: string;
   adsense_pub?: string;
   adsense_status?: string;
+  purpose?: string;
   metadata?: any;
 }
 

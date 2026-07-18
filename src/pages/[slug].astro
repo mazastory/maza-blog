@@ -80,6 +80,10 @@ const dateStr = new Date(publishDate).toLocaleDateString('ko-KR', { year: 'numer
 
 // Zero-IT 마법사로 자동 생성된 글인지 판별 (HTML 내부에 이미 h1 타이틀과 본문 썸네일이 포함되어 있음)
 const isZeroItPost = post.html_content && post.html_content.includes('max-width:7');
+const coupangBannerTop = siteConfig?.metadata?.coupang_banner_top || '';
+const coupangBannerSide = siteConfig?.metadata?.coupang_banner_side || '';
+const naverBrandHtml = siteConfig?.metadata?.naver_brand_html || '';
+const isMonetizationSite = siteConfig?.purpose === 'monetization';
 ---
 
 <Layout 
@@ -91,9 +95,16 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
 	datePublished={publishDate}
   siteConfig={siteConfig}
 >
-  <div class={`mx-auto px-4 pt-6 pb-12 md:px-6 md:pt-16 md:pb-20 ${siteConfig?.purpose === 'monetization' ? 'max-w-6xl grid grid-cols-1 lg:grid-cols-4 gap-8' : 'max-w-3xl'}`}>
+  {/* 수익형: 상단 풀배너 */}
+  {isMonetizationSite && coupangBannerTop && (
+    <div class="w-full bg-white border-b border-slate-100 py-3 px-4 flex justify-center overflow-hidden">
+      <Fragment set:html={coupangBannerTop} />
+    </div>
+  )}
+
+  <div class={`mx-auto px-4 pt-6 pb-12 md:px-6 md:pt-16 md:pb-20 ${isMonetizationSite ? 'max-w-6xl grid grid-cols-1 lg:grid-cols-4 gap-8' : 'max-w-3xl'}`}>
     
-    <div class={siteConfig?.purpose === 'monetization' ? 'lg:col-span-3' : ''}>
+    <div class={isMonetizationSite ? 'lg:col-span-3' : ''}>
       <!-- 뒤로가기 -->
       <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 hover:text-[var(--color-indigo-600)] mb-6 md:mb-10 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -160,10 +171,12 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
       {part2 && <Fragment set:html={part2} />}
     </article>
 
-    <!-- 광고 A: 본문 하단 (클라이언트 JS가 A/B 배정 후 숨김 처리) -->
-    <div id="ad-slot-bottom" class="mt-10 md:mt-16">
-      <AdSlot className="" />
-    </div>
+    <!-- 광고 A: 본문 하단 (애드센스용 사이트만) -->
+    {!isMonetizationSite && (
+      <div id="ad-slot-bottom" class="mt-10 md:mt-16">
+        <AdSlot siteConfig={siteConfig} className="" />
+      </div>
+    )}
 
     <!-- 공유 및 해시태그 -->
     <div class="mt-10 md:mt-16 bg-slate-50 rounded-3xl p-6 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -220,23 +233,34 @@ const isZeroItPost = post.html_content && post.html_content.includes('max-width:
     </div>
   </div>
 
-  {siteConfig?.purpose === 'monetization' && (
+  {isMonetizationSite && (
     <aside class="hidden lg:block lg:col-span-1">
       <div class="sticky top-24 space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="aspect-[3/4] bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            쿠팡 파트너스 배너<br/>(우측 고정 1단)
+        {coupangBannerSide ? (
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 overflow-hidden">
+            <Fragment set:html={coupangBannerSide} />
           </div>
-        </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="aspect-square bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            추천 상품 위젯<br/>(우측 고정 2단)
+        ) : (
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
+            <div class="aspect-[3/4] bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              쿠팡 파트너스 배너<br/>(우측 고정 1단)
+            </div>
           </div>
-        </div>
+        )}
+        {naverBrandHtml ? (
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 overflow-hidden">
+            <p class="text-[10px] font-bold text-green-600 mb-2 uppercase tracking-wider">Naver Brand</p>
+            <Fragment set:html={naverBrandHtml} />
+          </div>
+        ) : (
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
+            <div class="aspect-square bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              네이버 브랜드<br/>커넥트 위젯
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   )}
