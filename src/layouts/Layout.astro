@@ -43,7 +43,7 @@ const {
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-const canonicalUrl = Astro.url.href;
+const canonicalUrl = new URL(Astro.url.pathname, `https://${siteConfig?.domain || domain}`).href;
 
 const rawSc = siteConfig?.sc_verification || siteConfig?.metadata?.google_site_verification || '';
 let scContent = rawSc;
