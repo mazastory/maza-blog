@@ -18,7 +18,7 @@ const { slug: rawSlug } = Astro.params;
 const slug = rawSlug ? decodeURIComponent(rawSlug) : undefined;
 
 if (!slug) {
-  return Astro.redirect(`/404?from=slug&slug=${encodeURIComponent(String(slug))}`);
+  return Astro.redirect('/404', 302);
 }
 
 const [siteConfig, allPosts] = await Promise.all([
@@ -34,18 +34,14 @@ if (!postMeta) {
 }
 
 if (!postMeta) {
-  return Astro.redirect(`/404?from=slug2&slug=${encodeURIComponent(slug)}`);
+  return Astro.redirect('/404', 302);
 }
 
 const fullContent = await getPostContent(postMeta.id);
 const post = { ...postMeta, content: fullContent?.content || '', html_content: fullContent?.html_content || '' };
 
 if (!post) {
-  console.log('404 for slug:', slug, 'allPosts length:', allPosts.length);
-  if (allPosts.length > 0) {
-    console.log('First post ID:', allPosts[0].id);
-  }
-  return Astro.redirect(`/404?from=slug3&slug=${encodeURIComponent(slug)}`);
+  return Astro.redirect('/404', 302);
 }
 
 // SEO 내부 링크 (이전글/다음글) 계산

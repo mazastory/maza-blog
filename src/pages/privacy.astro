@@ -5,6 +5,7 @@ import { getSiteConfig, getRequestDomain } from '../lib/api';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400');
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const niche = siteConfig?.niche || '';
 const currentYear = new Date().getFullYear();

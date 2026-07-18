@@ -36,5 +36,5 @@ if (!targetSlug && post.title) {
 }
 
 const targetPath = targetSlug ? `/${targetSlug}` : `/${id}`;
-return Astro.redirect(encodeURI(targetPath), 302);
+return Astro.redirect(encodeURI(targetPath), 301);
 ---

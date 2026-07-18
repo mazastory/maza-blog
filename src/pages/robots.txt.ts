@@ -11,6 +11,8 @@ export const GET: APIRoute = async ({ request }) => {
   const robotsTxt = `
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: ${siteUrl}/sitemap.xml
 `.trim();
@@ -18,7 +20,7 @@ Sitemap: ${siteUrl}/sitemap.xml
   return new Response(robotsTxt, {
     headers: {
       'Content-Type': 'text/plain',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'public, max-age=86400',
       'Vary': 'Host'
     }
   });

@@ -27,8 +27,7 @@ let uniqueCategories = Array.from(new Set(allPosts.map(p => p.metadata?.category
 if (uniqueCategories.length === 0) {
   uniqueCategories.push(siteConfig?.metadata?.primary_topic_ko || 'Trend');
 }
-// CDN 캐시 강화: 1시간 CDN + 24시간 stale-while-revalidate
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+// 각 페이지에서 캐시 설정을 관리합니다 (Layout에서는 중복 설정하지 않음)
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
 const siteDesc = siteConfig?.niche || "MazaStudio Subdomain Blog - High Quality AI Content";
 
