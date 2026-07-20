@@ -17,6 +17,9 @@ export interface ThemeVars {
   footerAlign: 'left' | 'center';
   footerBg: 'white' | 'light' | 'dark' | 'black';
 
+  // Hero Builder
+  heroTemplate: 'modern' | 'classic' | 'magazine' | 'minimal' | 'split' | 'app';
+
   // Micro-Jitter
   paddingY: string;
 }
@@ -52,6 +55,7 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
   const footAlign: ('left' | 'center')[] = ['left', 'center'];
   const footBg: ('white' | 'light' | 'dark' | 'black')[] = ['white', 'light', 'dark', 'black'];
   const paddings = ['py-4', 'py-6', 'py-8', 'py-10'];
+  const heroTemplates: ('modern' | 'classic' | 'magazine' | 'minimal' | 'split' | 'app')[] = ['modern', 'classic', 'magazine', 'minimal', 'split', 'app'];
 
   const getIndex = (shift: number, len: number) => Math.abs((absHash >> shift)) % len;
 
@@ -72,5 +76,6 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
     footerAlign: footAlign[getIndex(10, footAlign.length)],
     footerBg: footBg[getIndex(11, footBg.length)],
     paddingY: paddings[getIndex(12, paddings.length)],
+    heroTemplate: heroTemplates[getIndex(13, heroTemplates.length)],
   };
 }

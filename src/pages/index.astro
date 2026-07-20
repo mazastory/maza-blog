@@ -63,7 +63,7 @@ if (featuredPost) {
 }
 
 const heroBgUrl = siteConfig?.metadata?.hero_bg_url || siteConfig?.metadata?.hero_image_url || null;
-const heroTemplate = siteConfig?.metadata?.hero_template || 'modern';
+const heroTemplate = siteConfig?.metadata?.hero_template || theme.heroTemplate || 'modern';
 
 const feedClass = theme.feedStyle === 'list' 
   ? 'flex flex-col gap-8 max-w-4xl mx-auto' 
