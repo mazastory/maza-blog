@@ -87,10 +87,10 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
 
       if (error) {
         console.error('Supabase Query Error:', error, 'Target Domain:', targetDomain);
-        return { blog_name: 'Debug: Query Error', metadata: { error: JSON.stringify(error), domain: targetDomain } };
+        throw new Error(`Failed to fetch site config for ${targetDomain}`);
       }
       if (!data) {
-        return { blog_name: 'Debug: No Data', metadata: { domain: targetDomain } };
+        throw new Error(`No site config found for ${targetDomain}`);
       }
       
       // The RPC used to return sc_verification and ga_measurement_id.

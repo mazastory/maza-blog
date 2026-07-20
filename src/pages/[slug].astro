@@ -18,7 +18,7 @@ const { slug: rawSlug } = Astro.params;
 const slug = rawSlug ? decodeURIComponent(rawSlug) : undefined;
 
 if (!slug) {
-  return Astro.redirect('/404', 302);
+  return Astro.rewrite('/404');
 }
 
 const [siteConfig, allPosts] = await Promise.all([
@@ -34,14 +34,14 @@ if (!postMeta) {
 }
 
 if (!postMeta) {
-  return Astro.redirect('/404', 302);
+  return Astro.rewrite('/404');
 }
 
 const fullContent = await getPostContent(postMeta.id);
 const post = { ...postMeta, content: fullContent?.content || '', html_content: fullContent?.html_content || '' };
 
 if (!post) {
-  return Astro.redirect('/404', 302);
+  return Astro.rewrite('/404');
 }
 
 // SEO 내부 링크 (이전글/다음글) 계산

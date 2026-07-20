@@ -13,7 +13,7 @@ const pageParam = Astro.params.page;
 const page = parseInt(pageParam || '1', 10);
 
 if (isNaN(page) || page < 1) {
-  return Astro.redirect('/404');
+  return Astro.rewrite('/404');
 }
 
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
@@ -26,7 +26,7 @@ const pagePosts = allPosts.slice(offset, offset + postsPerPage);
 const hasNextPage = allPosts.length > offset + postsPerPage;
 
 if (pagePosts.length === 0 && page > 1) {
-  return Astro.redirect('/404');
+  return Astro.rewrite('/404');
 }
 ---
 

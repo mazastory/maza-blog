@@ -12,7 +12,7 @@ const domain = getRequestDomain(Astro.request);
 const { slug } = Astro.params;
 
 if (!slug) {
-  return Astro.redirect('/404?from=category');
+  return Astro.rewrite('/404');
 }
 
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
