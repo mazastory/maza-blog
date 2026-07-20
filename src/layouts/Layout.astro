@@ -22,6 +22,20 @@ interface Props {
 const domain = getRequestDomain(Astro.request);
 const siteConfig = Astro.props.siteConfig || await getSiteConfig(domain);
 const theme = generateThemeVars(siteConfig);
+
+const defaultImages = [
+  'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1519389953815-46b7fc64a504?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1432821596592-e2c18b78144f?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop'
+];
+const domainHash = domain.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+const fallbackImage = defaultImages[domainHash % defaultImages.length];
+
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang);
 let uniqueCategories = Array.from(new Set(allPosts.map(p => p.metadata?.category).filter(Boolean)));
 if (uniqueCategories.length === 0) {
@@ -83,7 +97,7 @@ if (rawSc) {
 		<SEO 
 			title={pageTitle} 
 			description={description} 
-			image={image} 
+			image={image || fallbackImage} 
 			canonicalUrl={canonicalUrl} 
 			type={type} 
 		/>

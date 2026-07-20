@@ -84,11 +84,29 @@ const coupangBannerTop = siteConfig?.metadata?.coupang_banner_top || '';
 const coupangBannerSide = siteConfig?.metadata?.coupang_banner_side || '';
 const naverBrandHtml = siteConfig?.metadata?.naver_brand_html || '';
 const isMonetizationSite = siteConfig?.purpose === 'monetization';
+
+// meta description 생성: CSS 코드 오염 방지를 위해 순수 텍스트 소스를 우선 사용
+const rawDesc = (() => {
+	// 1순위: metadata에 저장된 summary/excerpt (가장 안전한 소스)
+	const stored = post.metadata?.summary || post.metadata?.excerpt || post.metadata?.data?.summary || '';
+	if (stored && stored.length > 40) return stored.trim().substring(0, 160);
+	// 2순위: html_content에서 HTML/CSS/스크립트 완전 제거
+	const fromHtml = (post.html_content || '')
+		.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // <style>...</style> 블록 제거
+		.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // <script>...</script> 블록 제거
+		.replace(/<[^>]+>/g, '') // 나머지 HTML 태그 제거
+		.replace(/\s+/g, ' ')
+		.trim()
+		.substring(0, 160);
+	if (fromHtml && fromHtml.length > 40 && !fromHtml.includes('{') && !fromHtml.includes('margin')) return fromHtml;
+	// 3순위: 제목으로 fallback
+	return `${post.title} — ${siteConfig?.niche || siteConfig?.blog_name || ''}`;
+})();
 ---
 
 <Layout 
 	title={post.title}
-	description={post.html_content ? post.html_content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim().substring(0, 160) : ""}
+	description={rawDesc}
 	image={metaImage}
 	type="article"
 	authorName={profileName}
