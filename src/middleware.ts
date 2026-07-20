@@ -6,6 +6,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const path = url.pathname;
 
+  // 0. 구형 URL 구조 301 영구 리다이렉트 (SEO 대응 - GSC 404 에러 방지)
+  // 매칭: /blog/slug, /post/slug, /article/slug
+  const legacyMatch = path.match(/^\/(blog|post|article)\/(.+)$/);
+  if (legacyMatch) {
+    return context.redirect(`/${legacyMatch[2]}`, 301);
+  }
+  // /blog, /post 등 단일 경로 접근 시 홈으로 리다이렉트
+  if (path === '/blog' || path === '/post' || path === '/article') {
+    return context.redirect('/', 301);
+  }
+
   // 1. rewrite를 통해 전달된 커스텀 헤더가 있는지 확인
   const forwardedLang = context.request.headers.get('x-maza-lang');
   if (forwardedLang) {
