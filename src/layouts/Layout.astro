@@ -42,7 +42,11 @@ const {
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-const canonicalUrl = new URL(Astro.url.pathname, `https://${siteConfig?.domain || domain}`).href;
+let path = Astro.url.pathname;
+if (path !== '/' && path.endsWith('/')) {
+  path = path.slice(0, -1);
+}
+const canonicalUrl = new URL(path, `https://${siteConfig?.domain || domain}`).href;
 
 const rawSc = siteConfig?.sc_verification || siteConfig?.metadata?.google_site_verification || '';
 let scContent = rawSc;
