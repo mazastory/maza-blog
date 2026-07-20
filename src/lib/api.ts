@@ -340,15 +340,23 @@ export async function getPostContent(id: string): Promise<{ content: string; htm
     return cache[cacheKey].data;
   }
 
-  try {
-    const { data, error } = await supabase.from('posts').select('html_content, content').eq('id', id).single();
-    if (error || !data) return null;
-    const result = { content: data.content || '', html_content: data.html_content || '' };
-    cache[cacheKey] = { data: result, timestamp: Date.now() };
-    return result;
-  } catch (e) {
-    return null;
-  }
+  if (inflight[cacheKey]) return inflight[cacheKey];
+
+  inflight[cacheKey] = (async () => {
+    try {
+      const { data, error } = await supabase.from('posts').select('html_content, content').eq('id', id).single();
+      if (error || !data) return null;
+      const result = { content: data.content || '', html_content: data.html_content || '' };
+      cache[cacheKey] = { data: result, timestamp: Date.now() };
+      return result;
+    } catch (e) {
+      return null;
+    } finally {
+      delete inflight[cacheKey];
+    }
+  })();
+
+  return inflight[cacheKey];
 }
 
 // 하위 호환용 단일 진입점: 내부적으로 site 조회 → 목록 조회 → 매칭 → fallback → 본문 조회를 한 번에 수행합니다.

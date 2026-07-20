@@ -11,9 +11,18 @@ interface KeywordLink {
  */
 export function buildKeywordMap(posts: Post[], currentSlug: string): KeywordLink[] {
   const map: Map<string, string> = new Map();
+  const currentPost = posts.find(p => p.slug === currentSlug);
+  const currentCategory = currentPost?.category || '';
 
-  posts.forEach(post => {
-    if (post.slug === currentSlug) return;
+  // CPU 최적화: 수백 개의 전체 글 대신, 같은 카테고리 + 최신 글 위주로 최대 50개만 필터링
+  let targetPosts = posts.filter(p => p.slug !== currentSlug);
+  if (targetPosts.length > 50) {
+    const sameCategory = targetPosts.filter(p => p.category === currentCategory);
+    const others = targetPosts.filter(p => p.category !== currentCategory);
+    targetPosts = [...sameCategory, ...others].slice(0, 50);
+  }
+
+  targetPosts.forEach(post => {
 
     // 제목에서 불용어 및 특수문자를 제거하여 메인 키워드 추출 시도
     // 아주 간단한 형태: 제목 전체를 키워드로 쓰기엔 너무 기니까, 해시태그를 적극 활용합니다.
