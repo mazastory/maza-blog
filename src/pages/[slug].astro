@@ -88,7 +88,7 @@ const isMonetizationSite = siteConfig?.purpose === 'monetization';
 
 <Layout 
 	title={post.title}
-	description={post.html_content ? post.html_content.replace(/<[^>]*>?/gm, '').replace(/\\s+/g, ' ').trim().substring(0, 160) : ""}
+	description={post.html_content ? post.html_content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim().substring(0, 160) : ""}
 	image={metaImage}
 	type="article"
 	authorName={profileName}

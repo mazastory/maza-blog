@@ -162,7 +162,7 @@ const feedClass = theme.feedStyle === 'list'
         </div>
         <div class="flex flex-wrap justify-center gap-4">
           {Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))).slice(0, 8).map(category => (
-            <a href={`/category/${category}`} class="px-6 py-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-slate-700 hover:text-indigo-700 font-bold transition-colors">
+            <a href={`/category/${encodeURIComponent(category as string)}`} class="px-6 py-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-slate-700 hover:text-indigo-700 font-bold transition-colors">
               <span class="capitalize">{category}</span>
             </a>
           ))}

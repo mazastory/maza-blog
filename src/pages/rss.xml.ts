@@ -27,7 +27,10 @@ export async function GET(context: APIContext) {
     items: posts.map((post) => {
       // 썸네일과 요약본을 포함한 리치 콘텐츠 생성 (SNS 연동 툴에서 추출하기 매우 좋음)
       const thumb = post.metadata?.thumbnail_url ? `<p><img src="${post.metadata.thumbnail_url}" alt="thumbnail" /></p>` : '';
-      const summary = post.metadata?.description || post.content.substring(0, 150) + '...';
+      const rawSummary = post.metadata?.data?.summary || post.metadata?.summary || post.metadata?.description || '';
+      const summary = rawSummary 
+        ? rawSummary.replace(/<[^>]*>?/gm, '').replace(/[#*`>\[\]\(\)-]/g, '').replace(/\s+/g, ' ').trim().substring(0, 200)
+        : (post.html_content || post.content || '').replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim().substring(0, 200);
       const richContent = `${thumb}<p>${summary}</p>`;
       
       // 해시태그 및 카테고리를 RSS의 <category> 태그로 매핑 (자동화 툴에서 해시태그 변수로 사용 가능)
