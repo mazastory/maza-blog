@@ -89,6 +89,8 @@ if (rawSc) {
 		<noscript>
 			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
 		</noscript>
+    {/* AOS Animation CSS */}
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 		<meta name="generator" content={Astro.generator} />
 		<ClientRouter />
 			{preloadImage && (
@@ -216,5 +218,26 @@ if (rawSc) {
         </div>
       )}
     </footer>
+    {/* AOS Animation JS */}
+    <script is:inline src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script is:inline>
+      document.addEventListener('astro:page-load', () => {
+        if (typeof AOS !== 'undefined') {
+          AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50,
+            easing: 'ease-out-cubic',
+          });
+        }
+      });
+      if (document.readyState === 'complete') {
+        if (typeof AOS !== 'undefined') AOS.init({ duration: 800, once: true, offset: 50 });
+      } else {
+        window.addEventListener('load', () => {
+          if (typeof AOS !== 'undefined') AOS.init({ duration: 800, once: true, offset: 50 });
+        });
+      }
+    </script>
   </body>
 </html>
