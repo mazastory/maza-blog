@@ -14,6 +14,14 @@ export interface Post {
   metadata?: any;
 }
 
+export interface SiteMetadata {
+  tier?: 'free' | 'pro' | 'agency';
+  mode?: 'stealth' | 'homepage';
+  unlocked_features?: string[];
+  max_subdomains?: number;
+  [key: string]: any;
+}
+
 export interface SiteConfig {
   id: string;
   blog_name: string;
@@ -22,7 +30,7 @@ export interface SiteConfig {
   adsense_pub?: string;
   adsense_status?: string;
   purpose?: string;
-  metadata?: any;
+  metadata?: SiteMetadata;
 }
 
 export function getRequestDomain(request: Request): string {

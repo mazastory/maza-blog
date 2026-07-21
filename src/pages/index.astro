@@ -141,7 +141,7 @@ const feedClass = theme.feedStyle === 'list'
         <div class={feedClass}>
           {recentPosts.slice(0, 9).map(post => (
             <div class="break-inside-avoid">
-              <PostCard post={post} />
+              <PostCard post={post} isPremium={theme.isPremium} />
             </div>
           ))}
         </div>

@@ -12,7 +12,13 @@ const { siteConfig = null, categories = [], currentLang = 'ko' } = Astro.props;
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const theme = generateThemeVars(siteConfig);
 
-const darkBg = theme.headerDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white/80 border-slate-200 backdrop-blur-md';
+const darkBg = theme.isPremium
+  ? (theme.headerDarkMode 
+      ? 'bg-slate-900/80 border-slate-800/50 text-white backdrop-blur-xl shadow-lg shadow-black/10' 
+      : 'bg-white/70 border-white/50 text-slate-900 backdrop-blur-xl shadow-sm ring-1 ring-slate-900/5')
+  : (theme.headerDarkMode
+      ? 'bg-slate-900 border-slate-800 text-white'
+      : 'bg-white border-slate-200 text-slate-900');
 const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
 ---
 

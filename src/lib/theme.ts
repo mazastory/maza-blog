@@ -22,6 +22,10 @@ export interface ThemeVars {
 
   // Micro-Jitter
   paddingY: string;
+
+  // Premium Features
+  isPremium: boolean;
+  themeId: string;
 }
 
 export function generateThemeVars(siteConfig: any): ThemeVars {
@@ -59,6 +63,9 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
 
   const getIndex = (shift: number, len: number) => Math.abs((absHash >> shift)) % len;
 
+  const isPremium = siteConfig?.metadata?.tier === 'pro' || siteConfig?.metadata?.tier === 'agency' || siteConfig?.metadata?.unlocked_features?.includes('premium_theme') || false;
+  const themeId = siteConfig?.metadata?.theme_id || 'free_default';
+
   return {
     color: siteConfig?.metadata?.theme_color || colors[absHash % colors.length],
     fontFamily: fonts[getIndex(1, fonts.length)].family,
@@ -77,5 +84,8 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
     footerBg: footBg[getIndex(11, footBg.length)],
     paddingY: paddings[getIndex(12, paddings.length)],
     heroTemplate: heroTemplates[getIndex(13, heroTemplates.length)],
+    
+    isPremium,
+    themeId,
   };
 }

@@ -24,11 +24,15 @@ let categoryPosts = allPosts.filter(post => {
   return category.toLowerCase() === decodedSlug.toLowerCase();
 });
 
+import { generateThemeVars } from '../../lib/theme';
+
 // 만약 해당 카테고리의 포스트가 없고, 현재 요청한 카테고리가 사이트 기본 카테고리와 일치한다면
 // 카테고리가 지정되지 않은(undefined/빈 문자열) 포스트들을 기본 카테고리로 간주하여 보여줍니다.
+const { getSiteConfig } = await import('../../lib/api');
+const siteConfig = await getSiteConfig(domain);
+const theme = generateThemeVars(siteConfig);
+
 if (categoryPosts.length === 0) {
-  const { getSiteConfig } = await import('../../lib/api');
-  const siteConfig = await getSiteConfig(domain);
   const fallbackCategory = siteConfig?.metadata?.primary_topic_ko || 'Trend';
   
   if (decodedSlug.toLowerCase() === fallbackCategory.toLowerCase()) {
@@ -71,7 +75,7 @@ const currentDesc = categoryDescriptions[slug.toLowerCase()] || defaultDescripti
     {categoryPosts.length > 0 ? (
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {categoryPosts.map(post => (
-          <PostCard post={post} />
+          <PostCard post={post} isPremium={theme.isPremium} />
         ))}
       </div>
     ) : (
