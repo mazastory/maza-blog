@@ -15,12 +15,26 @@ if (!slug) {
   return Astro.rewrite('/404');
 }
 
+const decodedSlug = decodeURIComponent(slug);
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
+
 // 카테고리 필터링: 대소문자 무시 매칭
-const categoryPosts = allPosts.filter(post => {
+let categoryPosts = allPosts.filter(post => {
   const category = post.metadata?.category || '';
-  return category.toLowerCase() === slug.toLowerCase();
+  return category.toLowerCase() === decodedSlug.toLowerCase();
 });
+
+// 만약 해당 카테고리의 포스트가 없고, 현재 요청한 카테고리가 사이트 기본 카테고리와 일치한다면
+// 카테고리가 지정되지 않은(undefined/빈 문자열) 포스트들을 기본 카테고리로 간주하여 보여줍니다.
+if (categoryPosts.length === 0) {
+  const { getSiteConfig } = await import('../../lib/api');
+  const siteConfig = await getSiteConfig(domain);
+  const fallbackCategory = siteConfig?.metadata?.primary_topic_ko || 'Trend';
+  
+  if (decodedSlug.toLowerCase() === fallbackCategory.toLowerCase()) {
+    categoryPosts = allPosts.filter(post => !post.metadata?.category);
+  }
+}
 
 // 카테고리별 동적 설명 (SEO용 Thin Content 방어)
 const categoryDescriptions: Record<string, string> = {

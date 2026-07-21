@@ -49,7 +49,7 @@ if (lang === 'en' && siteConfig?.metadata?.hero_subtitle_en) {
 }
 
 const featuredPost = posts.length > 0 ? posts[0] : null;
-const recentPosts = posts.slice(1);
+let recentPosts = posts.slice(1);
 
 // Featured Post 대표 이미지 추출
 let featuredImage = null;
@@ -64,6 +64,11 @@ if (featuredPost) {
 
 const heroBgUrl = siteConfig?.metadata?.hero_bg_url || siteConfig?.metadata?.hero_image_url || null;
 const heroTemplate = siteConfig?.metadata?.hero_template || theme.heroTemplate || 'modern';
+
+// App 테마인 경우 상단 캐러셀에서 이미 최신 글 5개를 보여주므로 리스트에서 중복을 제거합니다.
+if (heroTemplate === 'app') {
+  recentPosts = posts.slice(5);
+}
 
 const feedClass = theme.feedStyle === 'list' 
   ? 'flex flex-col gap-8 max-w-4xl mx-auto' 
@@ -151,24 +156,7 @@ const feedClass = theme.feedStyle === 'list'
       </section>
     )}
 
-    <!-- Category Explore Section (AdSense Internal Linking) -->
-    {posts.length > 0 && (
-      <section class="mt-16 md:mt-24 border-t border-slate-200 pt-16">
-        <div class="mb-8 text-center">
-          <h2 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 mb-4">{lang === 'ko' ? '주제별로 탐색하기' : (lang === 'ja' ? 'カテゴリーで探す' : 'Explore by Category')}</h2>
-          <p class="text-slate-500 max-w-2xl mx-auto">
-            {lang === 'ko' ? '관심 있는 분야의 심도 깊은 인사이트와 가이드를 만나보세요.' : (lang === 'ja' ? '興味のある分野の深い洞察とガイドをご覧ください。' : 'Find deep insights and guides in your areas of interest.')}
-          </p>
-        </div>
-        <div class="flex flex-wrap justify-center gap-4">
-          {Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))).slice(0, 8).map(category => (
-            <a href={`/category/${encodeURIComponent(category as string)}`} class="px-6 py-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-slate-700 hover:text-indigo-700 font-bold transition-colors">
-              <span class="capitalize">{category}</span>
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+
 
     {posts.length === 0 && (
       <div class="overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/90 px-8 py-14 text-center shadow-sm md:px-12">

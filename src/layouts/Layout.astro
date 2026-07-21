@@ -114,7 +114,7 @@ if (rawSc) {
 		<DynamicTheme siteConfig={siteConfig} />
 
 		{siteConfig?.adsense_pub && (
-			<script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsense_pub.startsWith('ca-pub-') ? siteConfig.adsense_pub : `ca-${siteConfig.adsense_pub.startsWith('pub-') ? siteConfig.adsense_pub : `pub-${siteConfig.adsense_pub}`}`}`} crossorigin="anonymous"></script>
+			<script is:inline async data-astro-transition-persist="adsense" src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsense_pub.startsWith('ca-pub-') ? siteConfig.adsense_pub : `ca-${siteConfig.adsense_pub.startsWith('pub-') ? siteConfig.adsense_pub : `pub-${siteConfig.adsense_pub}`}`}`} crossorigin="anonymous"></script>
 		)}
 
 		{/* 구글 서치콘솔 소유권 인증 메타 태그 */}
