@@ -46,6 +46,12 @@ export const GET: APIRoute = async ({ request }) => {
         <priority>0.3</priority>
       </url>
       <url>
+        <loc>${siteUrl}/terms</loc>
+        <lastmod>${latestPostDate}</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+      </url>
+      <url>
         <loc>${siteUrl}/disclaimer</loc>
         <lastmod>${latestPostDate}</lastmod>
         <changefreq>yearly</changefreq>

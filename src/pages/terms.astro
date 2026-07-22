@@ -1,0 +1,54 @@
+---
+export const prerender = false;
+import Layout from '../layouts/Layout.astro';
+import { getSiteConfig, getRequestDomain } from '../lib/api';
+
+const domain = getRequestDomain(Astro.request);
+const siteConfig = await getSiteConfig(domain);
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400');
+const blogName = siteConfig?.blog_name || "Maza Blog";
+const currentYear = new Date().getFullYear();
+const lastUpdated = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+
+// Convert simple markdown from DB or fallback to generic
+const rawTerms = siteConfig?.terms_of_service || `## 이용약관 (Terms of Service)\n\n본 블로그의 모든 콘텐츠는 정보 제공을 목적으로 작성되었으며, 참고용으로만 사용되어야 합니다. 작성된 정보의 정확성, 완전성을 보증하지 않으며, 이로 인해 발생하는 어떠한 직간접적인 손해에 대해서도 책임을 지지 않습니다.\n\n사용자는 본 블로그의 콘텐츠를 무단 복제, 배포할 수 없습니다.`;
+
+// Simple markdown parser
+const termsHtml = rawTerms
+  .split('\n\n')
+  .map(para => {
+    if (para.startsWith('## ')) {
+      return `<h2 class="text-2xl font-bold mt-8 mb-4 text-slate-800">${para.replace('## ', '')}</h2>`;
+    }
+    return `<p class="mb-4 text-slate-600 leading-relaxed">${para.replace(/\n/g, '<br/>')}</p>`;
+  })
+  .join('');
+---
+<Layout title={`이용약관 | ${blogName}`} description={`${blogName}(${domain})의 이용약관(Terms of Service).`} siteConfig={siteConfig}>
+  <main class="mx-auto max-w-4xl px-6 py-20 md:py-24 relative">
+    <div class="absolute top-0 right-0 w-full h-96 bg-gradient-to-b from-slate-100 to-transparent -z-10"></div>
+
+    <div class="mb-12 border-b border-slate-200 pb-12">
+      <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-bold uppercase tracking-widest text-slate-600 border border-slate-200">
+        Legal
+      </div>
+      <h1 class="text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl">
+        이용약관
+      </h1>
+      <p class="mt-3 text-slate-500 font-medium">
+        운영 사이트: <strong>{domain}</strong> · 최종 업데이트: {lastUpdated}
+      </p>
+    </div>
+
+    <div class="prose prose-lg prose-slate max-w-none">
+      <div set:html={termsHtml} />
+
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 mt-12 text-sm text-slate-600">
+        <p class="m-0">
+          본 방침은 {currentYear}년 기준으로 작성되었으며 법령 변경 또는 서비스 개편 시 사전 공지 후 변경될 수 있습니다.<br/>
+          운영 사이트: <strong>{domain}</strong> · 블로그명: <strong>{blogName}</strong>
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>
