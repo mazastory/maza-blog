@@ -33,7 +33,8 @@ const defaultImages = [
   'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop'
 ];
-const domainHash = domain.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+// [FIX] Anti-Footprint: 단순 덧셈 해시가 아닌 비트 연산 기반의 강력한 해싱으로 OG 이미지가 겹치는 현상 차단
+const domainHash = Math.abs(domain.split('').reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0));
 const fallbackImage = defaultImages[domainHash % defaultImages.length];
 
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang);

@@ -14,6 +14,13 @@ const {
   canonicalUrl = Astro.url.href,
   type = 'website',
 } = Astro.props;
+
+// [FIX] Anti-Footprint: 본문에서 추출된 description에 <style> 태그나 HTML 태그가 오염되어 들어오는 것을 완벽 차단
+const cleanDescription = description
+  .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // CSS 차단
+  .replace(/<[^>]+>/g, '') // HTML 차단
+  .replace(/\s+/g, ' ')
+  .trim();
 ---
 
 <!-- Canonical URL -->
@@ -22,18 +29,18 @@ const {
 <!-- Primary Meta Tags -->
 <title>{title}</title>
 <meta name="title" content={title} />
-<meta name="description" content={description} />
+<meta name="description" content={cleanDescription} />
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
+<meta property="og:description" content={cleanDescription} />
 <meta property="og:image" content={image} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={canonicalUrl} />
 <meta property="twitter:title" content={title} />
-<meta property="twitter:description" content={description} />
+<meta property="twitter:description" content={cleanDescription} />
 <meta property="twitter:image" content={image} />

@@ -31,9 +31,10 @@ export interface ThemeVars {
 export function generateThemeVars(siteConfig: any): ThemeVars {
   const domain = siteConfig?.domain || '';
   const seedStr = siteConfig?.id || domain || 'maza';
-  let hash = 0;
+  let hash = 2166136261;
   for (let i = 0; i < seedStr.length; i++) {
-    hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
+    hash ^= seedStr.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
   const absHash = Math.abs(hash);
 

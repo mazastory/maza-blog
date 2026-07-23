@@ -10,10 +10,15 @@ export const GET: APIRoute = async ({ request }) => {
   const siteConfig = await getSiteConfig(domain);
   const siteUrl = siteConfig?.domain ? `https://${siteConfig.domain}` : new URL(request.url).origin;
 
-  // 고정된 날짜 대신 가장 최근 포스트의 발행일을 사용하여 크롤러에게 최신 업데이트 상태를 알림
+  // [FIX] Anti-Footprint: Date parsing 에러로 인한 2025-01-01 고정 및 sitemap 크래시 방어
+  const safeDate = (dateStr: any) => {
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+
   const latestPostDate = posts.length > 0 
-    ? new Date(Math.max(...posts.map(p => new Date(p.publish_at || p.created_at).getTime()))).toISOString()
-    : '2025-01-01T00:00:00.000Z';
+    ? new Date(Math.max(...posts.map((p: any) => safeDate(p.publish_at || p.created_at).getTime()))).toISOString()
+    : new Date().toISOString();
 
   // 카테고리 목록 추출 (사이트맵에 카테고리 페이지도 포함)
   const categories = [...new Set(posts.map((p: any) => p.metadata?.category).filter(Boolean))];
@@ -68,7 +73,7 @@ export const GET: APIRoute = async ({ request }) => {
       ${posts.map((post: any) => `
         <url>
           <loc>${siteUrl}/${post.slug}</loc>
-          <lastmod>${new Date(post.publish_at || post.created_at).toISOString()}</lastmod>
+          <lastmod>${safeDate(post.publish_at || post.created_at).toISOString()}</lastmod>
           <changefreq>monthly</changefreq>
           <priority>0.8</priority>
         </url>
