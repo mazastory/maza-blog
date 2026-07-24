@@ -182,26 +182,8 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
           };
         });
 
-      // Inject mock posts if the blog is empty so it looks good as a sample
-      if (formattedData.length === 0) {
-        formattedData = Object.keys(SAMPLE_POSTS_MOCK).map((mockId, index) => {
-          const mock = SAMPLE_POSTS_MOCK[mockId];
-          const pastDate = new Date();
-          pastDate.setDate(pastDate.getDate() - (index * 2)); // 2일 간격으로 백데이터링
-          return {
-            id: mockId,
-            title: mock.title,
-            slug: mock.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + mockId.split('-')[0],
-            content: mock.content,
-            html_content: mock.content,
-            created_at: pastDate.toISOString(),
-            publish_at: pastDate.toISOString(),
-            status: 'published',
-            metadata: {},
-            thumbnail_url: mock.image
-          };
-        });
-      }
+      // Mock injection removed to prevent AdSense 'Thin Content/Niche Mismatch' flags.
+      // if (formattedData.length === 0) { ... }
 
       cache[cacheKey] = { data: formattedData, timestamp: Date.now() };
       return formattedData;
@@ -238,27 +220,7 @@ export function findPostMetaInList(posts: Post[], slug: string): Post | null {
 // 61번째 이후의 과거 글처럼 최근 60건 목록에 없는 경우를 위한 안전망(fallback) 쿼리.
 // slug 맨 끝의 id 접두사를 단서로 UUID 범위를 계산하여 인덱스를 타고 빠르게 조회합니다.
 export async function findPostMetaByIdHintFallback(slug: string, siteId: string): Promise<Post | null> {
-  // Check mock posts first
-  const mockKeys = Object.keys(SAMPLE_POSTS_MOCK);
-  const mockIndex = mockKeys.findIndex(id => slug.includes(id.split('-')[0]) || slug === id);
-  if (mockIndex !== -1) {
-    const mockId = mockKeys[mockIndex];
-    const mock = SAMPLE_POSTS_MOCK[mockId];
-    const pastDate = new Date();
-    pastDate.setDate(pastDate.getDate() - (mockIndex * 2)); // 2일 간격으로 백데이터링
-    return {
-      id: mockId,
-      title: mock.title,
-      slug: mock.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + mockId.split('-')[0],
-      content: mock.content,
-      html_content: mock.content,
-      created_at: pastDate.toISOString(),
-      publish_at: pastDate.toISOString(),
-      status: 'published',
-      metadata: {},
-      thumbnail_url: mock.image
-    };
-  }
+  // Mock fallback removed
 
   // If slug is a full UUID, query it directly to allow direct previews of ANY post (even scheduled/future)
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
@@ -344,10 +306,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
 // 글 본문(html_content, content)만 PK 정확 매칭으로 가져옵니다. 인덱스를 타므로 매우 빠릅니다.
 export async function getPostContent(id: string): Promise<{ content: string; html_content: string } | null> {
-  if (SAMPLE_POSTS_MOCK[id]) {
-    const mock = SAMPLE_POSTS_MOCK[id];
-    return { content: mock.content, html_content: mock.content };
-  }
+  // Mock fallback removed
 
   const cacheKey = `postContent_${id}`;
   if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_TTL) {
