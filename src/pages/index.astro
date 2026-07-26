@@ -11,6 +11,7 @@ import HeroMagazine from '../components/hero/HeroMagazine.astro';
 import HeroMinimal from '../components/hero/HeroMinimal.astro';
 import HeroSplit from '../components/hero/HeroSplit.astro';
 import HeroApp from '../components/hero/HeroApp.astro';
+import HeroCorporate from '../components/hero/HeroCorporate.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
 import { useTranslation } from '../lib/i18n';
 
@@ -76,9 +77,12 @@ const feedClass = theme.feedStyle === 'list'
 
 ---
 
-<Layout preloadImage={featuredImage} siteConfig={siteConfig}>
-  <div class="mx-auto max-w-7xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
-    {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+<Layout preloadImage={featuredImage} siteConfig={siteConfig} hideHeader={heroTemplate === 'corporate'}>
+  {heroTemplate === 'corporate' ? (
+    <HeroCorporate blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} categories={posts.length > 0 ? Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))) : [siteConfig?.metadata?.primary_topic_ko || 'Trend']} />
+  ) : (
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
+      {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
     {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
     {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
     {heroTemplate === 'minimal' && <HeroMinimal blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
@@ -175,4 +179,5 @@ const feedClass = theme.feedStyle === 'list'
     )}
 
   </div>
+  )}
 </Layout>
