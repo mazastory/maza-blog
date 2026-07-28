@@ -18,6 +18,8 @@ const { slug: rawSlug } = Astro.params;
 const slug = rawSlug ? decodeURIComponent(rawSlug) : undefined;
 
 if (!slug) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not Found';
   return Astro.rewrite('/404');
 }
 
@@ -34,6 +36,8 @@ if (!postMeta) {
 }
 
 if (!postMeta) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not Found';
   return Astro.rewrite('/404');
 }
 
@@ -41,6 +45,8 @@ const fullContent = await getPostContent(postMeta.id);
 const post = { ...postMeta, content: fullContent?.content || '', html_content: fullContent?.html_content || '' };
 
 if (!post) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not Found';
   return Astro.rewrite('/404');
 }
 
