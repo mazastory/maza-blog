@@ -12,6 +12,8 @@ const domain = getRequestDomain(Astro.request);
 const { slug } = Astro.params;
 
 if (!slug) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not Found';
   return Astro.rewrite('/404');
 }
 
@@ -54,7 +56,7 @@ const currentDesc = categoryDescriptions[slug.toLowerCase()] || defaultDescripti
 
 ---
 
-<Layout title={`${slug} 카테고리`} description={`${slug} 카테고리에 해당하는 글 모음입니다.`}>
+<Layout title={`${decodedSlug} | ${siteConfig?.blog_name || 'Blog'}`} description={currentDesc}>
   <div class="mx-auto max-w-5xl px-6 pt-12 pb-20 md:pt-20">
     
     <header class="mb-14 text-center">

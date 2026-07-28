@@ -20,6 +20,9 @@ export const GET: APIRoute = async ({ request }) => {
     ? new Date(Math.max(...posts.map((p: any) => safeDate(p.publish_at || p.created_at).getTime()))).toISOString()
     : new Date().toISOString();
 
+  // 정적 페이지는 고정 날짜 사용 (동적으로 바뀌면 Google 혼란 유발)
+  const staticPageDate = '2026-01-01T00:00:00.000Z';
+
   // 카테고리 목록 추출 (사이트맵에 카테고리 페이지도 포함)
   const categories = [...new Set(posts.map((p: any) => p.metadata?.category).filter(Boolean))];
 
@@ -34,31 +37,31 @@ export const GET: APIRoute = async ({ request }) => {
       </url>
       <url>
         <loc>${siteUrl}/about</loc>
-        <lastmod>${latestPostDate}</lastmod>
+        <lastmod>${staticPageDate}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
       </url>
       <url>
         <loc>${siteUrl}/contact</loc>
-        <lastmod>${latestPostDate}</lastmod>
+        <lastmod>${staticPageDate}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
       </url>
       <url>
         <loc>${siteUrl}/privacy</loc>
-        <lastmod>${latestPostDate}</lastmod>
+        <lastmod>${staticPageDate}</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
       </url>
       <url>
         <loc>${siteUrl}/terms</loc>
-        <lastmod>${latestPostDate}</lastmod>
+        <lastmod>${staticPageDate}</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
       </url>
       <url>
         <loc>${siteUrl}/disclaimer</loc>
-        <lastmod>${latestPostDate}</lastmod>
+        <lastmod>${staticPageDate}</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
       </url>

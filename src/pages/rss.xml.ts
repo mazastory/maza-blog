@@ -47,7 +47,7 @@ export async function GET(context: APIContext) {
         pubDate: new Date(post.publish_at || post.created_at),
         description: summary,
         content: richContent,
-        link: `/${post.slug}`,
+        link: `${siteUrl}/${post.slug}`,
         categories: tags,
       };
     }),
