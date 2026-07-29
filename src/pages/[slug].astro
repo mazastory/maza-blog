@@ -2,6 +2,7 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
+import CoupangBanner from '../components/CoupangBanner.astro';
 import AnalyticsTracker from '../components/AnalyticsTracker.astro';
 import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
 import { buildKeywordMap, injectInternalLinks } from '../lib/internalLinks';
@@ -120,9 +121,13 @@ const rawDesc = (() => {
   siteConfig={siteConfig}
 >
   {/* 수익형: 상단 풀배너 */}
-  {isMonetizationSite && coupangBannerTop && (
+  {isMonetizationSite && (
     <div class="w-full bg-white border-b border-slate-100 py-3 px-4 flex justify-center overflow-hidden">
-      <Fragment set:html={coupangBannerTop} />
+      {coupangBannerTop ? (
+        <Fragment set:html={coupangBannerTop} />
+      ) : (
+        <CoupangBanner siteConfig={siteConfig} position="top" />
+      )}
     </div>
   )}
 
@@ -195,6 +200,13 @@ const rawDesc = (() => {
       {part2 && <Fragment set:html={part2} />}
     </article>
 
+    <!-- 수익형: 본문 하단 배너 -->
+    {isMonetizationSite && (
+      <div class="mt-8 mb-4">
+        <CoupangBanner siteConfig={siteConfig} position="bottom" />
+      </div>
+    )}
+
     <!-- 광고 A: 본문 하단 (애드센스용 사이트만) -->
     {!isMonetizationSite && (
       <div id="ad-slot-bottom" class="mt-10 md:mt-16">
@@ -265,12 +277,7 @@ const rawDesc = (() => {
             <Fragment set:html={coupangBannerSide} />
           </div>
         ) : (
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 relative overflow-hidden group hover:border-orange-200 transition-colors">
-            <div class="aspect-[3/4] bg-slate-50 rounded-xl flex flex-col items-center justify-center text-slate-400 font-bold text-sm border border-dashed border-slate-200 text-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-              쿠팡 파트너스 배너<br/>(우측 고정 1단)
-            </div>
-          </div>
+          <CoupangBanner siteConfig={siteConfig} position="sidebar" />
         )}
         {naverBrandHtml ? (
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 overflow-hidden">

@@ -1,0 +1,51 @@
+---
+interface Props {
+  siteConfig?: any;
+  position?: 'top' | 'bottom' | 'sidebar';
+  className?: string;
+}
+
+const { siteConfig = null, position = 'bottom', className = '' } = Astro.props;
+
+// 애드센스용 메인 도메인인 경우 배너를 노출하지 않음 (안전 최우선)
+const isAdsenseMain = siteConfig?.metadata?.domain_type === 'main' || siteConfig?.adsense_pub;
+
+if (isAdsenseMain) {
+  // Return nothing if it's an AdSense domain
+}
+
+// 1. 유저 티어 확인
+const plan = siteConfig?.metadata?.plan || 'free';
+const userCoupangId = siteConfig?.metadata?.coupang_id;
+
+// 2. 오너(대표님) 쿠팡 ID 환경 변수에서 가져오기
+const ownerCoupangId = import.meta.env.PUBLIC_OWNER_COUPANG_ID || 'AF_OWNER_PLACEHOLDER';
+
+// 3. 티어별 배너 소유권 분기 (알짜배기 공간 분배)
+// 유료(pro) 유저면 배너도 100% 유저 것, 무료(free) 유저면 배너는 오너(대표님) 것
+const targetCoupangId = plan === 'pro' && userCoupangId ? userCoupangId : ownerCoupangId;
+
+// 기본 배너 이미지 및 링크 설정 (예시용, 실제 제휴 링크 생성 로직으로 교체 가능)
+const bannerLink = `https://link.coupang.com/a/banner?subid=${targetCoupangId}&position=${position}`;
+const bannerImage = position === 'sidebar' 
+  ? 'https://placehold.co/300x600/4f46e5/ffffff?text=Coupang+Partners\\nRight+Sidebar'
+  : 'https://placehold.co/728x90/4f46e5/ffffff?text=Coupang+Partners\\nHorizontal+Banner';
+
+---
+
+{!isAdsenseMain && (
+  <div class={`coupang-banner-wrapper flex items-center justify-center my-4 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow ${className}`}>
+    <a href={bannerLink} target="_blank" rel="nofollow noopener" class="block w-full text-center">
+      <div class="relative w-full">
+        {/* '광고' 레이블 */}
+        <span class="absolute top-0 right-0 bg-black/50 text-white text-[10px] px-2 py-1 rounded-bl-lg z-10 pointer-events-none">AD</span>
+        <img 
+          src={bannerImage} 
+          alt="쿠팡 파트너스 추천 상품" 
+          class="w-full h-auto object-cover max-w-full"
+          loading="lazy"
+        />
+      </div>
+    </a>
+  </div>
+)}
