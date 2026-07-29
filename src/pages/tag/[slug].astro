@@ -23,21 +23,24 @@ const tagPosts = allPosts.filter(post => {
   const tags = post.metadata?.hashtags || [];
   return tags.some((t: string) => t.replace(/^#/, '').toLowerCase() === slug.toLowerCase());
 });
+import { getLangFromEnv, useTranslations } from '../../i18n/utils';
+const lang = getLangFromEnv();
+const t = useTranslations(lang);
 ---
 
-<Layout title={`#${slug} 태그 검색 결과`} description={`#${slug} 태그가 포함된 관련 글 목록입니다.`}>
+<Layout title={`${t('search.tag.title')}: #${slug}`} description={t('search.tag.desc')}>
   <div class="mx-auto max-w-5xl px-6 pt-12 pb-20 md:pt-20">
     
     <header class="mb-14 text-center">
       <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-bold text-slate-500 border border-slate-200">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        <a href="/" class="hover:text-indigo-600 transition-colors">홈으로 돌아가기</a>
+        <a href="/" class="hover:text-indigo-600 transition-colors">{t('search.back')}</a>
       </div>
       <h1 class="text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
         <span class="text-indigo-600">#</span>{slug}
       </h1>
       <p class="mt-4 text-lg text-slate-500">
-        총 {tagPosts.length}개의 관련 포스트가 있습니다.
+        {t('search.tag.count').replace('{count}', tagPosts.length.toString())}
       </p>
     </header>
 
@@ -49,7 +52,7 @@ const tagPosts = allPosts.filter(post => {
       </div>
     ) : (
       <div class="py-20 text-center">
-        <p class="text-slate-500">해당 태그로 작성된 글이 없습니다.</p>
+        <p class="text-slate-500">{t('search.tag.empty')}</p>
       </div>
     )}
   </div>

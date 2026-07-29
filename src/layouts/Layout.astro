@@ -7,6 +7,10 @@ import DynamicTheme from '../components/DynamicTheme.astro';
 import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
 import { generateThemeVars } from '../lib/theme';
 import { ClientRouter } from 'astro:transitions';
+import { getLangFromEnv, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromEnv();
+const t = useTranslations(lang);
 
 interface Props {
 	title?: string;
@@ -170,7 +174,7 @@ if (rawSc) {
         <div class={`flex flex-col ${theme.footerAlign === 'center' ? 'items-center' : 'items-start'}`}>
           <h3 class="text-xl font-black mb-4">{siteTitle}</h3>
           <p class="text-sm opacity-80 mb-6 max-w-xs">{siteDesc}</p>
-          <p class="text-xs opacity-60">© {new Date().getFullYear()} {siteTitle}. All rights reserved.</p>
+          <p class="text-xs opacity-60">© {new Date().getFullYear()} {siteTitle}. {t('footer.copyright')}</p>
         </div>
 
         {/* Col 2: Quick Links */}

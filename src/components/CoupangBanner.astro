@@ -1,4 +1,9 @@
 ---
+import { getLangFromEnv, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromEnv();
+const t = useTranslations(lang);
+
 interface Props {
   siteConfig?: any;
   position?: 'top' | 'bottom' | 'sidebar';
@@ -38,10 +43,12 @@ const bannerImage = position === 'sidebar'
     <a href={bannerLink} target="_blank" rel="nofollow noopener" class="block w-full text-center">
       <div class="relative w-full">
         {/* '광고' 레이블 */}
-        <span class="absolute top-0 right-0 bg-black/50 text-white text-[10px] px-2 py-1 rounded-bl-lg z-10 pointer-events-none">AD</span>
+        <div class="absolute top-0 right-0 bg-black/60 backdrop-blur-sm text-white/90 text-[10px] font-bold px-2 py-0.5 rounded-bl-lg tracking-wider border-b border-l border-white/10 shadow-sm z-10">
+          {t('post.ad')}
+        </div>
         <img 
           src={bannerImage} 
-          alt="쿠팡 파트너스 추천 상품" 
+          alt={t('seo.ad_alt')} 
           class="w-full h-auto object-cover max-w-full"
           loading="lazy"
         />

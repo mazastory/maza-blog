@@ -1,13 +1,17 @@
 ---
+import { getLangFromEnv, useTranslations } from '../../i18n/utils';
+
+const lang = getLangFromEnv();
+const t = useTranslations(lang);
+
 export interface Props {
   blogName: string;
   blogDescription: string;
   heroBgUrl?: string | null;
-  t: any;
   posts: any[];
   heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, posts, heroSubtitle } = Astro.props;
 
 let bgImg = heroBgUrl || '/hero-bg-picasso.png';
 if (!heroBgUrl && posts.length > 0) {
@@ -51,7 +55,7 @@ const carouselPosts = posts.slice(0, 5);
     <div class="max-w-5xl mx-auto px-4 md:px-6">
       <div class="mb-6 flex items-end justify-between">
         <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">NEW</h2>
-        <span class="text-sm font-bold text-slate-400">최신 포스트</span>
+        <span class="text-sm font-bold text-slate-400">{t('nav.latest')}</span>
       </div>
       
       <!-- Horizontal Scroll Carousel -->

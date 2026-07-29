@@ -7,15 +7,17 @@ interface Props {
 }
 
 const { post, isPremium = false } = Astro.props;
-// Default language for formatted dates; can be extended to accept a prop later.
-const lang = 'ko';
+import { getLangFromEnv, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromEnv();
+const t = useTranslations(lang);
 const dateLocales: Record<string, string> = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP' };
 const formattedDate = new Date(post.publish_at || post.created_at).toLocaleDateString(dateLocales[lang] || 'en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric'
 });
-const tArticle = lang === 'ko' ? '아티클' : lang === 'ja' ? '記事' : 'Article';
+const tArticle = t('post.article');
 
 // 실제 이미지 추출: metadata.data.image1 → metadata.blocks 이미지 → thumbnail_url 폴백
 const metaImage = post.metadata?.data?.image1 
