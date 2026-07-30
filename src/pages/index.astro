@@ -89,7 +89,7 @@ const feedClass = theme.feedStyle === 'list'
 
 ---
 
-<Layout preloadImage={featuredImage} siteConfig={siteConfig} hideHeader={heroTemplate === 'corporate'}>
+<Layout description={blogDescription} preloadImage={featuredImage} siteConfig={siteConfig} hideHeader={heroTemplate === 'corporate'}>
   {heroTemplate === 'corporate' ? (
     <HeroCorporate blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} categories={posts.length > 0 ? Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))) : [siteConfig?.metadata?.primary_topic_ko || 'Trend']} />
   ) : (
