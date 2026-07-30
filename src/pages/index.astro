@@ -34,13 +34,25 @@ const t = useTranslation(lang);
 const posts = await getApprovedPosts(domain, lang);
 
 let blogName = siteConfig?.blog_name || "Maza Blog";
-let blogDescription = siteConfig?.niche || "Welcome to our blog.";
+let blogDescription = siteConfig?.metadata?.site_description || siteConfig?.niche || "Welcome to our blog.";
+
+// [FIX] meta description이 내부 코드값(ai_tools, career 등) 그대로 노출되는 것 방지
+// 최소 50자 이상의 의미있는 설명문으로 업그레이드
+if (blogDescription.length < 50) {
+  const niche = siteConfig?.niche || '';
+  const nicheLabel = niche.replace(/_/g, ' ');
+  blogDescription = `${blogName}는 ${nicheLabel} 분야의 실용적이고 깊이 있는 콘텐츠를 제공합니다. 전문가의 시각으로 분석한 최신 트렌드와 실전 가이드를 확인해 보세요.`;
+}
 let heroSubtitle = siteConfig?.metadata?.hero_subtitle || t.welcome;
 
 if (lang === 'en' && siteConfig?.metadata?.primary_topic_en) {
-  blogDescription = siteConfig.metadata.primary_topic_en;
+  blogDescription = siteConfig.metadata.primary_topic_en.length >= 50
+    ? siteConfig.metadata.primary_topic_en
+    : `${blogName} — Expert insights and practical guides on ${siteConfig.metadata.primary_topic_en}. Discover in-depth analysis and the latest trends.`;
 } else if (lang === 'ja' && siteConfig?.metadata?.primary_topic_ja) {
-  blogDescription = siteConfig.metadata.primary_topic_ja;
+  blogDescription = siteConfig.metadata.primary_topic_ja.length >= 50
+    ? siteConfig.metadata.primary_topic_ja
+    : `${blogName} — ${siteConfig.metadata.primary_topic_ja}に関する専門的な情報と実践ガイドをお届けします。`;
 }
 
 if (lang === 'en' && siteConfig?.metadata?.hero_subtitle_en) {
