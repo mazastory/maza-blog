@@ -13,6 +13,8 @@ const foundedYear = siteConfig?.metadata?.founded_year || new Date().getFullYear
 const authorName = siteConfig?.metadata?.author_name || '';
 const authorBio = siteConfig?.metadata?.author_bio || '';
 const missionStatement = siteConfig?.metadata?.mission_statement || '';
+const authorPersona = siteConfig?.metadata?.author_persona || '';
+const eeatGuideline = siteConfig?.metadata?.eeat_guideline || '';
 
 // niche 기반 동적 설명 생성 (aboutContent가 없을 때 fallback)
 const nicheDesc = niche
@@ -90,17 +92,18 @@ const pageDescription = aboutContent
           </li>
         </ul>
 
-        {authorName && (
+        {(authorName || authorPersona) && (
           <>
             <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
             <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">에디터 소개</h2>
             <div class="flex items-start gap-5 not-prose">
               <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-200 to-sky-200 flex items-center justify-center text-indigo-700 font-black text-xl">
-                {authorName.charAt(0)}
+                {(authorName || authorPersona).charAt(0)}
               </div>
               <div>
-                <p class="font-black text-lg text-slate-900">{authorName}</p>
-                {authorBio && <p class="text-slate-600 mt-1 leading-relaxed">{authorBio}</p>}
+                <p class="font-black text-lg text-slate-900">{authorName || '대표 에디터'}</p>
+                {authorPersona && <p class="text-indigo-600 font-bold mt-1 text-sm">{authorPersona}</p>}
+                {(authorBio || eeatGuideline) && <p class="text-slate-600 mt-2 leading-relaxed">{authorBio || eeatGuideline}</p>}
               </div>
             </div>
           </>
