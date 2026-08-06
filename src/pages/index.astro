@@ -91,16 +91,16 @@ const feedClass = theme.feedStyle === 'list'
 
 <Layout description={blogDescription} preloadImage={featuredImage} siteConfig={siteConfig} hideHeader={heroTemplate === 'corporate'}>
   {heroTemplate === 'corporate' ? (
-    <HeroCorporate blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} categories={posts.length > 0 ? Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))) : [siteConfig?.metadata?.primary_topic_ko || 'Trend']} />
+    <HeroCorporate theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} categories={posts.length > 0 ? Array.from(new Set(posts.map(p => p.metadata?.category).filter(Boolean))) : [siteConfig?.metadata?.primary_topic_ko || 'Trend']} />
   ) : (
     <div class="mx-auto max-w-7xl px-4 pt-8 pb-10 md:px-6 md:pt-20 md:pb-14">
-      {heroTemplate === 'modern' && <HeroModern blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-    {heroTemplate === 'classic' && <HeroClassic blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-    {heroTemplate === 'magazine' && <HeroMagazine blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-    {heroTemplate === 'minimal' && <HeroMinimal blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-    {heroTemplate === 'split' && <HeroSplit blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-    {heroTemplate === 'app' && <HeroApp blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-
+      {heroTemplate === 'modern' && <HeroModern theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'classic' && <HeroClassic theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'magazine' && <HeroMagazine theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'minimal' && <HeroMinimal theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'split' && <HeroSplit theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    {heroTemplate === 'app' && <HeroApp theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
+    
     <!-- Hero / Featured Post -->
     {featuredPost && heroTemplate !== 'app' && (
       <section class="mb-14 md:mb-20 max-w-5xl mx-auto">

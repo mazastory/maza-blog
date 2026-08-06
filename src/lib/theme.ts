@@ -84,7 +84,7 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
     footerAlign: footAlign[getIndex(10, footAlign.length)],
     footerBg: footBg[getIndex(11, footBg.length)],
     paddingY: paddings[getIndex(12, paddings.length)],
-    heroTemplate: heroTemplates[getIndex(13, heroTemplates.length)],
+    heroTemplate: heroTemplates[absHash % heroTemplates.length],
     
     isPremium,
     themeId,

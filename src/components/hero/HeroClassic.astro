@@ -1,5 +1,6 @@
 ---
 export interface Props {
+  theme?: any;
   blogName: string;
   blogDescription: string;
   heroBgUrl?: string | null;
@@ -7,10 +8,20 @@ export interface Props {
   posts: any[];
   heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
+const { theme, blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
+
+// 도메인이 그대로 노출되는 것을 방지하고 브랜드명처럼 포맷팅합니다 (예: profitnestlab.com -> Profit Nest Lab)
+const formatBrandName = (name: string) => {
+  if (name.includes('.')) {
+    const raw = name.split('.')[0];
+    return raw.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2').replace(/^./, str => str.toUpperCase());
+  }
+  return name;
+};
+const brandName = formatBrandName(blogName);
 ---
 
-<section class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-white border border-slate-200 p-8 md:p-14 lg:p-20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group">
+<section style={`--brand-color: ${theme?.color || '#4f46e5'}`} class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-white border border-slate-200 p-8 md:p-14 lg:p-20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group">
   {heroBgUrl && (
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <img src={heroBgUrl} alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] group-hover:scale-110" loading="eager" />
@@ -19,19 +30,19 @@ const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.p
   )}
   <div class="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
     <div class="mb-6 flex items-center justify-center" data-aos="fade-up" data-aos-delay="100">
-      <span class="rounded-full border border-slate-200 bg-slate-50/50 backdrop-blur-md px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-500 shadow-sm">
-        {blogName}
+      <span class="rounded-full border border-slate-200 bg-slate-50/50 backdrop-blur-md px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] shadow-sm" style="color: var(--brand-color)">
+        {brandName}
       </span>
     </div>
     <h1 data-aos="fade-up" data-aos-delay="200" class={`${blogDescription.length > 40 ? 'text-3xl md:text-4xl lg:text-5xl leading-[1.3]' : blogDescription.length > 20 ? 'text-4xl md:text-5xl lg:text-6xl leading-[1.2]' : 'text-5xl md:text-6xl lg:text-7xl leading-[1.15]'} font-serif font-black tracking-tight text-slate-900 break-keep drop-shadow-sm`} style="word-break: keep-all; overflow-wrap: break-word;">
       {blogDescription}
     </h1>
-    <div data-aos="fade-in" data-aos-delay="300" class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-8 mb-8 rounded-full"></div>
+    <div data-aos="fade-in" data-aos-delay="300" class="w-24 h-1 mx-auto mt-8 mb-8 rounded-full" style="background: linear-gradient(to right, var(--brand-color), #a855f7)"></div>
     <p data-aos="fade-up" data-aos-delay="400" class="max-w-2xl text-lg md:text-xl leading-relaxed text-slate-500 font-medium break-keep">
       {heroSubtitle}
     </p>
     <div data-aos="fade-up" data-aos-delay="500" class="mt-10 flex flex-wrap justify-center gap-4">
-      <a href="/about" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3.5 text-sm font-bold tracking-wide text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-200 hover:-translate-y-1">
+      <a href="/about" class="inline-flex items-center justify-center rounded-full px-8 py-3.5 text-sm font-bold tracking-wide text-white transition-all hover:opacity-90 hover:shadow-lg hover:-translate-y-1" style="background-color: var(--brand-color)">
         {t.about}
       </a>
       <a href="/contact" class="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white/80 backdrop-blur-sm px-8 py-3.5 text-sm font-bold tracking-wide text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-400 hover:shadow-md hover:-translate-y-1">
