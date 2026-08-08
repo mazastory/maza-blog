@@ -69,10 +69,16 @@ const domainHash = Math.abs(domain.split('').reduce((acc, char) => (acc << 5) - 
 const fallbackImage = defaultImages[domainHash % defaultImages.length];
 
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang);
-// [MAZA 50-Point QC] 1도메인 1카테고리 강제 (Topical Authority)
-// DB에 여러 카테고리가 흩어져 있더라도, 헤더 GNB에는 사이트의 메인 Niche 1개만 노출되도록 강제합니다.
-let primaryCategory = siteConfig?.metadata?.primary_topic_ko || 'GENERAL';
-let uniqueCategories = [primaryCategory];
+let uniqueCategories = Array.from(new Set(allPosts.map(p => p.metadata?.category).filter(Boolean)));
+if (uniqueCategories.length === 0) {
+  uniqueCategories.push(siteConfig?.metadata?.primary_topic_ko || 'Trend');
+}
+
+// [MAZA 50-Point QC] 애드센스 승인 심사 중인 사이트(Topical Authority 강제)의 경우 메인 카테고리 1개만 노출
+if (siteConfig?.purpose === 'adsense' && siteConfig?.adsense_status !== 'approved') {
+  const primaryCategory = siteConfig?.metadata?.primary_topic_ko || uniqueCategories[0] || 'GENERAL';
+  uniqueCategories = [primaryCategory];
+}
 // 각 페이지에서 캐시 설정을 관리합니다 (Layout에서는 중복 설정하지 않음)
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
 const siteDesc = siteConfig?.niche || "MazaStudio Subdomain Blog - High Quality AI Content";
