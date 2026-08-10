@@ -6,6 +6,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const path = url.pathname;
 
+  // -1. 봇 방어 및 경쟁자 크롤러 차단 (Bot Evasion)
+  const userAgent = context.request.headers.get('user-agent') || '';
+  const blockList = ['ahrefsbot', 'semrushbot', 'mj12bot', 'dotbot', 'rogerbot', 'baiduspider', 'yandexbot'];
+  const isMaliciousBot = blockList.some(bot => userAgent.toLowerCase().includes(bot));
+  
+  if (isMaliciousBot) {
+    // 경쟁사 분석 봇이나 불필요한 크롤러에게는 403 반환하여 트래픽 및 자산 보호
+    return new Response('Forbidden: Bot Access Denied', { status: 403 });
+  }
+
   // 0. 구형 URL 구조 301 영구 리다이렉트 (SEO 대응 - GSC 404 에러 방지)
   // 매칭: /blog/slug, /post/slug, /article/slug
   const legacyMatch = path.match(/^\/(blog|post|article)\/(.+)$/);
