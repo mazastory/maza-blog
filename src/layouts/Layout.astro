@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import SEO from '../components/SEO.astro';
 import Schema from '../components/Schema.astro';
 import DynamicTheme from '../components/DynamicTheme.astro';
+import NewsletterForm from '../components/NewsletterForm.astro';
 import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
 import { generateThemeVars } from '../lib/theme';
 import { ClientRouter } from 'astro:transitions';
@@ -190,6 +191,9 @@ if (rawSc) {
 		
 		<main class="relative z-10 flex-1">
 			<slot />
+			<div class="mx-auto px-6 max-w-4xl">
+				<NewsletterForm siteId={siteConfig?.id} domain={siteConfig?.domain || domain} />
+			</div>
 		</main>
 
 		
