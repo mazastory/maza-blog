@@ -118,13 +118,13 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
 }
 
 // 최적화: html_content를 제외하고 가벼운 목록만 가져옵니다. (5MB -> 50KB 최적화)
-export async function getApprovedPosts(domain?: string, locale?: string, limitCount: number = 60): Promise<any[]> {
+export async function getApprovedPosts(domain?: string, locale?: string, limitCount: number = 60, options?: { bypassCache?: boolean }): Promise<any[]> {
   let targetDomain = domain || import.meta.env.PUBLIC_SITE_DOMAIN || import.meta.env.SITE_DOMAIN || import.meta.env.URL || '';
   targetDomain = normalizeDomain(targetDomain);
   if (!targetDomain) return [];
   
   const cacheKey = `posts_${targetDomain}_${locale || 'all'}_${limitCount}`;
-  if (cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < POSTS_TTL) {
+  if (!options?.bypassCache && cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < POSTS_TTL) {
     return cache[cacheKey].data;
   }
 

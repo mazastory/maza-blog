@@ -31,7 +31,7 @@ const theme = generateThemeVars(siteConfig);
 const lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
 const t = useTranslation(lang);
 
-const posts = await getApprovedPosts(domain, lang);
+const posts = await getApprovedPosts(domain, lang, 60, { bypassCache });
 
 let blogName = siteConfig?.blog_name || "Maza Blog";
 let blogDescription = siteConfig?.metadata?.site_description || siteConfig?.niche || "Welcome to our blog.";
