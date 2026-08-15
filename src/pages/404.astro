@@ -3,8 +3,8 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 Astro.response.status = 404;
 
-// 301 Redirect for SSR/Edge environments (AdSense safety)
-return Astro.redirect('/', 301);
+// 301 Redirect is dangerous here because it poisons Vercel Edge Cache.
+// We rely on the meta refresh in the <head> below for fallback redirect.
 ---
 
 <Layout title="페이지를 찾을 수 없습니다 (404)">
