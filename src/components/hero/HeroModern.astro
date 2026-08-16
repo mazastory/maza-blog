@@ -21,7 +21,7 @@ const formatBrandName = (name: string) => {
 const brandName = formatBrandName(blogName);
 ---
 
-<section style={`--brand-color: ${theme?.color || '#4f46e5'}`} class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-slate-950 p-8 md:p-14 lg:p-20 shadow-2xl group">
+<section style={`--brand-color: ${theme?.color || '#4f46e5'}`} class="relative mb-8 md:mb-12 overflow-hidden rounded-3xl md:rounded-[32px] bg-slate-950 p-6 md:p-10 lg:p-12 shadow-2xl group">
   <!-- Animated Mesh Gradient Background & Grid -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
     {heroBgUrl ? (
@@ -34,37 +34,37 @@ const brandName = formatBrandName(blogName);
       <div class="absolute top-[20%] -right-[20%] h-[80%] w-[60%] rounded-full bg-fuchsia-600/30 blur-[120px] transition-transform duration-1000 group-hover:scale-110 group-hover:-translate-x-5"></div>
       <div class="absolute -bottom-[40%] left-[20%] h-[70%] w-[60%] rounded-full bg-cyan-500/20 blur-[120px] transition-transform duration-1000 group-hover:scale-110 group-hover:-translate-y-5"></div>
     )}
-    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMTAgMEwwIDBMMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvcGF0dGVybj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9InVybCgjc21hbGxHcmlkKSIvPjxwYXRoIGQ9Ik00MCAwTDAgMEwwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-40"></div>
+    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0dGVybiBkPSJNMTAgMEwwIDBMMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvcGF0dGVybj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9InVybCgjc21hbGxHcmlkKSIvPjxwYXRoIGQ9Ik00MCAwTDAgMEwwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-40"></div>
     <!-- Glass overlay -->
     <div class="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px]"></div>
   </div>
   
-  <div class="relative z-10 grid gap-10 lg:gap-16 lg:grid-cols-[1.5fr_1fr] lg:items-center">
+  <div class="relative z-10 grid gap-8 lg:gap-12 lg:grid-cols-[1.5fr_1fr] lg:items-center">
     <div class="min-w-0">
-      <div class="mb-6 flex flex-wrap items-center gap-3">
-        <span class="rounded-full border px-5 py-2 text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(99,102,241,0.2)] backdrop-blur-md" style="color: var(--brand-color); border-color: color-mix(in srgb, var(--brand-color) 30%, transparent); background-color: color-mix(in srgb, var(--brand-color) 20%, transparent);">
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <span class="rounded-full border px-4 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(99,102,241,0.2)] backdrop-blur-md" style="color: var(--brand-color); border-color: color-mix(in srgb, var(--brand-color) 30%, transparent); background-color: color-mix(in srgb, var(--brand-color) 20%, transparent);">
           {brandName}
         </span>
         <span class="flex h-2 w-2 rounded-full shadow-[0_0_8px_rgba(129,140,248,0.8)] animate-pulse" style="background-color: var(--brand-color)"></span>
       </div>
-      <h1 class={`${blogDescription.length > 40 ? 'text-3xl md:text-4xl lg:text-5xl leading-tight' : blogDescription.length > 20 ? 'text-4xl md:text-5xl lg:text-6xl leading-[1.15]' : 'text-5xl md:text-6xl lg:text-7xl leading-[1.1]'} font-black tracking-tight text-white break-keep drop-shadow-sm`} style="word-break: keep-all; overflow-wrap: break-word;">
+      <h1 class={`${blogDescription.length > 40 ? 'text-2xl md:text-3xl lg:text-4xl leading-snug' : blogDescription.length > 20 ? 'text-3xl md:text-4xl lg:text-5xl leading-tight' : 'text-4xl md:text-5xl lg:text-6xl leading-[1.1]'} font-black tracking-tight text-white break-keep drop-shadow-sm`} style="word-break: keep-all; overflow-wrap: break-word;">
         {blogDescription}
       </h1>
-      <p class="mt-8 max-w-2xl text-lg md:text-xl text-slate-300 font-medium break-keep leading-relaxed drop-shadow-sm">
+      <p class="mt-5 max-w-2xl text-base md:text-lg text-slate-300 font-medium break-keep leading-relaxed drop-shadow-sm">
         {heroSubtitle}
       </p>
-      <div class="mt-10 flex flex-wrap items-center gap-4">
-        <a href="/about" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full px-8 py-4 text-sm font-black tracking-wide text-white transition-all duration-300 hover:scale-105 hover:opacity-90 shadow-[0_8px_30px_-8px_rgba(99,102,241,0.6)] hover:shadow-[0_10px_40px_-10px_rgba(99,102,241,0.8)]" style="background-color: var(--brand-color)">
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href="/about" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full px-6 py-3 text-sm font-black tracking-wide text-white transition-all duration-300 hover:scale-105 hover:opacity-90 shadow-[0_8px_30px_-8px_rgba(99,102,241,0.6)] hover:shadow-[0_10px_40px_-10px_rgba(99,102,241,0.8)]" style="background-color: var(--brand-color)">
           <span class="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.2),transparent)] -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
           <span class="relative flex items-center gap-2">
             {t.about}
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </span>
         </a>
-        <a href="/contact" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full border-2 border-slate-700/80 bg-slate-800/40 px-8 py-4 text-sm font-bold tracking-wide text-white backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-slate-500 hover:bg-slate-700/60 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.3)]">
+        <a href="/contact" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full border-2 border-slate-700/80 bg-slate-800/40 px-6 py-3 text-sm font-bold tracking-wide text-white backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-slate-500 hover:bg-slate-700/60 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.3)]">
           <span class="relative">{t.contact}</span>
         </a>
-        <a href="/privacy" class="group relative inline-flex items-center justify-center rounded-full px-5 py-4 text-sm font-medium text-slate-400 transition-colors duration-300 hover:text-white hover:bg-white/5">
+        <a href="/privacy" class="group relative inline-flex items-center justify-center rounded-full px-4 py-3 text-sm font-medium text-slate-400 transition-colors duration-300 hover:text-white hover:bg-white/5">
           {t.privacy}
         </a>
       </div>
