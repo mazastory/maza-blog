@@ -219,14 +219,14 @@ if (rawSc) {
           <p class="text-sm opacity-80 mb-6 max-w-xs">{siteDesc}</p>
           
           {companyInfo && (
-            <div class="text-[11px] opacity-70 mb-6 space-y-1.5 leading-relaxed">
-              <p className="font-semibold text-slate-400 mb-1">Company Information</p>
-              <p><span className="opacity-60">상호명 :</span> {companyInfo.name}</p>
-              <p><span className="opacity-60">대표자 :</span> {companyInfo.ceo}</p>
-              <p><span className="opacity-60">사업자등록번호 :</span> {companyInfo.regNum}</p>
-              <p><span className="opacity-60">통신판매업신고 :</span> {companyInfo.ecommerce}</p>
-              <p><span className="opacity-60">이메일 :</span> {companyInfo.email}</p>
-              <p><span className="opacity-60">주소 :</span> {companyInfo.address}</p>
+            <div class="text-xs mb-6 space-y-1.5 leading-relaxed opacity-80">
+              <p class="font-bold mb-2">Company Information</p>
+              <p><span class="font-medium mr-1">상호명:</span> {companyInfo.name}</p>
+              <p><span class="font-medium mr-1">대표자:</span> {companyInfo.ceo}</p>
+              <p><span class="font-medium mr-1">사업자등록번호:</span> {companyInfo.regNum}</p>
+              <p><span class="font-medium mr-1">통신판매업신고:</span> {companyInfo.ecommerce}</p>
+              <p><span class="font-medium mr-1">이메일:</span> {companyInfo.email}</p>
+              <p><span class="font-medium mr-1">주소:</span> {companyInfo.address}</p>
             </div>
           )}
 
