@@ -2,7 +2,7 @@
 export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import PostCard from '../../components/PostCard.astro';
-import { getApprovedPosts, getRequestDomain } from '../../lib/api';
+import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../../lib/api';
 
 // 캐시 설정으로 로딩 속도 대폭 개선 (SWR + stale-if-error 적용)
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
@@ -17,7 +17,8 @@ if (!slug) {
   return Astro.rewrite('/404');
 }
 
-const allPosts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
+const siteConfig = await getSiteConfig(domain);
+const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
 // 태그 필터링: 대소문자 무시, '#' 제거 후 매칭
 const tagPosts = allPosts.filter(post => {
   const tags = post.metadata?.hashtags || [];

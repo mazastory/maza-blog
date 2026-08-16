@@ -69,7 +69,7 @@ const defaultImages = [
 const domainHash = Math.abs(domain.split('').reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0));
 const fallbackImage = defaultImages[domainHash % defaultImages.length];
 
-const allPosts = await getApprovedPosts(domain, Astro.locals.lang);
+const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
 let rawCategories = allPosts.map(p => p.metadata?.category)
   .filter(Boolean)
   .flatMap(cat => Array.isArray(cat) ? cat : String(cat).split(','))
@@ -193,7 +193,7 @@ if (rawSc) {
 	</head>
 	<body class="relative overflow-x-hidden bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 flex flex-col min-h-screen">
 		<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.12),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.1),_transparent_28%),linear-gradient(to_bottom,_rgba(255,255,255,0.92),_rgba(248,250,252,1))]"></div>
-		{!hideHeader && <Header siteConfig={siteConfig} categories={uniqueCategories} currentLang={Astro.locals.lang || 'ko'} />}
+		{!hideHeader && <Header siteConfig={siteConfig} categories={uniqueCategories} currentLang={siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko'} />}
 		
 		<main class="relative z-10 flex-1">
 			<slot />

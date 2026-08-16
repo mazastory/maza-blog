@@ -16,16 +16,22 @@ const missionStatement = siteConfig?.metadata?.mission_statement || '';
 const authorPersona = siteConfig?.metadata?.author_persona || '';
 const eeatGuideline = siteConfig?.metadata?.eeat_guideline || '';
 
+const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+
 // niche 기반 동적 설명 생성 (aboutContent가 없을 때 fallback)
-const nicheDesc = niche
-  ? `${blogName}은 <strong>${niche}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. ${niche}에 관심 있는 독자들에게 실용적이고 깊이 있는 정보를 제공하는 것을 목표로 합니다.`
-  : `${blogName}은 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`;
+const nicheDesc = lang === 'en'
+  ? (niche
+    ? `${blogName} is a specialized content blog focusing on <strong>${niche}</strong>. We aim to provide practical and in-depth information to readers interested in ${niche}.`
+    : `${blogName} is a specialized content blog providing reliable information to our readers.`)
+  : (niche
+    ? `${blogName}은 <strong>${niche}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. ${niche}에 관심 있는 독자들에게 실용적이고 깊이 있는 정보를 제공하는 것을 목표로 합니다.`
+    : `${blogName}은 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`);
 
 const pageDescription = aboutContent
   ? aboutContent.substring(0, 160)
   : niche
-    ? `${blogName} — ${niche} 전문 블로그. 실용적이고 깊이 있는 콘텐츠를 제공합니다.`
-    : `${blogName} 소개 페이지`;
+    ? (lang === 'en' ? `${blogName} — Expert blog for ${niche}. Providing practical and in-depth content.` : `${blogName} — ${niche} 전문 블로그. 실용적이고 깊이 있는 콘텐츠를 제공합니다.`)
+    : (lang === 'en' ? `About ${blogName}` : `${blogName} 소개 페이지`);
 ---
 <Layout title={`${blogName} · About`} description={pageDescription} siteConfig={siteConfig}>
   <main class="mx-auto max-w-4xl px-6 py-20 md:py-32 relative">
@@ -39,7 +45,7 @@ const pageDescription = aboutContent
       </div>
       
       <h1 class="mb-6 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl lg:text-6xl break-keep">
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>에 대하여
+        {lang === 'en' ? `About ` : ''}<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>{lang !== 'en' ? '에 대하여' : ''}
       </h1>
 
       {niche && (

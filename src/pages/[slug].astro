@@ -24,10 +24,8 @@ if (!slug) {
   return Astro.rewrite('/404');
 }
 
-const [siteConfig, allPosts] = await Promise.all([
-  getSiteConfig(domain),
-  getApprovedPosts(domain, Astro.locals.lang || 'ko')
-]);
+const siteConfig = await getSiteConfig(domain);
+const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
 
 import { findPostMetaInList, findPostMetaByIdHintFallback, getPostContent } from '../lib/api';
 

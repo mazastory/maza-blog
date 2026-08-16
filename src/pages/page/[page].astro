@@ -2,7 +2,7 @@
 export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import PostCard from '../../components/PostCard.astro';
-import { getApprovedPosts, getRequestDomain } from '../../lib/api';
+import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../../lib/api';
 
 // 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
@@ -18,7 +18,8 @@ if (isNaN(page) || page < 1) {
   return Astro.rewrite('/404');
 }
 
-const allPosts = await getApprovedPosts(domain, Astro.locals.lang || 'ko');
+const siteConfig = await getSiteConfig(domain);
+const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
 // index.astro에서 featuredPost 1개 + 첫 9개를 보여줬음 (총 10개)
 // 따라서 /page/2 에서는 11번째 포스트부터 보여주면 됨
 const postsPerPage = 9;

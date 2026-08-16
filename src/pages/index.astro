@@ -28,7 +28,7 @@ const bypassCache = url.searchParams.has('_bust');
 
 const siteConfig = await getSiteConfig(domain, { bypassCache });
 const theme = generateThemeVars(siteConfig);
-const lang = Astro.locals.lang || siteConfig?.metadata?.campaign?.language?.[0] || 'ko';
+const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
 const t = useTranslation(lang);
 
 const posts = await getApprovedPosts(domain, lang, 60, { bypassCache });
@@ -41,7 +41,13 @@ let blogDescription = siteConfig?.metadata?.site_description || siteConfig?.nich
 if (blogDescription.length < 50) {
   const niche = siteConfig?.niche || '';
   const nicheLabel = niche.replace(/_/g, ' ');
-  blogDescription = `${blogName}는 ${nicheLabel} 분야의 실용적이고 깊이 있는 콘텐츠를 제공합니다. 전문가의 시각으로 분석한 최신 트렌드와 실전 가이드를 확인해 보세요.`;
+  if (lang === 'en') {
+    blogDescription = `${blogName} provides practical and in-depth content in the field of ${nicheLabel}. Discover expert analysis, latest trends, and practical guides.`;
+  } else if (lang === 'ja') {
+    blogDescription = `${blogName}は${nicheLabel}分野の実用的で詳細なコンテンツを提供します。専門家の視点で分析した最新トレンドと実践ガイドをご覧ください。`;
+  } else {
+    blogDescription = `${blogName}는 ${nicheLabel} 분야의 실용적이고 깊이 있는 콘텐츠를 제공합니다. 전문가의 시각으로 분석한 최신 트렌드와 실전 가이드를 확인해 보세요.`;
+  }
 }
 let heroSubtitle = siteConfig?.metadata?.hero_subtitle || t.welcome;
 
