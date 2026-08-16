@@ -35,7 +35,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
       <div class="flex-1 flex justify-start">
         <a href="/" class="flex items-center gap-2">
           <div class={`flex h-8 w-8 items-center justify-center ${theme.borderRadius} bg-[var(--color-indigo-600)] text-white font-bold shadow-lg shadow-[var(--color-indigo-200)]`}>{blogName.charAt(0).toUpperCase()}</div>
-          <span class="text-xl font-black italic tracking-tight">{blogName}</span>
+          <span class="text-xl font-black italic tracking-tight whitespace-nowrap shrink-0">{blogName}</span>
         </a>
       </div>
     )}
@@ -54,7 +54,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
     {theme.headerLogoPos === 'center' && theme.headerMenuPos !== 'bottom' && (
       <div class="flex-none">
         <a href="/" class="flex items-center gap-2">
-          <span class="text-2xl font-black uppercase tracking-tighter text-[var(--color-indigo-600)]">{blogName}</span>
+          <span class="text-2xl font-black uppercase tracking-tighter text-[var(--color-indigo-600)] whitespace-nowrap shrink-0">{blogName}</span>
         </a>
       </div>
     )}
@@ -81,7 +81,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
           </nav>
         </div>
         <div class="flex-none">
-          <a href="/" class="flex items-center gap-2 text-xl font-black">{blogName}</a>
+          <a href="/" class="flex items-center gap-2 text-xl font-black whitespace-nowrap shrink-0">{blogName}</a>
         </div>
       </>
     )}
@@ -101,7 +101,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
       <>
         <div class="w-full flex justify-between items-center">
           {theme.headerLogoPos === 'center' ? <div class="flex-1"></div> : null}
-          <a href="/" class={`flex items-center gap-2 text-2xl font-black ${theme.headerLogoPos === 'right' ? 'ml-auto' : ''}`}>
+          <a href="/" class={`flex items-center gap-2 text-2xl font-black whitespace-nowrap shrink-0 ${theme.headerLogoPos === 'right' ? 'ml-auto' : ''}`}>
             {blogName}
           </a>
           <div class={`flex-1 flex justify-end gap-4`}>

@@ -155,15 +155,15 @@ const feedClass = theme.feedStyle === 'list'
         </div>
         
         <div class={feedClass}>
-          {recentPosts.slice(0, 9).map(post => (
-            <div class="break-inside-avoid">
+          {recentPosts.slice(0, 6).map((post, index) => (
+            <div class={`break-inside-avoid ${index >= 3 ? 'hidden sm:block' : ''}`}>
               <PostCard post={post} isPremium={theme.isPremium} />
             </div>
           ))}
         </div>
         
-        {recentPosts.length > 9 && (
-          <div class="mt-12 text-center">
+        {recentPosts.length > 3 && (
+          <div class="mt-8 md:mt-12 text-center">
             <a href="/page/2" class="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-8 py-3 text-sm font-bold text-slate-700 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700 hover:shadow-md">
               {t.loadMore}
             </a>
