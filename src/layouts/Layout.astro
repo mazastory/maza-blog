@@ -82,15 +82,9 @@ if (uniqueCategories.length === 0) {
   uniqueCategories.push(siteConfig?.metadata?.primary_topic_ko?.toUpperCase() || 'LIFESTYLE');
 }
 
-// [MAZA 50-Point QC] 애드센스 승인 심사 중인 사이트(Topical Authority 강제)의 경우 메인 카테고리 1개만 노출
-// (사용자 요청: 카테고리가 너무 많으면 상단이 지저분해지므로 최대 5개로 제한)
-if (siteConfig?.purpose === 'adsense' && siteConfig?.adsense_status !== 'approved') {
-  const primaryCategory = siteConfig?.metadata?.primary_topic_ko?.toUpperCase() || uniqueCategories[0] || 'GENERAL';
-  uniqueCategories = [primaryCategory];
-} else {
-  // 너무 많은 카테고리가 헤더를 깨뜨리지 않도록 최대 5개까지만 노출
-  uniqueCategories = uniqueCategories.slice(0, 5);
-}
+// [사용자 요청] 블로그의 주제 집중(Topical Authority)을 위해, 포스트에 여러 카테고리가 섞여 있더라도 상단 네비게이션에는 무조건 메인 카테고리 1개만 노출합니다.
+const primaryCategory = siteConfig?.metadata?.primary_topic_ko?.toUpperCase() || uniqueCategories[0] || 'LIFESTYLE';
+uniqueCategories = [primaryCategory];
 
 // 각 페이지에서 캐시 설정을 관리합니다 (Layout에서는 중복 설정하지 않음)
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
