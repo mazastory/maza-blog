@@ -72,7 +72,9 @@ const fallbackImage = defaultImages[domainHash % defaultImages.length];
 const allPosts = await getApprovedPosts(domain, Astro.locals.lang);
 let rawCategories = allPosts.map(p => p.metadata?.category)
   .filter(Boolean)
-  .map(cat => String(cat).trim().toUpperCase());
+  .flatMap(cat => Array.isArray(cat) ? cat : String(cat).split(','))
+  .map(cat => String(cat).trim().toUpperCase())
+  .filter(cat => cat.length > 0);
 
 let uniqueCategories = Array.from(new Set(rawCategories));
 

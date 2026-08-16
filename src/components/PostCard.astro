@@ -96,7 +96,12 @@ const freeClasses = "rounded-2xl bg-white border border-slate-200 shadow-sm tran
   <div class="flex flex-1 flex-col p-5 md:p-6">
     <div class="mb-3 flex items-center gap-2">
       <span class="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-600">
-        {tArticle}
+        {(() => {
+          const cat = post.metadata?.category;
+          if (!cat) return tArticle;
+          const catStr = Array.isArray(cat) ? String(cat[0]) : String(cat).split(',')[0];
+          return catStr.trim().toUpperCase();
+        })()}
       </span>
       <span class="text-xs font-medium text-slate-400">
         {formattedDate}
