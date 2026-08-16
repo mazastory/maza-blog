@@ -30,28 +30,6 @@ const domain = getRequestDomain(Astro.request);
 const isToomus = domain.includes('autosite.kr') || domain.includes('maza.ai.kr') || domain.includes('toomus');
 const isCanDoKorea = domain.includes('mazastory.com') || domain.includes('mazaus.com');
 
-let companyInfo = null;
-
-if (isToomus) {
-  companyInfo = {
-    name: '투머스 (Toomus)',
-    ceo: '김민호',
-    regNum: '604-30-53081',
-    ecommerce: '통신판매업 신고 완료',
-    email: 'metasoseono@gmail.com',
-    address: '경기도 광주시 새말길317번길 19, B동 103호'
-  };
-} else if (isCanDoKorea) {
-  companyInfo = {
-    name: '캔두코리아 (MAZA Studio)',
-    ceo: '조윤서',
-    regNum: '885-32-01361',
-    ecommerce: '제 2023-성남분당A-0874 호',
-    email: 'metasoseono@gmail.com',
-    address: '경기 성남시 분당구 대왕판교로645번길 12, 7층 44호'
-  };
-}
-
 const siteConfig = Astro.props.siteConfig || await getSiteConfig(domain);
 const theme = generateThemeVars(siteConfig);
 
@@ -207,23 +185,11 @@ if (rawSc) {
     <footer class={`relative z-10 border-t ${theme.footerBg === 'black' ? 'bg-black text-slate-400 border-black' : theme.footerBg === 'dark' ? 'bg-slate-900 text-slate-400 border-slate-800' : theme.footerBg === 'light' ? 'bg-slate-50 text-slate-500 border-slate-200' : 'bg-white text-slate-500 border-slate-100'} ${theme.paddingY} mt-16`}>
       <div class={`mx-auto px-6 ${theme.layoutWidth} ${theme.footerCols > 1 ? 'grid gap-8' : 'flex flex-col'} ${theme.footerCols === 2 ? 'grid-cols-1 md:grid-cols-2' : theme.footerCols === 3 ? 'grid-cols-1 md:grid-cols-3' : theme.footerCols === 4 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' : ''} ${theme.footerAlign === 'center' ? 'text-center items-center' : 'text-left'}`}>
         
-        {/* Col 1: Brand & Company Info */}
+        {/* Col 1: Brand & Info */}
         <div class={`flex flex-col ${theme.footerAlign === 'center' ? 'items-center' : 'items-start'}`}>
           <h3 class="text-xl font-black mb-4">{siteTitle}</h3>
           <p class="text-sm opacity-80 mb-6 max-w-xs">{siteDesc}</p>
           
-          {companyInfo && (
-            <div class="text-xs mb-6 space-y-1.5 leading-relaxed opacity-80">
-              <p class="font-bold mb-2">Company Information</p>
-              <p><span class="font-medium mr-1">상호명:</span> {companyInfo.name}</p>
-              <p><span class="font-medium mr-1">대표자:</span> {companyInfo.ceo}</p>
-              <p><span class="font-medium mr-1">사업자등록번호:</span> {companyInfo.regNum}</p>
-              <p><span class="font-medium mr-1">통신판매업신고:</span> {companyInfo.ecommerce}</p>
-              <p><span class="font-medium mr-1">이메일:</span> {companyInfo.email}</p>
-              <p><span class="font-medium mr-1">주소:</span> {companyInfo.address}</p>
-            </div>
-          )}
-
           <p class="text-xs opacity-60">© {new Date().getFullYear()} {siteTitle}. {t('footer.copyright')}</p>
         </div>
 
