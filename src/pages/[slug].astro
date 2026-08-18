@@ -28,6 +28,7 @@ const siteConfig = await getSiteConfig(domain);
 const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
 
 import { findPostMetaInList, findPostMetaByIdHintFallback, getPostContent } from '../lib/api';
+import { findRedirect } from '../lib/redirects';
 
 let postMeta = findPostMetaInList(allPosts, slug);
 if (!postMeta) {
@@ -35,6 +36,19 @@ if (!postMeta) {
 }
 
 if (!postMeta) {
+  // [REDIRECT] 글을 못 찾은 이 시점에만 삭제 규칙을 조회한다.
+  // 미들웨어에 넣으면 정상 요청까지 전부 DB 왕복을 문다.
+  const rule = await findRedirect(siteConfig?.id, `/${slug}`);
+  if (rule) {
+    if (rule.status_code === 301 && rule.target_path) {
+      return Astro.redirect(rule.target_path, 301);
+    }
+    // 410 Gone — 404("일시적으로 없음")보다 구글이 색인에서 빨리 뺀다.
+    Astro.response.status = 410;
+    Astro.response.statusText = 'Gone';
+    return Astro.rewrite('/404');
+  }
+
   Astro.response.status = 404;
   Astro.response.statusText = 'Not Found';
   return Astro.rewrite('/404');
