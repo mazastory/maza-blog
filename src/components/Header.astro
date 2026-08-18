@@ -1,6 +1,7 @@
 ---
 import { Search } from 'lucide-astro';
 import { generateThemeVars } from '../lib/theme';
+import { getCategoryLabel } from '../lib/categories';
 
 interface Props {
   siteConfig?: any;
@@ -28,6 +29,28 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
   </div>
 )}
 
+{/* [MOBILE NAV] 기존 네비게이션은 4가지 변형 전부 `hidden md:flex`라
+    모바일에서 메뉴가 통째로 사라졌고 햄버거도 없었다. 애드센스 심사는
+    모바일 우선이라 치명적이다(라이브 감사에서 확인).
+    변형마다 손대면 깨지기 쉬우므로, 모바일 전용 메뉴를 하나만 추가한다.
+    <details>를 쓰면 JS 없이 열고 닫히므로 SSR에서 깨질 여지가 없다. */}
+<details class={`md:hidden w-full border-b ${darkBg} group`}>
+  <summary class={`flex items-center justify-between px-6 py-3 cursor-pointer list-none ${textNav}`}>
+    <span class="text-sm font-bold">메뉴</span>
+    <svg class="h-5 w-5 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+    </svg>
+  </summary>
+  <nav class={`flex flex-col gap-1 px-6 pb-4 text-sm font-semibold ${textNav}`}>
+    <a href="/" class="py-2 hover:text-[var(--color-indigo-600)]">홈</a>
+    {categories.map((cat: string) => (
+      <a href={`/category/${encodeURIComponent(cat)}`} class="py-2 hover:text-[var(--color-indigo-600)]">{getCategoryLabel(cat)}</a>
+    ))}
+    <a href="/about" class="py-2 hover:text-[var(--color-indigo-600)]">소개</a>
+    <a href="/contact" class="py-2 hover:text-[var(--color-indigo-600)]">문의</a>
+  </nav>
+</details>
+
 <header class={`sticky top-0 z-50 w-full border-b transition-all ${darkBg} ${theme.paddingY}`}>
   <div class={`mx-auto flex flex-col md:flex-row items-center justify-between px-6 gap-4 ${theme.layoutWidth} ${theme.headerMenuPos === 'bottom' ? 'md:flex-col' : ''}`}>
     
@@ -35,7 +58,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
       <div class="flex-1 flex justify-start">
         <a href="/" class="flex items-center gap-2">
           <div class={`flex h-8 w-8 items-center justify-center ${theme.borderRadius} bg-[var(--color-indigo-600)] text-white font-bold shadow-lg shadow-[var(--color-indigo-200)]`}>{blogName.charAt(0).toUpperCase()}</div>
-          <span class="text-xl font-black italic tracking-tight whitespace-nowrap shrink-0">{blogName}</span>
+          <span class="text-xl font-black italic tracking-tight md:whitespace-nowrap md:shrink-0 min-w-0 truncate">{blogName}</span>
         </a>
       </div>
     )}
@@ -44,7 +67,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
       <div class="flex-1 flex justify-start">
         <nav class={`hidden md:flex items-center gap-6 text-sm font-semibold ${textNav}`}>
           <a href="/" class="hover:text-[var(--color-indigo-600)]">Home</a>
-          {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)] uppercase">{cat}</a>))}
+          {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)]">{getCategoryLabel(cat)}</a>))}
           <a href="/about" class="hover:text-[var(--color-indigo-600)]">About</a>
           <a href="/contact" class="hover:text-[var(--color-indigo-600)]">Contact</a>
         </nav>
@@ -54,7 +77,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
     {theme.headerLogoPos === 'center' && theme.headerMenuPos !== 'bottom' && (
       <div class="flex-none">
         <a href="/" class="flex items-center gap-2">
-          <span class="text-2xl font-black uppercase tracking-tighter text-[var(--color-indigo-600)] whitespace-nowrap shrink-0">{blogName}</span>
+          <span class="text-2xl font-black uppercase tracking-tighter text-[var(--color-indigo-600)] md:whitespace-nowrap md:shrink-0 min-w-0 truncate">{blogName}</span>
         </a>
       </div>
     )}
@@ -63,7 +86,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
       <div class={`flex-auto flex ${theme.headerMenuPos === 'right' ? 'justify-end pr-8' : 'justify-center'}`}>
         <nav class={`hidden md:flex items-center gap-6 text-sm font-semibold ${textNav}`}>
           <a href="/" class="hover:text-[var(--color-indigo-600)]">Home</a>
-          {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)] uppercase">{cat}</a>))}
+          {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)]">{getCategoryLabel(cat)}</a>))}
           <a href="/about" class="hover:text-[var(--color-indigo-600)]">About</a>
           <a href="/contact" class="hover:text-[var(--color-indigo-600)]">Contact</a>
         </nav>
@@ -75,13 +98,13 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
         <div class="flex-1 flex justify-start gap-8">
           <nav class={`hidden md:flex items-center gap-6 text-sm font-semibold ${textNav}`}>
             <a href="/" class="hover:text-[var(--color-indigo-600)]">Home</a>
-            {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)] uppercase">{cat}</a>))}
+            {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)]">{getCategoryLabel(cat)}</a>))}
             <a href="/about" class="hover:text-[var(--color-indigo-600)]">About</a>
             <a href="/contact" class="hover:text-[var(--color-indigo-600)]">Contact</a>
           </nav>
         </div>
         <div class="flex-none">
-          <a href="/" class="flex items-center gap-2 text-xl font-black whitespace-nowrap shrink-0">{blogName}</a>
+          <a href="/" class="flex items-center gap-2 text-xl font-black md:whitespace-nowrap md:shrink-0 min-w-0 truncate">{blogName}</a>
         </div>
       </>
     )}
@@ -101,7 +124,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
       <>
         <div class="w-full flex justify-between items-center">
           {theme.headerLogoPos === 'center' ? <div class="flex-1"></div> : null}
-          <a href="/" class={`flex items-center gap-2 text-2xl font-black whitespace-nowrap shrink-0 ${theme.headerLogoPos === 'right' ? 'ml-auto' : ''}`}>
+          <a href="/" class={`flex items-center gap-2 text-2xl font-black md:whitespace-nowrap md:shrink-0 min-w-0 truncate ${theme.headerLogoPos === 'right' ? 'ml-auto' : ''}`}>
             {blogName}
           </a>
           <div class={`flex-1 flex justify-end gap-4`}>
@@ -111,7 +134,7 @@ const textNav = theme.headerDarkMode ? 'text-slate-300' : 'text-slate-600';
         <div class={`w-full flex ${theme.headerLogoPos === 'center' ? 'justify-center' : 'justify-start'} border-t ${theme.headerDarkMode ? 'border-slate-800' : 'border-slate-100'} pt-4 mt-2`}>
           <nav class={`hidden md:flex items-center gap-8 text-sm font-semibold ${textNav}`}>
             <a href="/" class="hover:text-[var(--color-indigo-600)]">Home</a>
-            {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)] uppercase">{cat}</a>))}
+            {categories.map((cat: string) => (<a href={`/category/${encodeURIComponent(cat)}`} class="hover:text-[var(--color-indigo-600)]">{getCategoryLabel(cat)}</a>))}
             <a href="/about" class="hover:text-[var(--color-indigo-600)]">About</a>
             <a href="/contact" class="hover:text-[var(--color-indigo-600)]">Contact</a>
           </nav>

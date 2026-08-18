@@ -28,6 +28,7 @@ let categoryPosts = allPosts.filter(post => {
 });
 
 import { generateThemeVars } from '../../lib/theme';
+import { getCategoryLabel, getCategoryDescription } from '../../lib/categories';
 const theme = generateThemeVars(siteConfig);
 
 // 만약 해당 카테고리의 포스트가 없고, 현재 요청한 카테고리가 사이트 기본 카테고리와 일치한다면
@@ -41,16 +42,12 @@ if (categoryPosts.length === 0) {
 }
 
 // 카테고리별 동적 설명 (SEO용 Thin Content 방어)
-const categoryDescriptions: Record<string, string> = {
-  'it': '최신 테크 트렌드, 소프트웨어 가이드, 그리고 유용한 IT 실무 팁을 깊이 있게 분석합니다.',
-  'health': '검증된 논문과 전문가 자료를 바탕으로 올바른 건강 관리 및 다이어트 정보를 제공합니다.',
-  'finance': '재테크 노하우, 자산 관리 전략, 그리고 최신 경제 흐름을 쉽게 풀어냅니다.',
-  'travel': '생생한 여행 경험과 실용적인 현지 가이드, 그리고 추천 명소 정보를 공유합니다.',
-  'life': '더 나은 일상을 위한 생활 꿀팁, 자기계발, 그리고 다양한 라이프스타일 인사이드를 나눕니다.'
-};
-
-const defaultDescription = `이 카테고리에서는 '${slug}'와 관련된 깊이 있고 실용적인 정보를 다룹니다. 최신 동향과 실전 적용 팁을 확인해 보세요.`;
-const currentDesc = categoryDescriptions[slug.toLowerCase()] || defaultDescription;
+// [LABEL] 옛 설명 맵은 it/health/finance/travel/life 5종만 갖고 있어서
+// 현재 운영 중인 카테고리는 단 하나도 대응되지 않았고, 전부
+// "'knowledge_biz'와 관련된 깊이 있고 실용적인 정보" 같은 기계 문구로 나갔다.
+// 라벨/설명을 lib/categories.ts로 일원화한다.
+const currentDesc = getCategoryDescription(decodedSlug);
+const categoryLabel = getCategoryLabel(decodedSlug);
 
 ---
 
@@ -62,7 +59,7 @@ const currentDesc = categoryDescriptions[slug.toLowerCase()] || defaultDescripti
         Category Collection
       </div>
       <h1 class="text-4xl font-black tracking-tight text-slate-900 md:text-5xl capitalize">
-        {slug}
+        {categoryLabel}
       </h1>
       <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed font-medium">
         {currentDesc}
