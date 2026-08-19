@@ -1,10 +1,12 @@
 import { ui, defaultLang } from './ui';
 
-export function getLangFromEnv() {
-  // .env에 설정된 VITE_SITE_LANG이 있으면 사용, 없으면 defaultLang(ko) 사용
-  const envLang = import.meta.env.VITE_SITE_LANG;
-  if (envLang && envLang in ui) {
-    return envLang as keyof typeof ui;
+// [FIX] 이 앱은 멀티테넌트 SSR이라 요청마다 사이트가 다르다.
+// 예전엔 빌드타임 환경변수(VITE_SITE_LANG)로 언어를 고정했는데,
+// 그러면 어떤 도메인으로 들어와도 항상 같은 언어만 나온다.
+// siteConfig.metadata.language(요청별 값)를 넘겨받아 검증하는 방식으로 교체.
+export function resolveLang(lang?: string | null) {
+  if (lang && lang in ui) {
+    return lang as keyof typeof ui;
   }
   return defaultLang;
 }

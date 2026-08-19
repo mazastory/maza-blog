@@ -1,8 +1,5 @@
 ---
-import { getLangFromEnv, useTranslations } from '../i18n/utils';
-
-const lang = getLangFromEnv();
-const t = useTranslations(lang);
+import { resolveLang, useTranslations } from '../i18n/utils';
 
 interface Props {
   siteConfig?: any;
@@ -11,6 +8,7 @@ interface Props {
 }
 
 const { siteConfig = null, position = 'bottom', className = '' } = Astro.props;
+const t = useTranslations(resolveLang(siteConfig?.metadata?.language || siteConfig?.metadata?.lang));
 
 // 애드센스용 메인 도메인인 경우 배너를 노출하지 않음 (안전 최우선)
 const isAdsenseMain = siteConfig?.metadata?.domain_type === 'main' || siteConfig?.adsense_pub;

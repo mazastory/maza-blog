@@ -1,14 +1,14 @@
 ---
-import { getLangFromEnv, useTranslations } from '../i18n/utils';
-const lang = getLangFromEnv();
-const t = useTranslations(lang);
+import { resolveLang, useTranslations } from '../i18n/utils';
 
 interface Props {
   siteId?: string;
   domain?: string;
+  lang?: string;
 }
 
-const { siteId, domain } = Astro.props;
+const { siteId, domain, lang } = Astro.props;
+const t = useTranslations(resolveLang(lang));
 ---
 
 <div class="newsletter-wrapper bg-slate-900 text-white rounded-2xl p-8 my-12 shadow-xl border border-slate-800 relative overflow-hidden">

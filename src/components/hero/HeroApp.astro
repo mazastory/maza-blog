@@ -1,8 +1,5 @@
 ---
-import { getLangFromEnv, useTranslations } from '../../i18n/utils';
-
-const lang = getLangFromEnv();
-const t = useTranslations(lang);
+import { resolveLang, useTranslations } from '../../i18n/utils';
 
 export interface Props {
   blogName: string;
@@ -10,8 +7,10 @@ export interface Props {
   heroBgUrl?: string | null;
   posts: any[];
   heroSubtitle: string;
+  lang?: string;
 }
-const { blogName, blogDescription, heroBgUrl, posts, heroSubtitle } = Astro.props;
+const { blogName, blogDescription, heroBgUrl, posts, heroSubtitle, lang } = Astro.props;
+const t = useTranslations(resolveLang(lang));
 
 let bgImg = heroBgUrl || '/hero-bg-picasso.png';
 if (!heroBgUrl && posts.length > 0) {

@@ -5,12 +5,13 @@ import { getCategoryLabel } from '../lib/categories';
 interface Props {
   post: Post;
   isPremium?: boolean;
+  lang?: string;
 }
 
-const { post, isPremium = false } = Astro.props;
-import { getLangFromEnv, useTranslations } from '../i18n/utils';
+const { post, isPremium = false, lang: rawLang } = Astro.props;
+import { resolveLang, useTranslations } from '../i18n/utils';
 
-const lang = getLangFromEnv();
+const lang = resolveLang(rawLang);
 const t = useTranslations(lang);
 const dateLocales: Record<string, string> = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP' };
 const formattedDate = new Date(post.publish_at || post.created_at).toLocaleDateString(dateLocales[lang] || 'en-US', {
@@ -100,7 +101,7 @@ const freeClasses = "rounded-2xl bg-white border border-slate-200 shadow-sm tran
         {/* [LABEL] 내부 슬러그를 그대로 노출하지 않는다.
             toUpperCase()가 "CAREER_DEV", "ASSET_MANAGEMENT"를 독자에게 보여주고 있었고,
             사이트가 미완성으로 보이는 가장 큰 요인이었다. */}
-        {getCategoryLabel(post.metadata?.category) || tArticle}
+        {getCategoryLabel(post.metadata?.category, lang) || tArticle}
       </span>
       <span class="text-xs font-medium text-slate-400">
         {formattedDate}

@@ -93,9 +93,21 @@ if (subImages.length > 0) {
 
 const [part1, part2] = splitHtmlForAd(linkedHtmlContent);
 
-const profileName = siteConfig?.blog_name || "Maza Editor";
+const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+const blogName = siteConfig?.blog_name || "Maza Blog";
+// [FIX] 저자를 블로그명이 아닌 실제 저자 정보(author_name/bio)로 표시 — E-E-A-T 신호 강화
+const profileName = siteConfig?.metadata?.author_name?.trim() || blogName || "Maza Editor";
+const authorBio = siteConfig?.metadata?.author_bio?.trim() || '';
 const publishDate = post.publish_at || post.created_at;
-const dateStr = new Date(publishDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+const dateLocale = lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'ko-KR';
+const dateStr = new Date(publishDate).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+
+const POST_LABELS: Record<string, { backToList: string; blogHome: string; prevPost: string; nextPost: string; share: string; shareCopied: string; shareFailed: string }> = {
+  ko: { backToList: '목록으로', blogHome: '블로그 홈', prevPost: '이전 글', nextPost: '다음 글', share: '이 글 공유하기 (링크 복사)', shareCopied: '링크 복사 완료!', shareFailed: '링크 복사에 실패했습니다. URL을 직접 복사해주세요.' },
+  en: { backToList: 'Back to list', blogHome: 'Blog Home', prevPost: 'Previous Post', nextPost: 'Next Post', share: 'Share this article (copy link)', shareCopied: 'Link copied!', shareFailed: 'Could not copy the link. Please copy the URL manually.' },
+  ja: { backToList: '一覧に戻る', blogHome: 'ブログホーム', prevPost: '前の記事', nextPost: '次の記事', share: 'この記事を共有(リンクをコピー)', shareCopied: 'リンクをコピーしました!', shareFailed: 'リンクのコピーに失敗しました。URLを直接コピーしてください。' },
+};
+const labels = POST_LABELS[lang] || POST_LABELS.en;
 
 // Zero-IT 마법사로 자동 생성된 글인지 판별 (HTML 내부에 이미 h1 타이틀과 본문 썸네일이 포함되어 있음)
 const isZeroItPost = post.html_content && post.html_content.includes('max-width:7');
@@ -149,7 +161,7 @@ const rawDesc = (() => {
       <!-- 뒤로가기 -->
       <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 hover:text-[var(--color-indigo-600)] mb-6 md:mb-10 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        목록으로
+        {labels.backToList}
       </a>
 
     <!-- 포스트 헤더 -->
@@ -167,7 +179,7 @@ const rawDesc = (() => {
         
         <!-- 작성자 정보 -->
         <div class="flex items-center gap-3 text-sm text-slate-500">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2" title={authorBio || undefined}>
             <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-indigo-100)] to-slate-100 text-[var(--color-indigo-600)] font-bold text-xs shadow-inner">
               {profileName.charAt(0).toUpperCase()}
             </div>
@@ -176,6 +188,9 @@ const rawDesc = (() => {
           <span class="h-1 w-1 rounded-full bg-slate-300"></span>
           <time datetime={publishDate}>{dateStr}</time>
         </div>
+        {authorBio && (
+          <p class="mt-2 text-xs text-slate-400 max-w-xl break-keep">{authorBio}</p>
+        )}
       </header>
     )}
 
@@ -236,13 +251,15 @@ const rawDesc = (() => {
         ))}
       </div>
 
-      <button 
-        id="share-btn" 
+      <button
+        id="share-btn"
         class="group w-full md:w-auto flex-shrink-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 hover:-translate-y-0.5 transition-all"
-        title="링크 복사하기"
+        title={labels.share}
+        data-copied-text={labels.shareCopied}
+        data-failed-text={labels.shareFailed}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-        <span id="share-text">이 글 공유하기 (링크 복사)</span>
+        <span id="share-text">{labels.share}</span>
       </button>
     </div>
 
@@ -253,7 +270,7 @@ const rawDesc = (() => {
         <div class="flex justify-start order-2 md:order-1">
         {prevPost ? (
           <a href={`/${prevPost.slug || prevPost.id}`} class="group flex flex-col justify-center rounded-2xl border border-slate-200 bg-white p-5 hover:border-indigo-300 hover:shadow-md transition-all text-left w-full h-full">
-            <span class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500">← Previous Post</span>
+            <span class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500">← {labels.prevPost}</span>
             <span class="text-sm font-bold text-slate-800 line-clamp-2">{prevPost.title}</span>
           </a>
         ) : <div class="hidden md:block w-full"></div>}
@@ -263,7 +280,7 @@ const rawDesc = (() => {
         <div class="flex justify-center items-center order-1 md:order-2 mb-4 md:mb-0">
           <a href="/" class="flex flex-col items-center justify-center w-full h-full rounded-2xl border border-slate-200 bg-slate-900 p-5 hover:bg-indigo-600 transition-colors text-slate-400 hover:text-white group">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-white group-hover:scale-110 transition-transform"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span class="text-[10px] font-black uppercase tracking-widest text-white">블로그 홈</span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-white">{labels.blogHome}</span>
           </a>
         </div>
         
@@ -271,7 +288,7 @@ const rawDesc = (() => {
         <div class="flex justify-end order-3 md:order-3">
         {nextPost ? (
           <a href={`/${nextPost.slug || nextPost.id}`} class="group flex flex-col justify-center rounded-2xl border border-slate-200 bg-white p-5 hover:border-indigo-300 hover:shadow-md transition-all text-right w-full h-full">
-            <span class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500">Next Post →</span>
+            <span class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500">{labels.nextPost} →</span>
             <span class="text-sm font-bold text-slate-800 line-clamp-2">{nextPost.title}</span>
           </a>
         ) : <div class="hidden md:block w-full"></div>}
@@ -390,8 +407,9 @@ const rawDesc = (() => {
           }
           
           const originalHtml = shareBtn.innerHTML;
-          
-          shareBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span id="share-text">링크 복사 완료!</span>`;
+          const copiedText = shareBtn.dataset.copiedText || 'Link copied!';
+
+          shareBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span id="share-text">${copiedText}</span>`;
           shareBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
           shareBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
           
@@ -401,7 +419,7 @@ const rawDesc = (() => {
             shareBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
           }, 2500);
         } catch (err) {
-          alert('링크 복사에 실패했습니다. URL을 직접 복사해주세요.');
+          alert(shareBtn.dataset.failedText || 'Could not copy the link. Please copy the URL manually.');
         }
       });
     }

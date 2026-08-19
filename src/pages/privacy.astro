@@ -9,27 +9,147 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, sta
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const niche = siteConfig?.niche || '';
 const currentYear = new Date().getFullYear();
-const lastUpdated = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+const dateLocale = lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'ko-KR';
+const lastUpdated = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+
+const COPY: Record<string, any> = {
+  ko: {
+    title: '개인정보처리방침',
+    metaDesc: `${blogName}(${domain})의 개인정보처리방침. 수집 정보, 쿠키 정책, 광고 데이터 활용에 대해 안내합니다.`,
+    badge: 'Legal',
+    operatedBy: '운영 사이트',
+    lastUpdatedLabel: '최종 업데이트',
+    lead: `${blogName}(${domain})${niche ? `은 ${niche} 분야의 정보를 제공하는 블로그로서,` : '은'} 방문자의 개인정보를 소중히 여기며 최소한의 정보만 수집합니다. 아래에서 수집 정보와 활용 방식을 투명하게 안내합니다.`,
+    collectedTitle: '수집되는 정보',
+    collected: [
+      '접속 IP 주소 (트래픽 분석, 보안 목적)',
+      '브라우저 쿠키 (광고 개인화 및 사용자 경험 향상)',
+      'Google Analytics를 통한 페이지 조회 통계',
+      'Google AdSense를 통한 광고 관련 익명 데이터',
+    ],
+    securityTitle: '데이터 보안 및 공유',
+    securityDesc: '수집된 데이터는 엄격하게 보호되며, 법적 요구 없이 제3자와 무단 공유되지 않습니다. 광고 제공 목적으로 암호화된 익명 데이터가 Google AdSense 등 파트너사에 전달될 수 있습니다.',
+    adsenseTitle: 'Google AdSense 및 광고 쿠키',
+    adsenseP: (name: string) => `${name}은 Google AdSense를 통해 광고를 게재합니다. Google AdSense는 방문자의 관심사에 맞는 광고를 표시하기 위해 쿠키를 사용하며, Google의`,
+    adsensePolicySuffix: '이 적용됩니다.',
+    adsenseLi1: 'Google은 DoubleClick 쿠키를 사용하여 사용자가 이 사이트 및 인터넷의 다른 사이트를 방문할 때 관련성 높은 광고를 게재할 수 있습니다.',
+    adsenseLi2Pre: '',
+    adsenseLi2Link: 'Google 광고 설정 페이지',
+    adsenseLi2Post: '에서 맞춤형 광고를 언제든지 비활성화할 수 있습니다.',
+    privacyPolicyLink: '개인정보처리방침',
+    cookiesTitle: '쿠키(Cookies) 사용 안내',
+    cookiesP: (name: string, d: string) => `${name}(${d})은 사용자 경험 향상을 위해 쿠키를 사용합니다. 쿠키는 브라우저 설정에서 언제든지 차단하거나 삭제할 수 있으며, 이 경우 일부 서비스 이용에 제한이 있을 수 있습니다.`,
+    cookieEssential: '필수 쿠키:', cookieEssentialDesc: '사이트 기본 기능 제공에 필요합니다.',
+    cookieAnalytics: '분석 쿠키:', cookieAnalyticsDesc: 'Google Analytics를 통한 방문자 통계 수집에 사용됩니다.',
+    cookieAds: '광고 쿠키:', cookieAdsDesc: 'Google AdSense를 통한 맞춤형 광고 제공에 사용됩니다.',
+    retentionTitle: '개인정보의 보유 및 이용 기간',
+    retentionDesc: '수집된 개인정보는 서비스 제공 목적 달성 후 지체 없이 파기하며, 관련 법령에 따라 일정 기간 보존이 필요한 경우 해당 기간 동안만 보관합니다.',
+    rightsTitle: '이용자의 권리',
+    rightsDescPre: '이용자는 언제든지 자신의 개인정보에 대한 열람, 정정, 삭제, 처리정지 요청을 할 수 있습니다. 관련 문의는 ',
+    rightsDescLink: 'Contact 페이지',
+    rightsDescPost: '를 통해 접수하실 수 있습니다.',
+    footerNote: (y: number) => `본 방침은 ${y}년 기준으로 작성되었으며 법령 변경 또는 서비스 개편 시 사전 공지 후 변경될 수 있습니다.`,
+    operatedByFooter: '운영 사이트', blogNameLabel: '블로그명', nicheLabel: '전문 분야',
+  },
+  en: {
+    title: 'Privacy Policy',
+    metaDesc: `Privacy Policy for ${blogName} (${domain}) — what we collect, our cookie policy, and how advertising data is used.`,
+    badge: 'Legal',
+    operatedBy: 'Operated by',
+    lastUpdatedLabel: 'Last updated',
+    lead: `${blogName} (${domain})${niche ? ` is a blog providing information about ${niche}, and it` : ''} values your privacy and collects only the minimum information necessary. Below, we explain transparently what we collect and how we use it.`,
+    collectedTitle: 'Information We Collect',
+    collected: [
+      'Your IP address (for traffic analysis and security)',
+      'Browser cookies (for ad personalization and improving your experience)',
+      'Page view statistics via Google Analytics',
+      'Anonymous ad-related data via Google AdSense',
+    ],
+    securityTitle: 'Data Security & Sharing',
+    securityDesc: 'Collected data is strictly protected and is never shared with third parties without a legal requirement to do so. Encrypted, anonymized data may be shared with partners such as Google AdSense for ad-serving purposes.',
+    adsenseTitle: 'Google AdSense & Advertising Cookies',
+    adsenseP: (name: string) => `${name} serves ads through Google AdSense. Google AdSense uses cookies to show ads relevant to visitors' interests, and Google's`,
+    adsensePolicySuffix: ' applies.',
+    adsenseLi1: 'Google uses the DoubleClick cookie to serve relevant ads to users as they visit this site and other sites across the internet.',
+    adsenseLi2Pre: 'You can opt out of personalized advertising at any time via the ',
+    adsenseLi2Link: 'Google Ads Settings page',
+    adsenseLi2Post: '.',
+    privacyPolicyLink: 'privacy policy',
+    cookiesTitle: 'Use of Cookies',
+    cookiesP: (name: string, d: string) => `${name} (${d}) uses cookies to improve your experience. You can block or delete cookies at any time through your browser settings, though some features may be limited as a result.`,
+    cookieEssential: 'Essential cookies:', cookieEssentialDesc: 'Required to provide the site\'s core functionality.',
+    cookieAnalytics: 'Analytics cookies:', cookieAnalyticsDesc: 'Used to collect visitor statistics via Google Analytics.',
+    cookieAds: 'Advertising cookies:', cookieAdsDesc: 'Used to serve personalized ads via Google AdSense.',
+    retentionTitle: 'Data Retention Period',
+    retentionDesc: 'Collected personal data is deleted without delay once its purpose has been fulfilled, except where applicable law requires it to be retained for a defined period.',
+    rightsTitle: 'Your Rights',
+    rightsDescPre: 'You may request access to, correction of, deletion of, or a suspension of processing for your personal data at any time. Please reach out via our ',
+    rightsDescLink: 'Contact page',
+    rightsDescPost: ' with any related inquiries.',
+    footerNote: (y: number) => `This policy was last written in ${y} and may change following changes in law or our services, with prior notice.`,
+    operatedByFooter: 'Operated by', blogNameLabel: 'Blog name', nicheLabel: 'Focus area',
+  },
+  ja: {
+    title: 'プライバシーポリシー',
+    metaDesc: `${blogName}(${domain})のプライバシーポリシー。収集する情報、クッキーポリシー、広告データの利用についてご案内します。`,
+    badge: 'Legal',
+    operatedBy: '運営サイト',
+    lastUpdatedLabel: '最終更新日',
+    lead: `${blogName}(${domain})${niche ? `は${niche}分野の情報を提供するブログとして、` : 'は'}訪問者の個人情報を大切にし、必要最小限の情報のみを収集します。以下で収集する情報とその活用方法を透明にご案内します。`,
+    collectedTitle: '収集する情報',
+    collected: [
+      '接続IPアドレス(トラフィック分析・セキュリティ目的)',
+      'ブラウザクッキー(広告のパーソナライズおよびユーザー体験向上のため)',
+      'Google Analyticsによるページ閲覧統計',
+      'Google AdSenseによる広告関連の匿名データ',
+    ],
+    securityTitle: 'データの安全管理と共有',
+    securityDesc: '収集したデータは厳格に保護され、法的要求がない限り第三者と無断で共有されません。広告配信の目的で、暗号化された匿名データがGoogle AdSenseなどのパートナーに提供される場合があります。',
+    adsenseTitle: 'Google AdSenseと広告クッキー',
+    adsenseP: (name: string) => `${name}はGoogle AdSenseを通じて広告を配信しています。Google AdSenseは訪問者の興味に合わせた広告を表示するためにクッキーを使用し、Googleの`,
+    adsensePolicySuffix: 'が適用されます。',
+    adsenseLi1: 'Googleは、ユーザーが当サイトおよびインターネット上の他のサイトを訪問する際に、関連性の高い広告を配信するためにDoubleClickクッキーを使用することがあります。',
+    adsenseLi2Pre: '',
+    adsenseLi2Link: 'Google広告設定ページ',
+    adsenseLi2Post: 'から、パーソナライズ広告をいつでも無効にできます。',
+    privacyPolicyLink: 'プライバシーポリシー',
+    cookiesTitle: 'クッキー(Cookies)の使用について',
+    cookiesP: (name: string, d: string) => `${name}(${d})は、ユーザー体験向上のためにクッキーを使用します。クッキーはブラウザの設定からいつでもブロックまたは削除できますが、その場合一部サービスの利用が制限されることがあります。`,
+    cookieEssential: '必須クッキー:', cookieEssentialDesc: 'サイトの基本機能を提供するために必要です。',
+    cookieAnalytics: '分析クッキー:', cookieAnalyticsDesc: 'Google Analyticsによる訪問者統計の収集に使用されます。',
+    cookieAds: '広告クッキー:', cookieAdsDesc: 'Google AdSenseによるパーソナライズ広告の配信に使用されます。',
+    retentionTitle: '個人情報の保有および利用期間',
+    retentionDesc: '収集した個人情報は、サービス提供の目的が達成された後、遅滞なく破棄します。関連法令により一定期間の保存が必要な場合は、その期間のみ保管します。',
+    rightsTitle: '利用者の権利',
+    rightsDescPre: '利用者はいつでも自身の個人情報について、閲覧・訂正・削除・処理停止を請求できます。関連するお問い合わせは',
+    rightsDescLink: 'お問い合わせページ',
+    rightsDescPost: 'よりご連絡ください。',
+    footerNote: (y: number) => `本方針は${y}年時点で作成されており、法令の変更またはサービスの改編に伴い、事前告知の上変更される場合があります。`,
+    operatedByFooter: '運営サイト', blogNameLabel: 'ブログ名', nicheLabel: '専門分野',
+  },
+};
+const c = COPY[lang] || COPY.en;
 ---
-<Layout title={`개인정보처리방침 `} description={`${blogName}(${domain})의 개인정보처리방침. 수집 정보, 쿠키 정책, 광고 데이터 활용에 대해 안내합니다.`} siteConfig={siteConfig}>
+<Layout title={c.title} description={c.metaDesc} siteConfig={siteConfig}>
   <main class="mx-auto max-w-4xl px-6 py-20 md:py-24 relative">
     <div class="absolute top-0 right-0 w-full h-96 bg-gradient-to-b from-slate-100 to-transparent -z-10"></div>
 
     <div class="mb-12 border-b border-slate-200 pb-12">
       <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-bold uppercase tracking-widest text-slate-600 border border-slate-200">
-        Legal
+        {c.badge}
       </div>
       <h1 class="text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl">
-        개인정보처리방침
+        {c.title}
       </h1>
       <p class="mt-3 text-slate-500 font-medium">
-        운영 사이트: <strong>{domain}</strong> · 최종 업데이트: {lastUpdated}
+        {c.operatedBy}: <strong>{domain}</strong> · {c.lastUpdatedLabel}: {lastUpdated}
       </p>
     </div>
 
     <div class="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 hover:prose-a:text-indigo-700">
       <p class="lead text-xl text-slate-600 font-medium mb-10">
-        <strong>{blogName}</strong>({domain}){niche ? `은 ${niche} 분야의 정보를 제공하는 블로그로서,` : '은'} 방문자의 개인정보를 소중히 여기며 최소한의 정보만 수집합니다. 아래에서 수집 정보와 활용 방식을 투명하게 안내합니다.
+        {c.lead}
       </p>
 
       <div class="grid gap-6 md:grid-cols-2 mb-12">
@@ -37,59 +157,56 @@ const lastUpdated = new Date().toLocaleDateString('ko-KR', { year: 'numeric', mo
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 m-0 mb-3">수집되는 정보</h3>
+          <h3 class="text-lg font-bold text-slate-900 m-0 mb-3">{c.collectedTitle}</h3>
           <ul class="text-sm text-slate-600 m-0 pl-4 space-y-2">
-            <li>접속 IP 주소 (트래픽 분석, 보안 목적)</li>
-            <li>브라우저 쿠키 (광고 개인화 및 사용자 경험 향상)</li>
-            <li>Google Analytics를 통한 페이지 조회 통계</li>
-            <li>Google AdSense를 통한 광고 관련 익명 데이터</li>
+            {c.collected.map((item: string) => <li>{item}</li>)}
           </ul>
         </div>
         <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 m-0 mb-3">데이터 보안 및 공유</h3>
+          <h3 class="text-lg font-bold text-slate-900 m-0 mb-3">{c.securityTitle}</h3>
           <p class="text-sm text-slate-600 m-0">
-            수집된 데이터는 엄격하게 보호되며, 법적 요구 없이 제3자와 무단 공유되지 않습니다. 광고 제공 목적으로 암호화된 익명 데이터가 Google AdSense 등 파트너사에 전달될 수 있습니다.
+            {c.securityDesc}
           </p>
         </div>
       </div>
 
-      <h2>Google AdSense 및 광고 쿠키</h2>
+      <h2>{c.adsenseTitle}</h2>
       <p>
-        <strong>{blogName}</strong>은 Google AdSense를 통해 광고를 게재합니다. Google AdSense는 방문자의 관심사에 맞는 광고를 표시하기 위해 쿠키를 사용하며, Google의 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">개인정보처리방침</a>이 적용됩니다.
+        {c.adsenseP(blogName)} <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">{c.privacyPolicyLink}</a>{c.adsensePolicySuffix}
       </p>
       <ul>
-        <li>Google은 DoubleClick 쿠키를 사용하여 사용자가 이 사이트 및 인터넷의 다른 사이트를 방문할 때 관련성 높은 광고를 게재할 수 있습니다.</li>
-        <li><a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">Google 광고 설정 페이지</a>에서 맞춤형 광고를 언제든지 비활성화할 수 있습니다.</li>
+        <li>{c.adsenseLi1}</li>
+        <li>{c.adsenseLi2Pre}<a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">{c.adsenseLi2Link}</a>{c.adsenseLi2Post}</li>
       </ul>
 
-      <h2>쿠키(Cookies) 사용 안내</h2>
+      <h2>{c.cookiesTitle}</h2>
       <p>
-        {blogName}({domain})은 사용자 경험 향상을 위해 쿠키를 사용합니다. 쿠키는 브라우저 설정에서 언제든지 차단하거나 삭제할 수 있으며, 이 경우 일부 서비스 이용에 제한이 있을 수 있습니다.
+        {c.cookiesP(blogName, domain)}
       </p>
       <ul>
-        <li><strong>필수 쿠키:</strong> 사이트 기본 기능 제공에 필요합니다.</li>
-        <li><strong>분석 쿠키:</strong> Google Analytics를 통한 방문자 통계 수집에 사용됩니다.</li>
-        <li><strong>광고 쿠키:</strong> Google AdSense를 통한 맞춤형 광고 제공에 사용됩니다.</li>
+        <li><strong>{c.cookieEssential}</strong> {c.cookieEssentialDesc}</li>
+        <li><strong>{c.cookieAnalytics}</strong> {c.cookieAnalyticsDesc}</li>
+        <li><strong>{c.cookieAds}</strong> {c.cookieAdsDesc}</li>
       </ul>
 
-      <h2>개인정보의 보유 및 이용 기간</h2>
+      <h2>{c.retentionTitle}</h2>
       <p>
-        수집된 개인정보는 서비스 제공 목적 달성 후 지체 없이 파기하며, 관련 법령에 따라 일정 기간 보존이 필요한 경우 해당 기간 동안만 보관합니다.
+        {c.retentionDesc}
       </p>
 
-      <h2>이용자의 권리</h2>
+      <h2>{c.rightsTitle}</h2>
       <p>
-        이용자는 언제든지 자신의 개인정보에 대한 열람, 정정, 삭제, 처리정지 요청을 할 수 있습니다. 관련 문의는 <a href="/contact">Contact 페이지</a>를 통해 접수하실 수 있습니다.
+        {c.rightsDescPre}<a href="/contact">{c.rightsDescLink}</a>{c.rightsDescPost}
       </p>
 
       <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 mt-10 text-sm text-slate-600">
         <p class="m-0">
-          본 방침은 {currentYear}년 기준으로 작성되었으며 법령 변경 또는 서비스 개편 시 사전 공지 후 변경될 수 있습니다.<br/>
-          운영 사이트: <strong>{domain}</strong> · 블로그명: <strong>{blogName}</strong>
-          {niche && <> · 전문 분야: <strong>{niche}</strong></>}
+          {c.footerNote(currentYear)}<br/>
+          {c.operatedByFooter}: <strong>{domain}</strong> · {c.blogNameLabel}: <strong>{blogName}</strong>
+          {niche && <> · {c.nicheLabel}: <strong>{niche}</strong></>}
         </p>
       </div>
     </div>

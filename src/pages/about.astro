@@ -18,20 +18,91 @@ const eeatGuideline = siteConfig?.metadata?.eeat_guideline || '';
 
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
 
-// niche 기반 동적 설명 생성 (aboutContent가 없을 때 fallback)
-const nicheDesc = lang === 'en'
-  ? (niche
-    ? `${blogName} is a specialized content blog focusing on <strong>${niche}</strong>. We aim to provide practical and in-depth information to readers interested in ${niche}.`
-    : `${blogName} is a specialized content blog providing reliable information to our readers.`)
-  : (niche
-    ? `${blogName}은 <strong>${niche}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. ${niche}에 관심 있는 독자들에게 실용적이고 깊이 있는 정보를 제공하는 것을 목표로 합니다.`
-    : `${blogName}은 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`);
+const COPY: Record<string, any> = {
+  ko: {
+    badge: 'About Us',
+    headlinePrefix: '', headlineSuffix: '에 대하여',
+    nicheLine: (n: string, d: string) => `${n} 전문 콘텐츠 블로그 · ${d}`,
+    nicheDesc: (name: string, n: string) => n
+      ? `${name}은 <strong>${n}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. ${n}에 관심 있는 독자들에게 실용적이고 깊이 있는 정보를 제공하는 것을 목표로 합니다.`
+      : `${name}은 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`,
+    pageDesc: (name: string, n: string) => n ? `${name} — ${n} 전문 블로그. 실용적이고 깊이 있는 콘텐츠를 제공합니다.` : `${name} 소개 페이지`,
+    principlesTitle: '우리의 콘텐츠 원칙',
+    principles: (n: string) => [
+      { t: '독창적 관점:', d: `인터넷에서 흔히 볼 수 있는 정보를 단순 재조합하지 않습니다. ${n ? `${n} 분야에서` : ''} 독자적인 시각과 실용적인 인사이트를 제공합니다.` },
+      { t: '사실 기반 서술:', d: '검증되지 않은 수치나 통계를 사실처럼 제시하지 않습니다. 불확실한 정보는 "일반적으로", "많은 경우" 등 정성적으로 표현합니다.' },
+      { t: '독자 우선:', d: '광고보다 콘텐츠가 항상 우선입니다. 독자의 시간을 소중히 여기며, 실질적으로 도움이 되는 정보만 발행합니다.' },
+      { t: '투명한 운영:', d: '광고 수익 및 제휴 링크 활용 사실을 명확히 공개합니다.', linkText: '면책 조항', linkSuffix: '에서 자세한 내용을 확인하실 수 있습니다.' },
+      { t: 'AI 보조 + 편집자 검수:', d: '일부 콘텐츠 작성에 AI를 발행 보조 도구로 활용하며, 모든 글은 발행 전 편집자의 사실 확인 및 체계적 수정 과정을 거칩니다. 아무 콘텐츠도 미검수 상태로 발행되지 않습니다.', good: true },
+      { t: '콘텐츠 업데이트 정책:', d: '특정 분야의 정보가 변경될 경우, 기존 글을 주기적으로 갱신하여 정확성을 유지합니다.', warn: true },
+    ],
+    editorTitle: '에디터 소개',
+    defaultEditor: '대표 에디터',
+    footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. 본 사이트는 ${d} 도메인에서 운영됩니다.<br />
+      일부 콘텐츠 작성 과정에서 AI를 <strong>아이디어 생성 보조 도구</strong>로 활용하며,
+      작성된 모든 콘텐츠는 편집자가 <strong>실제로 검토하고 수정하여 발행합니다.</strong>
+      AI가 생성한 콘텐츠를 미검수 상태로 바로 게시하지 않습니다. 오류나 부정확한 정보를 발견하시면 <a href="/contact" class="underline">연락하여</a> 알려주세요.`,
+    contactCta: 'Contact Us',
+    disclaimerCta: '면책 조항 보기',
+  },
+  en: {
+    badge: 'About Us',
+    headlinePrefix: 'About ', headlineSuffix: '',
+    nicheLine: (n: string, d: string) => `Specialized content blog on ${n} · ${d}`,
+    nicheDesc: (name: string, n: string) => n
+      ? `${name} is a specialized content blog focusing on <strong>${n}</strong>. We aim to provide practical and in-depth information to readers interested in ${n}.`
+      : `${name} is a specialized content blog providing reliable information to our readers.`,
+    pageDesc: (name: string, n: string) => n ? `${name} — Expert blog for ${n}. Providing practical and in-depth content.` : `About ${name}`,
+    principlesTitle: 'Our Content Principles',
+    principles: (n: string) => [
+      { t: 'Original perspective:', d: `We don't simply recombine information that's already common online. We provide an independent point of view and practical insight${n ? ` on ${n}` : ''}.` },
+      { t: 'Fact-based writing:', d: 'We don\'t present unverified figures or statistics as fact. Uncertain information is qualified with language like "generally" or "in many cases."' },
+      { t: 'Readers first:', d: 'Content always comes before advertising. We value your time and only publish information that is genuinely useful.' },
+      { t: 'Transparent operations:', d: 'We clearly disclose our use of advertising revenue and affiliate links.', linkText: 'Disclaimer', linkSuffix: ' page.' },
+      { t: 'AI-assisted + editor-reviewed:', d: 'AI may be used as a drafting aid for some content, but every article goes through editorial fact-checking and revision before publication. No content is published without review.', good: true },
+      { t: 'Content update policy:', d: 'When information in a given field changes, we periodically refresh existing articles to keep them accurate.', warn: true },
+    ],
+    editorTitle: 'Meet the Editor',
+    defaultEditor: 'Lead Editor',
+    footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. This site is operated on the ${d} domain.<br />
+      AI may be used as an <strong>idea-generation aid</strong> in part of our writing process, and
+      all published content is <strong>reviewed and edited by a human editor</strong> before publication.
+      AI-generated content is never published without review. If you spot an error or inaccuracy, please <a href="/contact" class="underline">let us know</a>.`,
+    contactCta: 'Contact Us',
+    disclaimerCta: 'View Disclaimer',
+  },
+  ja: {
+    badge: 'About Us',
+    headlinePrefix: '', headlineSuffix: 'について',
+    nicheLine: (n: string, d: string) => `${n}専門コンテンツブログ · ${d}`,
+    nicheDesc: (name: string, n: string) => n
+      ? `${name}は<strong>${n}</strong>分野に特化した専門コンテンツブログです。${n}に関心のある読者に、実用的で深みのある情報を提供することを目指しています。`
+      : `${name}は読者に信頼できる情報を提供する専門コンテンツブログです。`,
+    pageDesc: (name: string, n: string) => n ? `${name} — ${n}専門ブログ。実用的で深みのあるコンテンツを提供します。` : `${name}について`,
+    principlesTitle: '私たちのコンテンツ原則',
+    principles: (n: string) => [
+      { t: '独自の視点:', d: `インターネット上でよく見られる情報を単純に再構成することはありません。${n ? `${n}分野において` : ''}独自の視点と実用的なインサイトを提供します。` },
+      { t: '事実に基づく記述:', d: '検証されていない数値や統計を事実として提示することはありません。不確かな情報は「一般的に」「多くの場合」など、定性的な表現を用います。' },
+      { t: '読者第一:', d: '広告よりもコンテンツを常に優先します。読者の時間を大切にし、実質的に役立つ情報のみを発信します。' },
+      { t: '透明な運営:', d: '広告収益およびアフィリエイトリンクの活用について明確に開示しています。', linkText: '免責事項', linkSuffix: 'で詳細をご確認いただけます。' },
+      { t: 'AI補助+編集者による検証:', d: '一部のコンテンツ作成にAIを補助ツールとして活用していますが、すべての記事は公開前に編集者によるファクトチェックと体系的な修正プロセスを経ています。未確認のコンテンツが公開されることはありません。', good: true },
+      { t: 'コンテンツ更新ポリシー:', d: '特定分野の情報が変化した場合、既存の記事を定期的に更新して正確性を維持します。', warn: true },
+    ],
+    editorTitle: '編集者紹介',
+    defaultEditor: '編集長',
+    footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. 本サイトは${d}ドメインで運営されています。<br />
+      一部のコンテンツ作成過程でAIを<strong>アイデア生成の補助ツール</strong>として活用しており、
+      作成されたすべてのコンテンツは編集者が<strong>実際にレビューし、修正の上で公開しています。</strong>
+      AIが生成したコンテンツを未確認のまま公開することはありません。誤りや不正確な情報を見つけた場合は<a href="/contact" class="underline">ご連絡</a>ください。`,
+    contactCta: 'Contact Us',
+    disclaimerCta: '免責事項を見る',
+  },
+};
+const c = COPY[lang] || COPY.en;
 
-const pageDescription = aboutContent
-  ? aboutContent.substring(0, 160)
-  : niche
-    ? (lang === 'en' ? `${blogName} — Expert blog for ${niche}. Providing practical and in-depth content.` : `${blogName} — ${niche} 전문 블로그. 실용적이고 깊이 있는 콘텐츠를 제공합니다.`)
-    : (lang === 'en' ? `About ${blogName}` : `${blogName} 소개 페이지`);
+const nicheDesc = c.nicheDesc(blogName, niche);
+const pageDescription = aboutContent ? aboutContent.substring(0, 160) : c.pageDesc(blogName, niche);
+const principles = c.principles(niche);
 ---
 <Layout title={`${blogName} · About`} description={pageDescription} siteConfig={siteConfig}>
   <main class="mx-auto max-w-4xl px-6 py-20 md:py-32 relative">
@@ -41,21 +112,21 @@ const pageDescription = aboutContent
 
     <div class="overflow-hidden rounded-[40px] border border-slate-200/80 bg-white/60 backdrop-blur-2xl p-10 md:p-16 shadow-[0_32px_80px_-48px_rgba(79,70,229,0.3)]">
       <div class="mb-8 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-indigo-600 border border-indigo-100">
-        About Us
+        {c.badge}
       </div>
-      
+
       <h1 class="mb-6 text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-5xl lg:text-6xl break-keep">
-        {lang === 'en' ? `About ` : ''}<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>{lang !== 'en' ? '에 대하여' : ''}
+        {c.headlinePrefix}<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>{c.headlineSuffix}
       </h1>
 
       {niche && (
         <p class="mb-10 text-lg font-semibold text-indigo-600 border-l-4 border-indigo-300 pl-4">
-          {niche} 전문 콘텐츠 블로그 · {domain}
+          {c.nicheLine(niche, domain)}
         </p>
       )}
-      
+
       <div class="prose prose-lg md:prose-xl prose-slate max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 hover:prose-a:text-indigo-700 prose-p:leading-relaxed">
-        
+
         {aboutContent ? (
           <p class="text-xl font-medium text-slate-600" set:html={aboutContent} />
         ) : (
@@ -70,44 +141,29 @@ const pageDescription = aboutContent
           </blockquote>
         )}
 
-        <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">우리의 콘텐츠 원칙</h2>
+        <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">{c.principlesTitle}</h2>
         <ul class="space-y-3 text-slate-700 not-prose list-none pl-0">
-          <li class="flex items-start gap-3">
-            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-            <span><strong>독창적 관점:</strong> 인터넷에서 흔히 볼 수 있는 정보를 단순 재조합하지 않습니다. {niche ? `${niche} 분야에서` : ''} 독자적인 시각과 실용적인 인사이트를 제공합니다.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-            <span><strong>사실 기반 서술:</strong> 검증되지 않은 수치나 통계를 사실처럼 제시하지 않습니다. 불확실한 정보는 "일반적으로", "많은 경우" 등 정성적으로 표현합니다.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-            <span><strong>독자 우선:</strong> 광고보다 콘텐츠가 항상 우선입니다. 독자의 시간을 소중히 여기며, 실질적으로 도움이 되는 정보만 발행합니다.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-            <span><strong>투명한 운영:</strong> 광고 수익 및 제휴 링크 활용 사실을 명확히 공개합니다. <a href="/disclaimer">면책 조항</a>에서 자세한 내용을 확인하실 수 있습니다.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">✓</span>
-            <span><strong>AI 보조 + 편집자 검수:</strong> 일부 콘텐츠 작성에 AI를 발행 보조 도구로 활용하며, 모든 글은 <strong>발행 전 편집자의 사실 확인 및 체계적 수정 과정</strong>을 거칩니다. 아무 콘텐츠도 미검수 상태로 발행되지 않습니다.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-bold">✓</span>
-            <span><strong>콘텐츠 업데이트 정책:</strong> 특정 분야의 정보가 변경될 경우, 기존 글을 주기적으로 갱신하여 정확성을 유지합니다.</span>
-          </li>
+          {principles.map((p: any, i: number) => (
+            <li class="flex items-start gap-3">
+              <span class={`mt-1 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${p.good ? 'bg-green-100 text-green-600' : p.warn ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>✓</span>
+              <span>
+                <strong>{p.t}</strong> {p.d}
+                {p.linkText && <> <a href="/disclaimer">{p.linkText}</a>{p.linkSuffix}</>}
+              </span>
+            </li>
+          ))}
         </ul>
 
         {(authorName || authorPersona) && (
           <>
             <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-            <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">에디터 소개</h2>
+            <h2 class="text-2xl font-black text-slate-900 mt-10 mb-4">{c.editorTitle}</h2>
             <div class="flex items-start gap-5 not-prose">
               <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-200 to-sky-200 flex items-center justify-center text-indigo-700 font-black text-xl">
                 {(authorName || authorPersona).charAt(0)}
               </div>
               <div>
-                <p class="font-black text-lg text-slate-900">{authorName || '대표 에디터'}</p>
+                <p class="font-black text-lg text-slate-900">{authorName || c.defaultEditor}</p>
                 {authorPersona && <p class="text-indigo-600 font-bold mt-1 text-sm">{authorPersona}</p>}
                 {(authorBio || eeatGuideline) && <p class="text-slate-600 mt-2 leading-relaxed">{authorBio || eeatGuideline}</p>}
               </div>
@@ -117,19 +173,14 @@ const pageDescription = aboutContent
 
         <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
-        <p class="text-sm text-slate-500 leading-relaxed">
-          &copy; {foundedYear} {blogName}. 본 사이트는 {domain} 도메인에서 운영됩니다.<br />
-          일부 콘텐츠 작성 과정에서 AI를 <strong>아이디어 생성 보조 도구</strong>로 활용하며,
-          작성된 모든 콘텐츠는 편집자가 <strong>실제로 검토하고 수정하여 발행합니다.</strong>
-          AI가 생성한 콘텐츠를 미검수 상태로 바로 게시하지 않습니다. 오류나 부정확한 정보를 발견하시면 <a href="/contact" class="underline">연락하여</a> 알려주세요.
-        </p>
+        <p class="text-sm text-slate-500 leading-relaxed" set:html={c.footerNote(foundedYear, domain)} />
 
         <div class="mt-10 flex flex-wrap gap-4">
           <a href="/contact" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:bg-indigo-600">
-            Contact Us
+            {c.contactCta}
           </a>
           <a href="/disclaimer" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-700 transition-all hover:-translate-y-1 hover:border-indigo-200 hover:text-indigo-700">
-            면책 조항 보기
+            {c.disclaimerCta}
           </a>
         </div>
       </div>

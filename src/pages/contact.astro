@@ -38,7 +38,7 @@ const contactDesc = lang === 'en'
 
       {niche && (
         <p class="mb-4 text-sm font-semibold text-indigo-500">
-          {niche} 전문 블로그 · {domain}
+          {lang === 'en' ? `${niche} blog · ${domain}` : `${niche} 전문 블로그 · ${domain}`}
         </p>
       )}
       
@@ -63,10 +63,10 @@ const contactDesc = lang === 'en'
       <div class="mt-10 flex flex-wrap justify-center gap-3 text-sm text-slate-500">
         <span class="flex items-center gap-1.5">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          평균 1~2일 내 답변
+          {lang === 'en' ? 'We usually reply within 1-2 days' : '평균 1~2일 내 답변'}
         </span>
         <span class="text-slate-300">·</span>
-        <span>광고 문의, 콘텐츠 제보, 협업 모두 환영합니다</span>
+        <span>{lang === 'en' ? 'Ads, content tips, and collaborations are all welcome' : '광고 문의, 콘텐츠 제보, 협업 모두 환영합니다'}</span>
       </div>
     </div>
   </main>

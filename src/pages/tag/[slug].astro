@@ -18,15 +18,15 @@ if (!slug) {
 }
 
 const siteConfig = await getSiteConfig(domain);
-const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
+const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+const allPosts = await getApprovedPosts(domain, lang);
 // 태그 필터링: 대소문자 무시, '#' 제거 후 매칭
 const tagPosts = allPosts.filter(post => {
   const tags = post.metadata?.hashtags || [];
   return tags.some((t: string) => t.replace(/^#/, '').toLowerCase() === slug.toLowerCase());
 });
-import { getLangFromEnv, useTranslations } from '../../i18n/utils';
-const lang = getLangFromEnv();
-const t = useTranslations(lang);
+import { resolveLang, useTranslations } from '../../i18n/utils';
+const t = useTranslations(resolveLang(lang));
 ---
 
 <Layout title={`${t('search.tag.title')}: #${slug}`} description={t('search.tag.desc')}>
@@ -48,7 +48,7 @@ const t = useTranslations(lang);
     {tagPosts.length > 0 ? (
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {tagPosts.map(post => (
-          <PostCard post={post} />
+          <PostCard post={post} lang={lang} />
         ))}
       </div>
     ) : (

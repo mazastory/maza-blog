@@ -19,7 +19,8 @@ if (!slug) {
 
 const decodedSlug = decodeURIComponent(slug);
 const siteConfig = await getSiteConfig(domain);
-const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko');
+const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+const allPosts = await getApprovedPosts(domain, lang);
 
 // 카테고리 필터링: 대소문자 무시 매칭
 let categoryPosts = allPosts.filter(post => {
@@ -46,17 +47,23 @@ if (categoryPosts.length === 0) {
 // 현재 운영 중인 카테고리는 단 하나도 대응되지 않았고, 전부
 // "'knowledge_biz'와 관련된 깊이 있고 실용적인 정보" 같은 기계 문구로 나갔다.
 // 라벨/설명을 lib/categories.ts로 일원화한다.
-const currentDesc = getCategoryDescription(decodedSlug);
-const categoryLabel = getCategoryLabel(decodedSlug);
+const currentDesc = getCategoryDescription(decodedSlug, lang);
+const categoryLabel = getCategoryLabel(decodedSlug, lang);
 
+const CATEGORY_PAGE_LABELS: Record<string, { badge: string; count: (n: number) => string; empty: string }> = {
+  ko: { badge: '카테고리 모음', count: (n) => `총 ${n}개의 전문 포스트가 등록되어 있습니다.`, empty: '해당 카테고리에 작성된 글이 없습니다.' },
+  en: { badge: 'Category Collection', count: (n) => `${n} articles in this category.`, empty: 'No articles have been published in this category yet.' },
+  ja: { badge: 'カテゴリー一覧', count: (n) => `このカテゴリーには${n}件の記事があります。`, empty: 'このカテゴリーの記事はまだありません。' },
+};
+const pageLabels = CATEGORY_PAGE_LABELS[lang] || CATEGORY_PAGE_LABELS.en;
 ---
 
-<Layout title={`${decodedSlug} | ${siteConfig?.blog_name || 'Blog'}`} description={currentDesc}>
+<Layout title={`${categoryLabel} | ${siteConfig?.blog_name || 'Blog'}`} description={currentDesc}>
   <div class="mx-auto max-w-5xl px-6 pt-12 pb-20 md:pt-20">
-    
+
     <header class="mb-14 text-center">
       <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-sm font-bold text-indigo-600 border border-indigo-100">
-        Category Collection
+        {pageLabels.badge}
       </div>
       <h1 class="text-4xl font-black tracking-tight text-slate-900 md:text-5xl capitalize">
         {categoryLabel}
@@ -65,19 +72,19 @@ const categoryLabel = getCategoryLabel(decodedSlug);
         {currentDesc}
       </p>
       <p class="mt-4 text-sm text-slate-400">
-        총 {categoryPosts.length}개의 전문 포스트가 등록되어 있습니다.
+        {pageLabels.count(categoryPosts.length)}
       </p>
     </header>
 
     {categoryPosts.length > 0 ? (
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {categoryPosts.map(post => (
-          <PostCard post={post} isPremium={theme.isPremium} />
+          <PostCard post={post} isPremium={theme.isPremium} lang={lang} />
         ))}
       </div>
     ) : (
       <div class="py-20 text-center">
-        <p class="text-slate-500">해당 카테고리에 작성된 글이 없습니다.</p>
+        <p class="text-slate-500">{pageLabels.empty}</p>
       </div>
     )}
   </div>

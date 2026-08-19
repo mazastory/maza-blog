@@ -6,10 +6,11 @@ export interface Props {
   url: string;
   image?: string;
   authorName?: string;
+  publisherName?: string;
   datePublished?: string;
 }
 
-const { type, title, description: rawDescription, url, image, authorName, datePublished } = Astro.props;
+const { type, title, description: rawDescription, url, image, authorName, publisherName, datePublished } = Astro.props;
 const description = rawDescription ? rawDescription.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
 
 const schema: Record<string, any> = {
@@ -30,7 +31,7 @@ if (type === 'Article') {
     };
     schema.publisher = {
       "@type": "Organization",
-      "name": authorName,
+      "name": publisherName || authorName,
       "logo": {
         "@type": "ImageObject",
         "url": new URL('/favicon.svg', Astro.site || Astro.url.origin).toString()
