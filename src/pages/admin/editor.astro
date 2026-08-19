@@ -141,10 +141,12 @@ import Layout from '../../layouts/Layout.astro';
       pageTitle!.textContent = '글 수정';
       saveBtn.innerHTML = '수정 완료';
       
+      // site_id까지 함께 확인해 다른 사이트의 글을 불러오지 못하게 한다.
       const { data: post, error } = await supabase
         .from('posts')
         .select('*')
         .eq('id', postId)
+        .eq('site_id', currentSiteId)
         .single();
         
       if (error) {
@@ -190,8 +192,8 @@ import Layout from '../../layouts/Layout.astro';
       };
 
       if (postId) {
-        // 수정
-        const { error } = await supabase.from('posts').update(postData).eq('id', postId);
+        // 수정 — site_id까지 함께 확인해 다른 사이트의 글은 수정할 수 없게 한다.
+        const { error } = await supabase.from('posts').update(postData).eq('id', postId).eq('site_id', currentSiteId);
         if (error) throw error;
         alert('성공적으로 수정되었습니다.');
       } else {

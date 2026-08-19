@@ -46,6 +46,11 @@ import Layout from '../../layouts/Layout.astro';
 <script>
   import { supabase } from '../../lib/supabase';
 
+  // [FIX] 이전엔 도메인을 구하고도 쿼리에 안 써서, 로그인만 하면
+  // 플랫폼 전체 사이트의 글이 다 보이고 지워질 수 있었다.
+  // RLS가 최종 방어선이지만, 클라이언트 쿼리도 site_id로 반드시 좁힌다.
+  let currentSiteId: string | null = null;
+
   // Auth Check
   supabase.auth.getSession().then(({ data }) => {
     if (!data.session) {
@@ -65,15 +70,24 @@ import Layout from '../../layouts/Layout.astro';
     const loading = document.getElementById('loading');
     const emptyState = document.getElementById('empty-state');
     const postList = document.getElementById('post-list');
-    
-    // 현재 접속된 도메인을 기준으로 사이트 조회 (옵션)
-    const _domain = window.location.hostname;
-    
+
+    // 현재 접속된 도메인을 기준으로 사이트 조회 — 반드시 이 site_id로만 조회/삭제한다.
+    const domain = window.location.hostname;
+    const { data: site, error: siteError } = await supabase.from('sites').select('id').eq('domain', domain).single();
+
+    if (siteError || !site) {
+      if (loading) loading.style.display = 'none';
+      alert('이 도메인에 연결된 사이트를 찾지 못했습니다.');
+      return;
+    }
+    currentSiteId = site.id;
+
     try {
-      // 내 DB의 posts 테이블에서 모든 글 가져오기
+      // 내 사이트(site_id)에 속한 글만 가져오기
       const { data: posts, error } = await supabase
         .from('posts')
         .select('id, title, status, created_at, publish_at, slug')
+        .eq('site_id', currentSiteId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -122,9 +136,11 @@ import Layout from '../../layouts/Layout.astro';
   // 글로벌 함수로 노출
   (window as any).deletePost = async (id: string) => {
     if (!confirm('정말로 이 글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
-    
+    if (!currentSiteId) return;
+
     try {
-      const { error } = await supabase.from('posts').delete().eq('id', id);
+      // site_id까지 함께 확인해 다른 사이트의 글은 절대 지울 수 없게 한다.
+      const { error } = await supabase.from('posts').delete().eq('id', id).eq('site_id', currentSiteId);
       if (error) throw error;
       
       alert('삭제되었습니다.');
