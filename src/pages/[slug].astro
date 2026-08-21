@@ -30,6 +30,24 @@ const allPosts = await getApprovedPosts(domain, siteConfig?.metadata?.language |
 import { findPostMetaInList, findPostMetaByIdHintFallback, getPostContent } from '../lib/api';
 import { findRedirect } from '../lib/redirects';
 
+/**
+ * 410 응답 본문. 레이아웃을 태우지 않는 이유는 두 가지다.
+ *  1) 이 페이지는 사람이 볼 일이 거의 없다 — 색인에서 빼달라는 신호가 목적이다.
+ *  2) Layout 은 DB 조회(getSiteConfig)를 타는데, 삭제된 URL 에 그 비용을 쓸 이유가 없다.
+ */
+const GONE_HTML = `<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>삭제된 글입니다 (410)</title>
+<style>body{font-family:system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;display:flex;
+min-height:80vh;flex-direction:column;align-items:center;justify-content:center;color:#334155;text-align:center;padding:2rem}
+h1{font-size:1.5rem;margin:0 0 .5rem}p{margin:0 0 1.5rem;color:#64748b}a{color:#4f46e5}</style>
+</head><body>
+<h1>삭제된 글입니다</h1>
+<p>이 글은 영구적으로 삭제되었습니다.</p>
+<a href="/">홈으로 가기</a>
+</body></html>`
+
 let postMeta = findPostMetaInList(allPosts, slug);
 if (!postMeta) {
   postMeta = await findPostMetaByIdHintFallback(slug, siteConfig?.id || '');
@@ -44,9 +62,20 @@ if (!postMeta) {
       return Astro.redirect(rule.target_path, 301);
     }
     // 410 Gone — 404("일시적으로 없음")보다 구글이 색인에서 빨리 뺀다.
-    Astro.response.status = 410;
-    Astro.response.statusText = 'Gone';
-    return Astro.rewrite('/404');
+    //
+    // [2026-08-21] rewrite('/404') 를 쓰면 안 된다. 404.astro 가 첫 줄에서
+    // `Astro.response.status = 404` 를 무조건 덮어써서, 여기서 410 을 넣어도
+    // 클라이언트에는 404 가 나갔다. post_redirects 에 161건이 등록돼 있었는데도
+    // 실제 응답은 전부 404 였다 — 기능이 있는데 한 번도 동작하지 않았다.
+    //
+    // 그래서 rewrite 대신 Response 를 직접 만든다. 상태 코드가 다른 라우트의
+    // 부수효과에 좌우되지 않는다. 404.astro 의 홈 자동 이동(meta refresh)도
+    // 타지 않는데, 영구 삭제된 URL 을 홈으로 보내면 구글이 soft 404 로 본다.
+    return new Response(GONE_HTML, {
+      status: 410,
+      statusText: 'Gone',
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
   }
 
   Astro.response.status = 404;
