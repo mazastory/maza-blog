@@ -15,8 +15,23 @@ export const GET: APIRoute = async ({ request }) => {
   const domain = getRequestDomain(request);
   let posts, siteConfig;
   try {
-    posts = await getApprovedPosts(domain, undefined, 5000);
+    // [2026-08-27] 사이트 언어를 먼저 읽고 그 언어로 글을 뽑는다.
+    //
+    // 예전에는 `getApprovedPosts(domain, undefined, ...)` 였고, 그 안에서
+    // `locale || 'ko'` 로 떨어져 **사이트맵이 항상 한국어**를 봤다. 홈은
+    // `siteConfig` 의 언어를 쓰므로 둘이 어긋난다.
+    //
+    // 실측(mazastory.com, language='en'):
+    //     홈 = 영어 1건   ·   사이트맵 = 한국어 12건
+    // 같은 사이트가 방문자와 구글에 다른 목록을 광고하고 있었고, 그 12건은
+    // 홈에서 링크되지 않으니 고아였다. 오늘 아침에 고친 것과 같은 계통인데
+    // 이번에는 날짜가 아니라 언어다.
+    //
+    // 다른 11곳은 언어 미설정이라 홈도 'ko' 로 폴백해 우연히 맞았다 —
+    // 우연히 맞는 것은 맞는 게 아니다.
     siteConfig = await getSiteConfig(domain);
+    const siteLang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || 'ko';
+    posts = await getApprovedPosts(domain, siteLang, 5000);
   } catch (e) {
     console.error('[sitemap] 데이터 조회 실패 — 빈 사이트맵 대신 503:', e);
     return new Response('Service Unavailable', {
