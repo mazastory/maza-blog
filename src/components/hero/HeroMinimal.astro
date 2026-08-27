@@ -1,5 +1,15 @@
 ---
 export interface Props {
+  /**
+   * [2026-08-27] `theme` 을 Props 에 추가했다.
+   * index.astro 는 7개 템플릿 전부에 theme 을 넘기는데 이 파일은 선언도 사용도
+   * 하지 않아서, 타입은 에러였고 **사이트 테마가 실제로 안 먹었다**(HeroModern·
+   * HeroClassic 만 적용 중이었다). 현재 12개 사이트는 전부 hero_template 미설정 →
+   * modern 폴백이라 화면에 드러난 적은 없다.
+   * 아래 `--brand-color` 로 강조색만 우선 연결했다. 나머지 색까지 테마화하는 것은
+   * 별도 작업이다.
+   */
+  theme?: any;
   blogName: string;
   blogDescription: string;
   heroBgUrl?: string | null;
@@ -7,10 +17,10 @@ export interface Props {
   posts: any[];
   heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
+const { theme, blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
 ---
 
-<section class="relative mb-10 md:mb-16 py-16 md:py-24">
+<section style={`--brand-color: ${theme?.color || '#4f46e5'}`} class="relative mb-10 md:mb-16 py-16 md:py-24">
   <div class="max-w-4xl">
     <div class="mb-8 flex items-center gap-4">
       <div class="w-12 h-[2px] bg-black"></div>

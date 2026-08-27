@@ -1,5 +1,15 @@
 ---
 export interface Props {
+  /**
+   * [2026-08-27] `theme` 을 Props 에 추가했다.
+   * index.astro 는 7개 템플릿 전부에 theme 을 넘기는데 이 파일은 선언도 사용도
+   * 하지 않아서, 타입은 에러였고 **사이트 테마가 실제로 안 먹었다**(HeroModern·
+   * HeroClassic 만 적용 중이었다). 현재 12개 사이트는 전부 hero_template 미설정 →
+   * modern 폴백이라 화면에 드러난 적은 없다.
+   * 아래 `--brand-color` 로 강조색만 우선 연결했다. 나머지 색까지 테마화하는 것은
+   * 별도 작업이다.
+   */
+  theme?: any;
   blogName: string;
   blogDescription: string;
   heroBgUrl?: string | null;
@@ -7,7 +17,7 @@ export interface Props {
   posts: any[];
   heroSubtitle: string;
 }
-const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
+const { theme, blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle } = Astro.props;
 
 let bgImg = heroBgUrl || '/hero-bg-picasso.png';
 if (!heroBgUrl && posts.length > 0) {
@@ -20,7 +30,7 @@ if (!heroBgUrl && posts.length > 0) {
 }
 ---
 
-<section class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-slate-900 shadow-2xl flex flex-col md:flex-row">
+<section style={`--brand-color: ${theme?.color || '#4f46e5'}`} class="relative mb-10 md:mb-16 overflow-hidden rounded-3xl md:rounded-[40px] bg-slate-900 shadow-2xl flex flex-col md:flex-row">
   <div class="w-full md:w-1/2 p-8 md:p-14 lg:p-20 flex flex-col justify-center relative z-10">
     <div class="mb-8">
       <span class="inline-block border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-300 rounded-lg">

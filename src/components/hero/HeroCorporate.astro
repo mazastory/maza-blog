@@ -3,6 +3,16 @@ import PostCard from '../PostCard.astro';
 import { Search, ArrowRight } from 'lucide-astro';
 
 export interface Props {
+  /**
+   * [2026-08-27] `theme` 을 Props 에 추가했다.
+   * index.astro 는 7개 템플릿 전부에 theme 을 넘기는데 이 파일은 선언도 사용도
+   * 하지 않아서, 타입은 에러였고 **사이트 테마가 실제로 안 먹었다**(HeroModern·
+   * HeroClassic 만 적용 중이었다). 현재 12개 사이트는 전부 hero_template 미설정 →
+   * modern 폴백이라 화면에 드러난 적은 없다.
+   * 아래 `--brand-color` 로 강조색만 우선 연결했다. 나머지 색까지 테마화하는 것은
+   * 별도 작업이다.
+   */
+  theme?: any;
   blogName: string;
   blogDescription: string;
   heroBgUrl?: string | null;
@@ -11,7 +21,7 @@ export interface Props {
   heroSubtitle: string;
   categories?: string[];
 }
-const { blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle, categories = [] } = Astro.props;
+const { theme, blogName, blogDescription, heroBgUrl, t, posts, heroSubtitle, categories = [] } = Astro.props;
 
 let bgImg = heroBgUrl || '/hero-bg-picasso.png';
 if (!heroBgUrl && posts.length > 0) {
@@ -27,7 +37,7 @@ const featuredPost = posts.length > 0 ? posts[0] : null;
 const recentPosts = posts.slice(1, 3); // Get 2 posts for the bottom section
 ---
 
-<div class="flex flex-col lg:flex-row min-h-screen w-full bg-white font-sans text-slate-900">
+<div style={`--brand-color: ${theme?.color || '#4f46e5'}`} class="flex flex-col lg:flex-row min-h-screen w-full bg-white font-sans text-slate-900">
   
   {/* Left Panel - Image */}
   <div class="relative w-full lg:w-1/2 min-h-[50vh] lg:min-h-screen">
