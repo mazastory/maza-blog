@@ -1,13 +1,29 @@
 import type { APIRoute } from 'astro';
 
 import { getApprovedPosts, getSiteConfig, getRequestDomain } from '../lib/api';
+import { resolvePublishDate } from '../lib/postDate';
 
 export const prerender = false;
 
+/**
+ * [2026-08-27] DB 장애 시 503.
+ * 예전에는 조회가 실패해도 빈 배열로 진행해 **글 0개짜리 사이트맵을 HTTP 200 으로**
+ * 내보냈다. 구글은 200 을 "이게 최신 상태"로 받아들여 색인에서 URL 을 떨어뜨린다.
+ * 503 + Retry-After 는 "잠깐 문제가 있으니 나중에 다시 오라"는 뜻이라 안전하다.
+ */
 export const GET: APIRoute = async ({ request }) => {
   const domain = getRequestDomain(request);
-  const posts = await getApprovedPosts(domain, undefined, 5000);
-  const siteConfig = await getSiteConfig(domain);
+  let posts, siteConfig;
+  try {
+    posts = await getApprovedPosts(domain, undefined, 5000);
+    siteConfig = await getSiteConfig(domain);
+  } catch (e) {
+    console.error('[sitemap] 데이터 조회 실패 — 빈 사이트맵 대신 503:', e);
+    return new Response('Service Unavailable', {
+      status: 503,
+      headers: { 'Retry-After': '300', 'Content-Type': 'text/plain' },
+    });
+  }
   const siteUrl = siteConfig?.domain ? `https://${siteConfig.domain}` : new URL(request.url).origin;
 
   // [FIX] Anti-Footprint: Date parsing 에러로 인한 2025-01-01 고정 및 sitemap 크래시 방어
@@ -17,7 +33,7 @@ export const GET: APIRoute = async ({ request }) => {
   };
 
   const latestPostDate = posts.length > 0 
-    ? new Date(Math.max(...posts.map((p: any) => safeDate(p.publish_at || p.created_at).getTime()))).toISOString()
+    ? new Date(Math.max(...posts.map((p: any) => safeDate(resolvePublishDate(p)).getTime()))).toISOString()
     : new Date().toISOString();
 
   // 정적 페이지는 고정 날짜 사용 (동적으로 바뀌면 Google 혼란 유발)
@@ -76,7 +92,7 @@ export const GET: APIRoute = async ({ request }) => {
       ${posts.map((post: any) => `
         <url>
           <loc>${siteUrl}/${post.slug}</loc>
-          <lastmod>${safeDate(post.publish_at || post.created_at).toISOString()}</lastmod>
+          <lastmod>${safeDate(resolvePublishDate(post)).toISOString()}</lastmod>
           <changefreq>monthly</changefreq>
           <priority>0.8</priority>
         </url>

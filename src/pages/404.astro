@@ -4,33 +4,32 @@ import Layout from '../layouts/Layout.astro';
 import { getSiteConfig, getRequestDomain } from '../lib/api';
 Astro.response.status = 404;
 
-// 301 Redirect is dangerous here because it poisons Vercel Edge Cache.
-// We rely on the meta refresh in the <head> below for fallback redirect.
+// [2026-08-27] 자동 이동을 제거했다.
+// 상태 코드는 404 인데 사용자와 크롤러가 즉시 홈(200)을 보게 되므로 구글은
+// 이것을 soft 404 로 판정한다. 색인 재측정(8/28~29) 직전이라 결과에 섞이면
+// 원인을 또 헷갈리게 된다.
+// "정적 호스팅 폴백"이라는 옛 근거는 지금 유효하지 않다 — prerender=false 라
+// 서버가 아래 Astro.response.status 로 404 를 직접 낸다.
+// 301 도 쓰지 않는다(Vercel Edge Cache 오염). 404 는 404 로 둔다.
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
 
 const COPY: Record<string, any> = {
-  ko: { title: '페이지를 찾을 수 없습니다 (404)', heading: '페이지를 찾을 수 없습니다', desc: '요청하신 페이지가 삭제되었거나, 이름이 변경되었거나, 일시적으로 사용할 수 없습니다.', redirecting: '메인 페이지로 이동 중입니다...', back: '홈으로 돌아가기' },
-  en: { title: 'Page Not Found (404)', heading: 'Page Not Found', desc: 'The page you requested may have been removed, renamed, or is temporarily unavailable.', redirecting: 'Redirecting to the home page...', back: 'Back to Home' },
-  ja: { title: 'ページが見つかりません (404)', heading: 'ページが見つかりません', desc: 'お探しのページは削除されたか、名前が変更されたか、一時的にご利用いただけません。', redirecting: 'ホームページに移動しています...', back: 'ホームに戻る' },
+  ko: { title: '페이지를 찾을 수 없습니다 (404)', heading: '페이지를 찾을 수 없습니다', desc: '요청하신 페이지가 삭제되었거나, 이름이 변경되었거나, 일시적으로 사용할 수 없습니다.', back: '홈으로 돌아가기' },
+  en: { title: 'Page Not Found (404)', heading: 'Page Not Found', desc: 'The page you requested may have been removed, renamed, or is temporarily unavailable.', back: 'Back to Home' },
+  ja: { title: 'ページが見つかりません (404)', heading: 'ページが見つかりません', desc: 'お探しのページは削除されたか、名前が変更されたか、一時的にご利用いただけません。', back: 'ホームに戻る' },
 };
 const c = COPY[lang] || COPY.en;
 ---
 
 <Layout title={c.title}>
-  <head>
-    <!-- Bulletproof fallback for static hosting -->
-    <meta http-equiv="refresh" content="0;url=/" />
-    <script>window.location.replace("/");</script>
-  </head>
   <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
     <h1 class="text-9xl font-black text-indigo-600 mb-4">404</h1>
     <h2 class="text-3xl font-bold text-slate-800 mb-4">{c.heading}</h2>
     <p class="text-slate-500 mb-8 max-w-md">
-      {c.desc}<br/>
-      {c.redirecting}
+      {c.desc}
     </p>
     <a href="/" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition-colors">
       {c.back}

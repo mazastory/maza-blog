@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { resolvePublishDate } from './postDate';
 
 export interface Post {
   id: string;
@@ -37,7 +38,7 @@ export function getRequestDomain(request: Request): string {
   try {
     let hostname = '';
     
-    // 1. 헤더에서 추출 시도 (Netlify/Vercel alias 도메인 문제 해결)
+    // 1. 헤더에서 추출 시도 (Vercel alias 도메인 문제 해결)
     const hostHeader = request.headers.get('x-forwarded-host') || request.headers.get('host');
     if (hostHeader) {
       hostname = hostHeader.split(':')[0]; // 포트 제거
@@ -58,7 +59,22 @@ export function getRequestDomain(request: Request): string {
   }
 }
 
-// 캐시: siteConfig 5분, posts 2분 (Netlify Edge 인스턴스별 인메모리)
+/**
+ * 인프라 실패(DB 연결·쿼리 오류)와 "결과가 없음"을 구분하기 위한 에러.
+ *
+ * [2026-08-27] 이걸 만든 이유: 예전에는 두 경우가 모두 빈 배열/가짜 객체로 돌아왔다.
+ * 그래서 **"글이 없는 사이트"와 "DB 가 죽은 사이트"가 화면에서 똑같이 보였고**,
+ * 둘 다 HTTP 200 이라 구글에도 "내용 없는 정상 페이지"로 제출됐다.
+ */
+export class BlogDataError extends Error {
+  constructor(message: string, readonly cause?: unknown) {
+    super(message);
+    this.name = 'BlogDataError';
+  }
+}
+
+// 캐시: siteConfig 5분, posts 2분 (서버리스 인스턴스별 인메모리)
+// ※ 엣지 캐시는 이것과 별개다 — astro.config.mjs 의 Vercel ISR 이 관장한다.
 const cache: Record<string, { data: any, timestamp: number }> = {};
 const SITE_CONFIG_TTL = 5 * 60 * 1000;   // 5분
 const POSTS_TTL       = 2 * 60 * 1000;   // 2분
@@ -93,22 +109,27 @@ export async function getSiteConfig(domain?: string, options?: { bypassCache?: b
         .eq('domain', targetDomain)
         .maybeSingle();
 
+      // [2026-08-27] 두 경우를 구분한다.
+      //  · 쿼리 오류 = 인프라 실패 → BlogDataError. 호출부가 503 을 낼 수 있다.
+      //  · 행 없음   = 그냥 없는 도메인 → null. 404 로 가는 게 맞다.
+      // 예전에는 둘 다 catch 로 떨어져 `{ blog_name: 'Debug: Exception' }` 이라는
+      // 가짜 설정 객체를 돌려줬다. 그 값이 Layout 의 siteTitle 과 Header 의 blogName
+      // 으로 **그대로 렌더**됐다 — 2026-08-21 에 라이브 11곳이 이 문자열을
+      // 사이트 제목으로 달고 있었다.
       if (error) {
-        console.error('Supabase Query Error:', error, 'Target Domain:', targetDomain);
-        throw new Error(`Failed to fetch site config for ${targetDomain}`);
+        console.error('[maza-blog] sites 쿼리 실패:', error, 'domain:', targetDomain);
+        throw new BlogDataError(`site config 조회 실패 (${targetDomain})`, error);
       }
       if (!data) {
-        throw new Error(`No site config found for ${targetDomain}`);
+        console.warn('[maza-blog] 등록되지 않은 도메인:', targetDomain);
+        return null;
       }
-      
+
       // The RPC used to return sc_verification and ga_measurement_id.
       // Layout.astro handles fallback to metadata.google_site_verification so this direct query is compatible.
-      
+
       cache[cacheKey] = { data, timestamp: Date.now() };
       return data;
-    } catch (e) {
-      console.error('Supabase Exception:', e);
-      return { blog_name: 'Debug: Exception', metadata: { error: String(e), domain: targetDomain } };
     } finally {
       delete inflight[cacheKey];
     }
@@ -134,25 +155,36 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
   inflight[cacheKey] = (async () => {
     try {
       // get_public_posts 대신 직접 site_id를 조회 후 posts 목록을 가져옵니다.
-      const { data: site } = await supabase.from('sites').select('id').eq('domain', targetDomain).limit(1).maybeSingle();
-      if (!site) return cache[cacheKey]?.data ?? [];
-
-      const nowIso = new Date().toISOString();
+      // [2026-08-27] 여기도 인프라 실패와 "없음"을 구분한다.
+      const { data: site, error: siteErr } = await supabase
+        .from('sites').select('id').eq('domain', targetDomain).limit(1).maybeSingle();
+      if (siteErr) {
+        console.error('[maza-blog] sites 조회 실패:', siteErr, 'domain:', targetDomain);
+        throw new BlogDataError(`sites 조회 실패 (${targetDomain})`, siteErr);
+      }
+      if (!site) {
+        console.warn('[maza-blog] 등록되지 않은 도메인:', targetDomain);
+        return [];
+      }
 
       const targetLanguage = locale || 'ko';
       const result = await supabase.from('posts')
-        .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
+        .select('id, title, slug, source_image_url, created_at, publish_at, status, metadata, source_type')
         .eq('site_id', site.id)
         .eq('status', 'published')
         .or(`language.eq.${targetLanguage},language.is.null`)
-        .or(`publish_at.lte.${nowIso},publish_at.is.null`)
         .order('publish_at', { ascending: false })  // created_at → publish_at 정렬로 더 정확한 순서
         .limit(limitCount);
 
       const { data, error } = result;
-      if (error || !data) return cache[cacheKey]?.data ?? [];
-
-      const now = new Date().getTime();
+      // 예전에는 쿼리가 실패해도 `[]` 를 돌려줬다. 그러면 화면은 "아직 작성된 글이
+      // 없습니다"를 HTTP 200 으로 내보내고, 사이트맵도 글 0개로 나간다.
+      // **DB 가 죽은 것과 글이 없는 것이 구분되지 않았다.**
+      if (error) {
+        console.error('[maza-blog] posts 조회 실패:', error, 'domain:', targetDomain);
+        throw new BlogDataError(`posts 조회 실패 (${targetDomain})`, error);
+      }
+      if (!data) return [];
 
       let formattedData = data
         .filter((post: any) => {
@@ -160,8 +192,11 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
                                post.metadata?.is_compliance === true ||
                                /개인정보처리방침|이용약관|책임 한계|블로그 소개|문의하기/.test(post.title);
           if (isCompliance) return false;
-          const publishTime = new Date(post.publish_at || post.created_at).getTime();
-          return post.title && publishTime <= now;
+          // [2026-08-27] `publish_at <= now` 조건을 뺐다. 위에서 이미
+          // status='published' 로 거르므로 중복이고, 미래 날짜가 잘못 박힌
+          // 발행글 19건을 사이트맵·목록·RSS 에서 조용히 지우고 있었다.
+          // 근거는 lib/postDate.ts 주석 참조.
+          return !!post.title;
         })
         .map((post: any) => {
           let thumbnail_url = post.source_image_url;
@@ -171,16 +206,22 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
           return {
             id: post.id,
             title: post.title,
-            slug: post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0],
+            slug: computeSlug(post),
             content: '',
             html_content: '',
             created_at: post.created_at,
-            publish_at: post.publish_at || post.created_at,
+            // 미래 날짜는 여기서 과거로 고정한다 — 이 값이 곧 사이트맵 lastmod ·
+            // RSS pubDate · JSON-LD datePublished 로 나간다.
+            publish_at: resolvePublishDate(post),
             status: post.status,
             metadata: post.metadata,
             thumbnail_url
           };
-        });
+        })
+        // 정렬도 고정된 날짜 기준으로 다시 잡는다. SQL 은 원본 publish_at 으로
+        // 정렬하므로, 그대로 두면 미래 글이 최신인 척 목록 맨 위를 차지한다.
+        .sort((a: any, b: any) =>
+          new Date(b.publish_at).getTime() - new Date(a.publish_at).getTime());
 
       // Mock injection removed to prevent AdSense 'Thin Content/Niche Mismatch' flags.
       // if (formattedData.length === 0) { ... }
@@ -188,7 +229,14 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
       cache[cacheKey] = { data: formattedData, timestamp: Date.now() };
       return formattedData;
     } catch (e) {
-      return cache[cacheKey]?.data ?? [];
+      // 캐시에 직전 정상 응답이 있으면 그것으로 버틴다(일시적 장애 흡수).
+      // 없으면 삼키지 않고 올려보낸다 — 빈 페이지를 200 으로 내보내지 않기 위해서다.
+      const stale = cache[cacheKey]?.data;
+      if (stale) {
+        console.warn('[maza-blog] posts 조회 실패 — 캐시된 직전 응답으로 대체:', targetDomain);
+        return stale;
+      }
+      throw e instanceof BlogDataError ? e : new BlogDataError(`posts 조회 실패 (${targetDomain})`, e);
     } finally {
       delete inflight[cacheKey];
     }
@@ -197,9 +245,27 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
   return inflight[cacheKey];
 }
 
-// 슬러그를 즉석에서 계산합니다 (DB에 slug 컬럼이 없으므로 title + id 접두사로 파생).
-function computeSlug(post: { title: string; id: string }): string {
+/**
+ * [2026-08-27] **`posts.slug` 는 실재하는 컬럼이다.** 이 함수의 옛 주석("DB에 slug
+ * 컬럼이 없으므로")은 사실이 아니었고, 그 오해가 중복 URL 을 만들고 있었다.
+ *
+ * 실측(발행글 162건):
+ *   published_url ↔ DB slug      162/162 일치   ← 실제로 웹에 나간 주소
+ *   published_url ↔ 계산 slug    157/162 일치   ← 5건 어긋남
+ *
+ * 어긋나는 이유는 `toLowerCase()` 다. 제목에 `AI`·`LLM`·`PC` 같은 대문자가 있으면
+ * 계산값이 소문자로 낮아진다. 그런데 **두 주소가 다 200 으로 열린다**(상세 경로가
+ * 계산값으로도 글을 찾아내므로) — 같은 글이 두 URL 로 살아 있는 중복 콘텐츠다.
+ * 2026-08-21 에 "사이트맵이 깨졌다"고 오진했던 것도 같은 대소문자 차이였다.
+ *
+ * 그래서 DB 값을 단일 진실로 삼는다. 계산은 slug 가 비어 있을 때의 폴백으로만 남긴다.
+ */
+function deriveSlug(post: { title: string; id: string }): string {
   return post.title.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + post.id.split('-')[0];
+}
+
+function computeSlug(post: { title: string; id: string; slug?: string | null }): string {
+  return post.slug || deriveSlug(post);
 }
 
 function isCompliancePost(post: { title: string; source_type?: string; metadata?: any }): boolean {
@@ -211,7 +277,8 @@ function isCompliancePost(post: { title: string; source_type?: string; metadata?
 // [slug].astro에서 이미 호출한 getApprovedPosts() 결과(또는 동일 필터의 candidates 목록)를
 // 그대로 받아 slug를 매칭합니다. 별도 DB 쿼리를 하지 않는 순수 함수입니다.
 export function findPostMetaInList(posts: Post[], slug: string): Post | null {
-  const match = posts.find(p => p.slug === slug || p.id === slug);
+  // DB slug 와 계산 slug 를 모두 받는다 — 수정 전에 나간 소문자 링크가 404 나지 않게.
+  const match = posts.find(p => p.slug === slug || deriveSlug(p) === slug || p.id === slug);
   if (!match) return null;
   if (isCompliancePost(match as any)) return null;
   return match;
@@ -228,7 +295,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
   if (isUuid) {
     try {
       const { data, error } = await supabase.from('posts')
-        .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
+        .select('id, title, slug, source_image_url, created_at, publish_at, status, metadata, source_type')
         .eq('site_id', siteId)
         .eq('id', slug)
         .single();
@@ -244,11 +311,14 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
       return {
         id: data.id,
         title: data.title,
-        slug,
+        // [2026-08-27] 요청받은 slug 가 아니라 **DB 의 정본 slug** 를 돌려준다.
+        // 상세 페이지가 이 값으로 canonical 을 만들기 때문이다 — 소문자 주소로
+        // 들어와도 정본은 DB 주소를 가리켜야 중복이 정리된다.
+        slug: computeSlug(data),
         content: '',
         html_content: '',
         created_at: data.created_at,
-        publish_at: data.publish_at || data.created_at,
+        publish_at: resolvePublishDate(data),
         status: data.status,
         metadata: data.metadata,
         thumbnail_url,
@@ -269,7 +339,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
   try {
     const { data, error } = await supabase.from('posts')
-      .select('id, title, source_image_url, created_at, publish_at, status, metadata, source_type')
+      .select('id, title, slug, source_image_url, created_at, publish_at, status, metadata, source_type')
       .eq('site_id', siteId)
       .eq('status', 'published')
       .gte('id', minUuid)
@@ -278,7 +348,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
     if (error || !data || data.length === 0) return null;
 
-    const candidate = data.find((post: any) => computeSlug(post) === slug) || (data.length === 1 ? data[0] : null);
+    const candidate = data.find((post: any) => computeSlug(post) === slug || deriveSlug(post) === slug) || (data.length === 1 ? data[0] : null);
     if (!candidate) return null;
     if (isCompliancePost(candidate)) return null;
 
@@ -290,11 +360,12 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
     return {
       id: candidate.id,
       title: candidate.title,
-      slug,
+      // 위와 같은 이유 — 정본은 DB slug 다.
+      slug: computeSlug(candidate),
       content: '',
       html_content: '',
       created_at: candidate.created_at,
-      publish_at: candidate.publish_at || candidate.created_at,
+      publish_at: resolvePublishDate(candidate),
       status: candidate.status,
       metadata: candidate.metadata,
       thumbnail_url,

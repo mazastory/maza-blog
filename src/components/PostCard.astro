@@ -1,4 +1,5 @@
 ---
+import { resolvePublishDate } from '../lib/postDate';
 import type { Post } from '../lib/api';
 import { getCategoryLabel } from '../lib/categories';
 
@@ -14,7 +15,7 @@ import { resolveLang, useTranslations } from '../i18n/utils';
 const lang = resolveLang(rawLang);
 const t = useTranslations(lang);
 const dateLocales: Record<string, string> = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP' };
-const formattedDate = new Date(post.publish_at || post.created_at).toLocaleDateString(dateLocales[lang] || 'en-US', {
+const formattedDate = new Date(resolvePublishDate(post)).toLocaleDateString(dateLocales[lang] || 'en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric'

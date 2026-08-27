@@ -20,6 +20,14 @@ interface Props {
   preloadImage?: string;
   siteConfig?: any;
   hideHeader?: boolean;
+  /**
+   * [2026-08-27] 정본 경로를 호출부가 지정할 수 있게 했다.
+   * 기본값은 요청 경로인데, 그러면 **같은 글의 두 주소가 각자 자기를 canonical 로
+   * 선언한다.** 실제로 대소문자만 다른 슬러그 두 개가 둘 다 200 으로 열리고 있었다
+   * (`posts.slug` 대신 제목을 소문자로 낮춰 계산했기 때문). 상세 페이지는 DB 의
+   * slug 로 만든 정본을 넘긴다.
+   */
+  canonicalPath?: string;
 }
 
 const domain = getRequestDomain(Astro.request);
@@ -79,7 +87,7 @@ const {
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-let path = Astro.url.pathname;
+let path = Astro.props.canonicalPath || Astro.url.pathname;
 if (path !== '/' && path.endsWith('/')) {
   path = path.slice(0, -1);
 }

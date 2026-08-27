@@ -5,14 +5,17 @@ import AdSlot from '../components/AdSlot.astro';
 import CoupangBanner from '../components/CoupangBanner.astro';
 import AnalyticsTracker from '../components/AnalyticsTracker.astro';
 import { getSiteConfig, getRequestDomain, getApprovedPosts } from '../lib/api';
+import { resolvePublishDate } from '../lib/postDate';
 import { buildKeywordMap, injectInternalLinks } from '../lib/internalLinks';
 import { splitHtmlForAd, injectImagesIntoHtml } from '../lib/adManager';
 
-// CDN 캐싱 활성화: 쿠키 의존성 제거로 Cloudflare/Netlify 캐싱이 작동함
+// CDN 캐싱 활성화: 쿠키 의존성 제거로 엣지 캐싱이 작동함
 // - 개인 정보(쿠키 등) 없음 → CDN이 페이지를 저장해 전 세계 방문자에게 즉시 제공
-// 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
-Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
+// [2026-08-27] 캐시 헤더 두 줄을 제거했다. 둘 다 실제로는 아무 일도 하지 않았다.
+//  · `Netlify-CDN-Cache-Control` — 이 사이트는 Vercel 에 있다(`server: Vercel`). 넷리파이 헤더는 무시된다.
+//  · `Cache-Control` — ISR 라우트에서는 Vercel 이 자기 값으로 덮어쓴다.
+//    (실측: 코드는 s-maxage=60 을 넣는데 운영 응답은 `public, max-age=0` 이었다)
+// 이 사이트의 엣지 캐시는 astro.config.mjs 의 `adapter: vercel({ isr })` 가 정한다.
 
 const domain = getRequestDomain(Astro.request);
 const { slug: rawSlug } = Astro.params;
@@ -127,7 +130,8 @@ const blogName = siteConfig?.blog_name || "Maza Blog";
 // [FIX] 저자를 블로그명이 아닌 실제 저자 정보(author_name/bio)로 표시 — E-E-A-T 신호 강화
 const profileName = siteConfig?.metadata?.author_name?.trim() || blogName || "Maza Editor";
 const authorBio = siteConfig?.metadata?.author_bio?.trim() || '';
-const publishDate = post.publish_at || post.created_at;
+// [2026-08-27] 미래 publish_at 이 JSON-LD datePublished 로 새어나가던 것을 막는다.
+const publishDate = resolvePublishDate(post);
 const dateLocale = lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'ko-KR';
 const dateStr = new Date(publishDate).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -172,6 +176,7 @@ const rawDesc = (() => {
 	authorName={profileName}
 	datePublished={publishDate}
   siteConfig={siteConfig}
+  canonicalPath={`/${postMeta.slug}`}
 >
   {/* 수익형: 상단 풀배너 */}
   {isMonetizationSite && (
