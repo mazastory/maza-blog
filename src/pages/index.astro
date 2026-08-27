@@ -17,21 +17,44 @@ import { useTranslation } from '../lib/i18n';
 
 import { generateThemeVars } from '../lib/theme';
 
-// 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
-Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
+// [2026-08-27] 캐시 헤더 두 줄을 제거했다. 둘 다 실제로는 아무 일도 하지 않았다.
+//  · `Netlify-CDN-Cache-Control` — 이 사이트는 Vercel 에 있다(`server: Vercel`). 넷리파이 헤더는 무시된다.
+//  · `Cache-Control` — ISR 라우트에서는 Vercel 이 자기 값으로 덮어쓴다.
+//    (실측: 코드는 s-maxage=60 을 넣는데 운영 응답은 `public, max-age=0` 이었다)
+// 이 사이트의 엣지 캐시는 astro.config.mjs 의 `adapter: vercel({ isr })` 가 정한다.
 
 // 서버사이드(런타임)에서 접속한 도메인 기준으로 승인된 포스트만 렌더링
 const url = new URL(Astro.request.url);
 const domain = getRequestDomain(Astro.request);
 const bypassCache = url.searchParams.has('_bust');
 
-const siteConfig = await getSiteConfig(domain, { bypassCache });
+// [2026-08-27] DB 장애 때 "아직 작성된 글이 없습니다"를 200 으로 내보내지 않는다.
+// 이 화면이 정확히 그렇게 굳어 있었다(운영 홈이 5.4일간 빈 상태로 캐시됨).
+// 빈 홈은 애드센스 심사에서도 thin content 로 읽힌다 — 503 이 훨씬 안전하다.
+let siteConfig, posts;
+try {
+  siteConfig = await getSiteConfig(domain, { bypassCache });
+} catch (e) {
+  console.error('[index] site config 조회 실패 — 빈 홈 대신 503:', e);
+  return new Response('Service Unavailable', {
+    status: 503,
+    headers: { 'Retry-After': '300', 'Content-Type': 'text/plain' },
+  });
+}
+
 const theme = generateThemeVars(siteConfig);
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
 const t = useTranslation(lang);
 
-const posts = await getApprovedPosts(domain, lang, 60, { bypassCache });
+try {
+  posts = await getApprovedPosts(domain, lang, 60, { bypassCache });
+} catch (e) {
+  console.error('[index] posts 조회 실패 — 빈 홈 대신 503:', e);
+  return new Response('Service Unavailable', {
+    status: 503,
+    headers: { 'Retry-After': '300', 'Content-Type': 'text/plain' },
+  });
+}
 
 let blogName = siteConfig?.blog_name || "Maza Blog";
 let blogDescription = siteConfig?.metadata?.site_description || siteConfig?.niche || "Welcome to our blog.";
@@ -115,7 +138,7 @@ const feedClass = theme.feedStyle === 'list'
     {heroTemplate === 'magazine' && <HeroMagazine theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
     {heroTemplate === 'minimal' && <HeroMinimal theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
     {heroTemplate === 'split' && <HeroSplit theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} />}
-    {heroTemplate === 'app' && <HeroApp theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} t={t} posts={posts} heroSubtitle={heroSubtitle} lang={lang} />}
+    {heroTemplate === 'app' && <HeroApp theme={theme} blogName={blogName} blogDescription={blogDescription} heroBgUrl={heroBgUrl} posts={posts} heroSubtitle={heroSubtitle} lang={lang} />}
     
     <!-- Hero / Featured Post -->
     {featuredPost && heroTemplate !== 'app' && (

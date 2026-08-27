@@ -4,9 +4,11 @@ import Layout from '../../layouts/Layout.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../../lib/api';
 
-// 캐시 설정으로 로딩 속도 대폭 개선 (SWR 적용)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
-Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
+// [2026-08-27] 캐시 헤더 두 줄을 제거했다. 둘 다 실제로는 아무 일도 하지 않았다.
+//  · `Netlify-CDN-Cache-Control` — 이 사이트는 Vercel 에 있다(`server: Vercel`). 넷리파이 헤더는 무시된다.
+//  · `Cache-Control` — ISR 라우트에서는 Vercel 이 자기 값으로 덮어쓴다.
+//    (실측: 코드는 s-maxage=60 을 넣는데 운영 응답은 `public, max-age=0` 이었다)
+// 이 사이트의 엣지 캐시는 astro.config.mjs 의 `adapter: vercel({ isr })` 가 정한다.
 
 const domain = getRequestDomain(Astro.request);
 const pageParam = Astro.params.page;
