@@ -201,7 +201,13 @@ const feedClass = theme.feedStyle === 'list'
           ))}
         </div>
         
-        {recentPosts.length > 3 && (
+        {/* [2026-08-28] `recentPosts.length > 3`(= 전체 글 5개 이상)이면 버튼을
+            보여줬는데, `/page/[page].astro` 는 전체 글이 10개를 넘어야만(대문
+            피처드 1 + 1페이지 9) /page/2 에 글이 있다. 그 사이(5~10개)인
+            사이트는 버튼은 뜨는데 눌러도 무조건 404 였다(vorapost.com 에서
+            실제 확인). 같은 임계값(10)으로 맞춘다 — 이 값이 바뀌면 여기도
+            같이 바꿔야 한다. */}
+        {posts.length > 10 && (
           <div class="mt-8 md:mt-12 text-center">
             <a href="/page/2" class="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-8 py-3 text-sm font-bold text-slate-700 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700 hover:shadow-md">
               {t.loadMore}
