@@ -34,7 +34,14 @@ if (type === 'Article') {
       "name": publisherName || authorName,
       "logo": {
         "@type": "ImageObject",
-        "url": new URL('/favicon.svg', Astro.site || Astro.url.origin).toString()
+        // [2026-08-28 수리] Astro.site 를 먼저 쓰면 실제 요청 도메인 대신 항상
+        // 'https://example.com' 이 찍혔다 — 12개 사이트 전부가 하나의 Vercel
+        // 배포를 여러 커스텀 도메인으로 공유하는데, 그 빌드 시점에
+        // PUBLIC_SITE_DOMAIN/SITE_DOMAIN/Vercel URL 이 전부 안 잡혀 있어
+        // astro.config.mjs 의 마지막 폴백('https://example.com')이 항상 이겼다.
+        // output:'server'(SSR)라 Astro.url 은 요청마다 실제 도메인을 담고
+        // 있으므로, 정적 빌드값(Astro.site)보다 이걸 우선한다.
+        "url": new URL('/favicon.svg', Astro.url.origin || Astro.site).toString()
       }
     };
   }
