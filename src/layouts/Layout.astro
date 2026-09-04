@@ -99,6 +99,46 @@ if (rawSc) {
   const match = rawSc.match(/content="([^"]+)"/);
   scContent = match ? match[1] : rawSc.replace('google-site-verification=', '');
 }
+
+/**
+ * 네이버 서치어드바이저 소유확인 (2026-08-31 신설)
+ *
+ * 우리 사이트는 한국어인데 **구글에만 등록돼 있었다.** 네이버 색인은 한 번도 재본 적이
+ * 없다. 네이버 웹마스터도구는 사이트별 소유확인을 요구하고, 메타태그 방식을 지원한다.
+ *
+ * 값은 `sites.metadata.naver_site_verification` 에 넣는다(jsonb 라 마이그레이션 불필요).
+ * 사장님이 네이버에서 받은 코드를 사이트마다 저장하면 이 태그가 나간다.
+ *
+ * 구글 것과 같은 관용을 둔다 — 전체 메타태그를 통째로 붙여넣어도 content 만 뽑아 쓴다.
+ */
+/**
+ * 빙 웹마스터도구 소유확인 (2026-08-31 신설)
+ *
+ * 빙은 **"도메인 등록자가 누구냐"가 아니라 "이 사이트 내용을 바꿀 수 있느냐"**를 묻는다.
+ * 그래서 마자가 이 태그를 심으면 유저 계정 없이도 인증된다 — 제로 IT 를 지키는 방식이다.
+ *
+ * 🟡 `msvalidate.01` 코드는 **계정 단위**로 알려져 있으나(커뮤니티 보고, 공식 확인 못 함)
+ * 사이트별로 다를 경우를 대비해 개별 값을 우선한다:
+ *   1순위 `sites.metadata.bing_site_verification`
+ *   2순위 `PUBLIC_BING_SITE_VERIFICATION` (계정 공통)
+ */
+const rawBing =
+  siteConfig?.metadata?.bing_site_verification ||
+  import.meta.env.PUBLIC_BING_SITE_VERIFICATION ||
+  import.meta.env.BING_SITE_VERIFICATION ||
+  '';
+let bingContent = rawBing;
+if (rawBing) {
+  const mb = rawBing.match(/content="([^"]+)"/);
+  bingContent = mb ? mb[1] : rawBing.replace('msvalidate.01=', '').trim();
+}
+
+const rawNaver = siteConfig?.metadata?.naver_site_verification || '';
+let naverContent = rawNaver;
+if (rawNaver) {
+  const m = rawNaver.match(/content="([^"]+)"/);
+  naverContent = m ? m[1] : rawNaver.replace('naver-site-verification=', '').trim();
+}
 ---
 
 <!doctype html>
@@ -159,6 +199,16 @@ if (rawSc) {
 		{/* 구글 서치콘솔 소유권 인증 메타 태그 */}
 		{scContent && (
 			<meta name="google-site-verification" content={scContent} />
+		)}
+
+		{/* 네이버 서치어드바이저 소유권 인증 메타 태그 (2026-08-31) */}
+		{naverContent && (
+			<meta name="naver-site-verification" content={naverContent} />
+		)}
+
+		{/* 빙 웹마스터도구 소유권 인증 메타 태그 (2026-08-31) */}
+		{bingContent && (
+			<meta name="msvalidate.01" content={bingContent} />
 		)}
 
 		{/* 구글 애널리틱스 (GA4) */}
