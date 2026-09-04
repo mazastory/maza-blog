@@ -169,7 +169,7 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
 
       const targetLanguage = locale || 'ko';
       const result = await supabase.from('posts')
-        .select('id, title, slug, source_image_url, created_at, publish_at, status, metadata, source_type')
+        .select('id, title, slug, source_image_url, created_at, publish_at, first_published_at, status, metadata, source_type')
         .eq('site_id', site.id)
         .eq('status', 'published')
         .or(`language.eq.${targetLanguage},language.is.null`)
@@ -295,7 +295,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
   if (isUuid) {
     try {
       const { data, error } = await supabase.from('posts')
-        .select('id, title, slug, source_image_url, created_at, publish_at, status, metadata, source_type')
+        .select('id, title, slug, source_image_url, created_at, publish_at, first_published_at, status, metadata, source_type')
         .eq('site_id', siteId)
         .eq('id', slug)
         .single();
@@ -339,7 +339,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
 
   try {
     const { data, error } = await supabase.from('posts')
-      .select('id, title, slug, source_image_url, created_at, publish_at, status, metadata, source_type')
+      .select('id, title, slug, source_image_url, created_at, publish_at, first_published_at, status, metadata, source_type')
       .eq('site_id', siteId)
       .eq('status', 'published')
       .gte('id', minUuid)

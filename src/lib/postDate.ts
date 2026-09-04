@@ -34,6 +34,7 @@
  */
 
 type DatedPost = {
+  first_published_at?: string | null;
   publish_at?: string | null;
   created_at?: string | null;
 };
@@ -45,22 +46,38 @@ function parse(value?: string | null): Date | null {
 }
 
 /**
- * 표시·구조화데이터·사이트맵에 쓸 발행 날짜. 절대 미래를 돌려주지 않는다.
+ * 표시·구조화데이터·사이트맵·RSS 에 쓸 **불변 발행 날짜**.
  *
- * 미래일 때 `created_at` 으로 내려간다 — 행이 만들어진 시각이라 반드시 과거이고,
- * 렌더할 때마다 바뀌지 않는다(`now` 를 쓰면 `datePublished` 가 매 요청 흔들려서
- * 구글에 더 나쁜 신호가 된다).
+ * [2026-09-04] 파이프라인(warehouseDispatcher·recoverHangingJobs 등)이 이미
+ * 발행된 글의 `publish_at` 을 `published → archived → published` 세탁으로 앞으로
+ * 밀고 있었다(불변 트리거 우회). 그 결과 2주 된 글의 `datePublished`·`<lastmod>`
+ * 가 매번 "오늘" 로 튀었고 — 새 도메인이 URL 수십 개로 날짜를 흔드는 것은
+ * 구글이 명시적으로 억제하는 패턴(날짜 스푸핑 콘텐츠팜)이다.
+ *
+ * **규칙: 발행일 = created_at 과 publish_at 중 이른 쪽.**
+ * - 글은 자기 행이 만들어지기 전에 발행될 수 없다 → created_at 이 상한.
+ * - 백데이트 글(`publish_at` 을 일부러 과거로)은 그 이른 값이 그대로 쓰인다.
+ * - `publish_at` 이 created_at 보다 뒤면 = 파이프라인이 민 것 → 무시.
+ * - 미래·`now()` 절대 안 나온다. 렌더마다 바뀌지 않는다.
+ *
+ * 근본(누가 publish_at 을 소유하나, 세탁 경로 차단)은 스케줄러 수리로 따로 다룬다.
  */
 export function resolvePublishDate(post: DatedPost): string {
   const now = Date.now();
+
+  // first_published_at 이 있으면 그게 답이다 — DB 트리거가 불변으로 지킨다.
+  const firstPub = parse(post.first_published_at);
+  if (firstPub && firstPub.getTime() <= now) return firstPub.toISOString();
+
   const publishAt = parse(post.publish_at);
-  if (publishAt && publishAt.getTime() <= now) return publishAt.toISOString();
-
   const createdAt = parse(post.created_at);
-  if (createdAt && createdAt.getTime() <= now) return createdAt.toISOString();
 
-  // 둘 다 못 믿을 때만. created_at 이 미래인 행은 실측상 없다.
-  return new Date(now).toISOString();
+  const past = [firstPub, publishAt, createdAt].filter((d): d is Date => !!d && d.getTime() <= now);
+  if (past.length > 0) {
+    return new Date(Math.min(...past.map((d) => d.getTime()))).toISOString();
+  }
+  // 전부 미래이거나 없음(실측상 없다). created_at 원본 → 최후에 now.
+  return (createdAt ?? new Date(now)).toISOString();
 }
 
 /** `publish_at` 이 미래인가 — 계기판·점검용. 표시 경로에서는 위 함수를 쓸 것. */
