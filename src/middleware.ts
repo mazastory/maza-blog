@@ -17,8 +17,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // 0. 구형 URL 구조 301 영구 리다이렉트 (SEO 대응 - GSC 404 에러 방지)
-  // 매칭: /blog/slug, /post/slug, /article/slug
-  const legacyMatch = path.match(/^\/(blog|post|article)\/(.+)$/);
+  //
+  // ⚠️ [2026-09-07] `post` 를 이 목록에서 뺐다.
+  // 여기서 `/post/(.+)` 를 통째로 가로채는 바람에 **`src/pages/post/[id].astro`
+  // 가 한 번도 실행되지 않았다.** 그 파일은 DB 에서 id → slug 를 찾아 정본 주소로
+  // 보내는 코드인데, 미들웨어가 앞에서 `/post/<UUID>` → `/<UUID>` 로 던져버려
+  // slug 자리에 UUID 가 들어가고 그대로 404 가 됐다.
+  //
+  //   실측(2026-09-06): /post/abc123 → 301 → /abc123 → 404
+  //   autosite.kr · profitnestlab.com 두 곳에서 동일. GSC 「리디렉션 오류」·
+  //   「찾을 수 없음(404)」 메일이 여러 사이트에 같은 날 온 원인이다.
+  //
+  // `blog` · `article` 은 처리할 페이지가 없으므로 여기서 계속 넘긴다.
+  const legacyMatch = path.match(/^\/(blog|article)\/(.+)$/);
   if (legacyMatch) {
     return context.redirect(`/${legacyMatch[2]}`, 301);
   }
