@@ -27,6 +27,15 @@ const tagPosts = allPosts.filter(post => {
   const tags = post.metadata?.hashtags || [];
   return tags.some((t: string) => t.replace(/^#/, '').toLowerCase() === slug.toLowerCase());
 });
+
+// [2026-09-07] 결과가 0건이면 404. category/[slug].astro 와 같은 이유 —
+//   빈 태그 페이지가 200 으로 나가면 soft 404 이고 URL 공간이 무한해진다.
+if (tagPosts.length === 0) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not Found';
+  return Astro.rewrite('/404');
+}
+
 import { resolveLang, useTranslations } from '../../i18n/utils';
 const t = useTranslations(resolveLang(lang));
 ---

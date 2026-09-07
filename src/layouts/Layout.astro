@@ -68,7 +68,26 @@ if (uniqueCategories.length === 0) {
 }
 
 // [사용자 요청] 블로그의 주제 집중(Topical Authority)을 위해, 포스트에 여러 카테고리가 섞여 있더라도 상단 네비게이션에는 무조건 메인 카테고리 1개만 노출합니다.
-const primaryCategory = siteConfig?.metadata?.primary_topic_ko?.toUpperCase() || uniqueCategories[0] || 'LIFESTYLE';
+//
+// [2026-09-07] 다만 "글이 실제로 있는" 카테고리만 건다.
+//   그동안은 primary_topic_ko 를 무조건 링크했다. 글이 한 편도 없어도 걸었다.
+//   실측(9/7): 메뉴 링크의 글 개수를 세어보니
+//     vorapost.com  /category/IT       → 0건
+//     mazaus.com    /category/GENERAL  → 0건
+//   나머지 10개 사이트는 정상이었다. 즉 primary_topic_ko 와 글의 metadata.category 가
+//   어긋난 사이트에서만 빈 메뉴가 나갔다.
+//   빈 카테고리 페이지는 이제 404 를 내므로(category/[slug].astro), 그대로 두면
+//   메뉴가 404 로 이어진다. 그래서 실제 글이 있는 것 중에서 고른다.
+//     1순위 primary_topic_ko (글이 있을 때만)
+//     2순위 글이 가장 많은 카테고리
+const declaredPrimary = siteConfig?.metadata?.primary_topic_ko?.toUpperCase();
+const categoryCounts = new Map<string, number>();
+for (const c of rawCategories) categoryCounts.set(c, (categoryCounts.get(c) || 0) + 1);
+const mostCommon = Array.from(categoryCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+const primaryCategory =
+  (declaredPrimary && categoryCounts.has(declaredPrimary)) ? declaredPrimary
+  : (mostCommon || declaredPrimary || uniqueCategories[0] || 'LIFESTYLE');
 uniqueCategories = [primaryCategory];
 
 // 각 페이지에서 캐시 설정을 관리합니다 (Layout에서는 중복 설정하지 않음)

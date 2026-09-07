@@ -44,6 +44,21 @@ if (categoryPosts.length === 0) {
   }
 }
 
+// [2026-09-07] 결과가 0건이면 404 를 낸다.
+//   그동안 아무 문자열이나 넣어도 200 이 나갔다 —
+//   실측: /category/zzz없는거999 → 200, 글 링크 0개, self-canonical.
+//   구글에게 이건 **soft 404** 이고, 무한히 만들어질 수 있는 URL 공간이다.
+//   GSC 실측(mazastory.com, 9/4 기준):
+//     중복 페이지·구글이 다른 표준 선택 44건(실패함) — 빈 목록끼리 똑같아 보인다
+//     크롤링됨-색인생성되지않음 55건 — 크롤은 했는데 실을 내용이 없다
+//   빈 목록은 크롤 예산을 먹고 색인을 흐린다. 없는 분류는 없다고 답한다.
+//   ※ 위 fallback(기본 카테고리 구제)을 거친 뒤에 판정해야 한다.
+if (categoryPosts.length === 0) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not Found';
+  return Astro.rewrite('/404');
+}
+
 // 카테고리별 동적 설명 (SEO용 Thin Content 방어)
 // [LABEL] 옛 설명 맵은 it/health/finance/travel/life 5종만 갖고 있어서
 // 현재 운영 중인 카테고리는 단 하나도 대응되지 않았고, 전부
