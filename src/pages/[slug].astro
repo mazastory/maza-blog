@@ -62,7 +62,16 @@ if (!postMeta) {
   const rule = await findRedirect(siteConfig?.id, `/${slug}`);
   if (rule) {
     if (rule.status_code === 301 && rule.target_path) {
-      return Astro.redirect(rule.target_path, 301);
+      // [2026-09-07] `Location` 헤더는 ISO-8859-1 만 받는다. 한글 경로를 날것으로
+      //   넣으면 함수가 죽는다(실측: HTTP 500 · FUNCTION_INVOCATION_FAILED).
+      //   저장할 때 인코딩하는 게 원칙이지만, 여기서도 한 번 더 막는다 —
+      //   규칙은 스크립트·수동 입력 등 여러 경로로 들어온다.
+      //   이미 인코딩된 값을 다시 인코딩하면 `%` 가 `%25` 가 되므로, 인코딩이
+      //   필요한 문자가 남아 있을 때만 encodeURI 를 태운다.
+      const target = /[^\x00-\x7F]/.test(rule.target_path)
+        ? encodeURI(rule.target_path)
+        : rule.target_path;
+      return Astro.redirect(target, 301);
     }
     // 410 Gone — 404("일시적으로 없음")보다 구글이 색인에서 빨리 뺀다.
     //
