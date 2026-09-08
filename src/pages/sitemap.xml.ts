@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 
 import { getApprovedPosts, getSiteConfig, getRequestDomain } from '../lib/api';
 import { resolvePublishDate } from '../lib/postDate';
+import { buildPostUrl } from '../lib/postUrl';
 
 export const prerender = false;
 
@@ -106,7 +107,7 @@ export const GET: APIRoute = async ({ request }) => {
       `).join('')}
       ${posts.map((post: any) => `
         <url>
-          <loc>${siteUrl}/${post.slug}</loc>
+          <loc>${buildPostUrl(siteUrl, post.slug)}</loc>
           <lastmod>${safeDate(resolvePublishDate(post)).toISOString()}</lastmod>
           <changefreq>monthly</changefreq>
           <priority>0.8</priority>

@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { getApprovedPosts, getSiteConfig, getRequestDomain } from '../lib/api';
 import { resolvePublishDate } from '../lib/postDate';
+import { buildPostUrl } from '../lib/postUrl';
 
 export const prerender = false;
 
@@ -74,8 +75,8 @@ export async function GET(context: APIContext) {
       return `
         <item>
           <title><![CDATA[${post.title}]]></title>
-          <link>${siteUrl}/${post.slug}</link>
-          <guid isPermaLink="true">${siteUrl}/${post.slug}</guid>
+          <link>${buildPostUrl(siteUrl, post.slug)}</link>
+          <guid isPermaLink="true">${buildPostUrl(siteUrl, post.slug)}</guid>
           <pubDate>${new Date(resolvePublishDate(post)).toUTCString()}</pubDate>
           <description><![CDATA[${summary}]]></description>
           <content:encoded><![CDATA[${richContent}]]></content:encoded>
