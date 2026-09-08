@@ -7,17 +7,31 @@ export const prerender = false;
 export async function GET(context: APIContext) {
   try {
     const domain = getRequestDomain(context.request);
-    const locale = context.locals.lang || 'ko';
-    
+
     // [2026-08-27] 조회 실패를 빈 피드로 삼키지 않는다.
     // 예전에는 catch 에서 경고만 찍고 `posts = []` 로 진행해 **항목 0개짜리 RSS 를
     // HTTP 200 으로** 내보냈다. 구독자·크롤러 입장에서는 "글이 전부 사라졌다"와
     // 구분되지 않는다.
+    //
+    // [2026-09-08] 언어를 요청 컨텍스트가 아니라 **사이트 설정**에서 읽는다.
+    //
+    // 예전에는 `context.locals.lang || 'ko'` 였다. 그 값이 안 잡히면 'ko' 로 떨어져
+    // **영어 사이트에서 한국어 글을 찾았고**, 한국어 글이 없으면 항목 0개짜리 RSS 가
+    // HTTP 200 으로 나갔다.
+    //
+    // 실측(mazastory.com, language='en', 2026-09-08):
+    //     sitemap.xml = 37개   ·   rss.xml = 0개 (622바이트 껍데기)
+    //     GSC 화면에도 "발견된 페이지 1" 로 찍혔고, `<language>` 가 ko 로 나갔다.
+    //
+    // 8/27 에 sitemap.xml.ts 는 같은 이유로 고쳤는데 **형제 파일인 여기가 남아 있었다.**
+    // 사이트 언어를 알아야 글을 뽑을 수 있으므로 config 를 먼저 읽는다(순서가 바뀌었다).
     let posts: any[] = [];
     let config;
+    let locale = 'ko';
     try {
-      posts = await getApprovedPosts(domain, locale, 500); // Limit to 500 for RSS safety
       config = await getSiteConfig(domain);
+      locale = config?.metadata?.language || config?.metadata?.lang || context.locals.lang || 'ko';
+      posts = await getApprovedPosts(domain, locale, 500); // Limit to 500 for RSS safety
     } catch (e) {
       console.error('[rss] 데이터 조회 실패 — 빈 피드 대신 503:', e);
       return new Response('Service Unavailable', {
