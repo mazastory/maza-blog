@@ -10,6 +10,12 @@ export interface Post {
   thumbnail_url?: string;
   created_at: string;
   publish_at: string;
+  /**
+   * 글이 실제로 사이트에 처음 나간 시각. DB 트리거가 불변으로 지킨다.
+   * resolvePublishDate 가 **최우선**으로 쓰는 값이라 반드시 함께 실어 보낸다 —
+   * 빠뜨리면 소비하는 쪽의 두 번째 계산이 created_at 으로 떨어진다(2026-09-11).
+   */
+  first_published_at?: string | null;
   status: string;
   category?: string;
   metadata?: any;
@@ -210,6 +216,12 @@ export async function getApprovedPosts(domain?: string, locale?: string, limitCo
             content: '',
             html_content: '',
             created_at: post.created_at,
+            // ⚠️ 2026-09-11: 이 줄이 없어서 사이트맵 lastmod 가 9/8(created_at)로 나갔다.
+            //    resolvePublishDate 는 first_published_at 을 **최우선**으로 쓰는데,
+            //    반환 객체가 그 값을 안 실어 보내서 소비하는 쪽(sitemap·rss·[slug]·PostCard)이
+            //    같은 함수를 다시 부를 때 firstPub=undefined 가 되고 created_at 으로 떨어졌다.
+            //    계산은 여기서 한 번 하지만, 원본도 함께 넘겨야 두 번째 호출이 같은 답을 낸다.
+            first_published_at: post.first_published_at,
             // 미래 날짜는 여기서 과거로 고정한다 — 이 값이 곧 사이트맵 lastmod ·
             // RSS pubDate · JSON-LD datePublished 로 나간다.
             publish_at: resolvePublishDate(post),
@@ -318,6 +330,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
         content: '',
         html_content: '',
         created_at: data.created_at,
+        first_published_at: data.first_published_at,   // 위 주석과 같은 이유 (2026-09-11)
         publish_at: resolvePublishDate(data),
         status: data.status,
         metadata: data.metadata,
@@ -365,6 +378,7 @@ export async function findPostMetaByIdHintFallback(slug: string, siteId: string)
       content: '',
       html_content: '',
       created_at: candidate.created_at,
+      first_published_at: candidate.first_published_at,   // 위 주석과 같은 이유 (2026-09-11)
       publish_at: resolvePublishDate(candidate),
       status: candidate.status,
       metadata: candidate.metadata,
