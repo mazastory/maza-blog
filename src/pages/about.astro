@@ -35,15 +35,14 @@ const COPY: Record<string, any> = {
       { t: '사실 기반 서술:', d: '검증되지 않은 수치나 통계를 사실처럼 제시하지 않습니다. 불확실한 정보는 "일반적으로", "많은 경우" 등 정성적으로 표현합니다.' },
       { t: '독자 우선:', d: '광고보다 콘텐츠가 항상 우선입니다. 독자의 시간을 소중히 여기며, 실질적으로 도움이 되는 정보만 발행합니다.' },
       { t: '투명한 운영:', d: '광고 수익 및 제휴 링크 활용 사실을 명확히 공개합니다.', linkText: '면책 조항', linkSuffix: '에서 자세한 내용을 확인하실 수 있습니다.' },
-      { t: 'AI 보조 + 편집자 검수:', d: '일부 콘텐츠 작성에 AI를 발행 보조 도구로 활용하며, 모든 글은 발행 전 편집자의 사실 확인 및 체계적 수정 과정을 거칩니다. 아무 콘텐츠도 미검수 상태로 발행되지 않습니다.', good: true },
+      { t: 'AI 작성 + 자동 검사:', d: '글은 AI가 초안을 쓰고, 발행 전에 자동 검사(출처 표기·제목 중복·깨진 링크·언어 혼입·안전성)를 거칩니다. 사람이 모든 글을 개별로 검수하지는 않습니다. 오류를 발견하시면 알려주시면 고치겠습니다.', good: true },
       { t: '콘텐츠 업데이트 정책:', d: '특정 분야의 정보가 변경될 경우, 기존 글을 주기적으로 갱신하여 정확성을 유지합니다.', warn: true },
     ],
     editorTitle: '에디터 소개',
     defaultEditor: '대표 에디터',
     footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. 본 사이트는 ${d} 도메인에서 운영됩니다.<br />
-      일부 콘텐츠 작성 과정에서 AI를 <strong>아이디어 생성 보조 도구</strong>로 활용하며,
-      작성된 모든 콘텐츠는 편집자가 <strong>실제로 검토하고 수정하여 발행합니다.</strong>
-      AI가 생성한 콘텐츠를 미검수 상태로 바로 게시하지 않습니다. 오류나 부정확한 정보를 발견하시면 <a href="/contact" class="underline">연락하여</a> 알려주세요.`,
+      이 사이트의 글은 <strong>AI가 작성</strong>하고, 발행 전에 자동 검사를 거칩니다.
+      사람이 모든 글을 개별로 검수하지는 않습니다. 오류나 부정확한 정보를 발견하시면 <a href="/contact" class="underline">연락하여</a> 알려주시면 고치겠습니다.`,
     contactCta: 'Contact Us',
     disclaimerCta: '면책 조항 보기',
   },
@@ -61,15 +60,14 @@ const COPY: Record<string, any> = {
       { t: 'Fact-based writing:', d: 'We don\'t present unverified figures or statistics as fact. Uncertain information is qualified with language like "generally" or "in many cases."' },
       { t: 'Readers first:', d: 'Content always comes before advertising. We value your time and only publish information that is genuinely useful.' },
       { t: 'Transparent operations:', d: 'We clearly disclose our use of advertising revenue and affiliate links.', linkText: 'Disclaimer', linkSuffix: ' page.' },
-      { t: 'AI-assisted + editor-reviewed:', d: 'AI may be used as a drafting aid for some content, but every article goes through editorial fact-checking and revision before publication. No content is published without review.', good: true },
+      { t: 'AI-written + automated checks:', d: 'Articles are drafted by AI and run through automated checks before publication (source attribution, duplicate titles, broken links, language mixing, safety). We do not review every article individually. If you spot an error, tell us and we will fix it.', good: true },
       { t: 'Content update policy:', d: 'When information in a given field changes, we periodically refresh existing articles to keep them accurate.', warn: true },
     ],
     editorTitle: 'Meet the Editor',
     defaultEditor: 'Lead Editor',
     footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. This site is operated on the ${d} domain.<br />
-      AI may be used as an <strong>idea-generation aid</strong> in part of our writing process, and
-      all published content is <strong>reviewed and edited by a human editor</strong> before publication.
-      AI-generated content is never published without review. If you spot an error or inaccuracy, please <a href="/contact" class="underline">let us know</a>.`,
+      Articles on this site are <strong>written by AI</strong> and run through automated checks before publication.
+      We do not review every article individually. If you spot an error or inaccuracy, please <a href="/contact" class="underline">let us know</a> and we will fix it.`,
     contactCta: 'Contact Us',
     disclaimerCta: 'View Disclaimer',
   },
@@ -87,15 +85,14 @@ const COPY: Record<string, any> = {
       { t: '事実に基づく記述:', d: '検証されていない数値や統計を事実として提示することはありません。不確かな情報は「一般的に」「多くの場合」など、定性的な表現を用います。' },
       { t: '読者第一:', d: '広告よりもコンテンツを常に優先します。読者の時間を大切にし、実質的に役立つ情報のみを発信します。' },
       { t: '透明な運営:', d: '広告収益およびアフィリエイトリンクの活用について明確に開示しています。', linkText: '免責事項', linkSuffix: 'で詳細をご確認いただけます。' },
-      { t: 'AI補助+編集者による検証:', d: '一部のコンテンツ作成にAIを補助ツールとして活用していますが、すべての記事は公開前に編集者によるファクトチェックと体系的な修正プロセスを経ています。未確認のコンテンツが公開されることはありません。', good: true },
+      { t: 'AIによる作成+自動チェック:', d: '記事はAIが下書きを作成し、公開前に自動チェック（出典表記・タイトル重複・リンク切れ・言語混在・安全性）を通します。すべての記事を人が個別に検証しているわけではありません。誤りを見つけたらお知らせください、修正します。', good: true },
       { t: 'コンテンツ更新ポリシー:', d: '特定分野の情報が変化した場合、既存の記事を定期的に更新して正確性を維持します。', warn: true },
     ],
     editorTitle: '編集者紹介',
     defaultEditor: '編集長',
     footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. 本サイトは${d}ドメインで運営されています。<br />
-      一部のコンテンツ作成過程でAIを<strong>アイデア生成の補助ツール</strong>として活用しており、
-      作成されたすべてのコンテンツは編集者が<strong>実際にレビューし、修正の上で公開しています。</strong>
-      AIが生成したコンテンツを未確認のまま公開することはありません。誤りや不正確な情報を見つけた場合は<a href="/contact" class="underline">ご連絡</a>ください。`,
+      本サイトの記事は<strong>AIが作成</strong>し、公開前に自動チェックを通しています。
+      すべての記事を人が個別に検証しているわけではありません。誤りや不正確な情報を見つけた場合は<a href="/contact" class="underline">ご連絡</a>ください、修正します。`,
     contactCta: 'Contact Us',
     disclaimerCta: '免責事項を見る',
   },
