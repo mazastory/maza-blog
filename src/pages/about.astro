@@ -19,6 +19,9 @@ const eeatGuideline = siteConfig?.metadata?.eeat_guideline || '';
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
 // 표시용 분야명. DB 값은 설명문인 경우가 많아 그대로 문장에 꽂으면 깨진다(lib/niche.ts).
 const niche = displayNiche(siteConfig?.niche, lang);
+// 사이트를 운영하는 법인. 글쓴이(편집부)와는 다른 칸이다 —
+// 구글과 전자상거래법이 보는 것은 이쪽이다. 없으면 표시하지 않는다.
+const operator = siteConfig?.metadata?.operator || '';
 
 const COPY: Record<string, any> = {
   ko: {
@@ -40,7 +43,7 @@ const COPY: Record<string, any> = {
     ],
     editorTitle: '에디터 소개',
     defaultEditor: '대표 에디터',
-    footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. 본 사이트는 ${d} 도메인에서 운영됩니다.<br />
+    footerNote: (y: number, d: string, op: string) => `&copy; ${y} ${blogName}. 본 사이트는 ${d} 도메인에서 운영됩니다.${op ? ` 운영: <strong>${op}</strong>.` : ''}<br />
       이 사이트의 글은 <strong>AI가 작성</strong>하고, 발행 전에 자동 검사를 거칩니다.
       사람이 모든 글을 개별로 검수하지는 않습니다. 오류나 부정확한 정보를 발견하시면 <a href="/contact" class="underline">연락하여</a> 알려주시면 고치겠습니다.`,
     contactCta: 'Contact Us',
@@ -65,7 +68,7 @@ const COPY: Record<string, any> = {
     ],
     editorTitle: 'Meet the Editor',
     defaultEditor: 'Lead Editor',
-    footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. This site is operated on the ${d} domain.<br />
+    footerNote: (y: number, d: string, op: string) => `&copy; ${y} ${blogName}. This site is operated on the ${d} domain.${op ? ` Operated by <strong>${op}</strong>.` : ''}<br />
       Articles on this site are <strong>written by AI</strong> and run through automated checks before publication.
       We do not review every article individually. If you spot an error or inaccuracy, please <a href="/contact" class="underline">let us know</a> and we will fix it.`,
     contactCta: 'Contact Us',
@@ -90,7 +93,7 @@ const COPY: Record<string, any> = {
     ],
     editorTitle: '編集者紹介',
     defaultEditor: '編集長',
-    footerNote: (y: number, d: string) => `&copy; ${y} ${blogName}. 本サイトは${d}ドメインで運営されています。<br />
+    footerNote: (y: number, d: string, op: string) => `&copy; ${y} ${blogName}. 本サイトは${d}ドメインで運営されています。${op ? ` 運営: <strong>${op}</strong>。` : ''}<br />
       本サイトの記事は<strong>AIが作成</strong>し、公開前に自動チェックを通しています。
       すべての記事を人が個別に検証しているわけではありません。誤りや不正確な情報を見つけた場合は<a href="/contact" class="underline">ご連絡</a>ください、修正します。`,
     contactCta: 'Contact Us',
@@ -172,7 +175,7 @@ const principles = c.principles(niche);
 
         <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
-        <p class="text-sm text-slate-500 leading-relaxed" set:html={c.footerNote(foundedYear, domain)} />
+        <p class="text-sm text-slate-500 leading-relaxed" set:html={c.footerNote(foundedYear, domain, operator)} />
 
         <div class="mt-10 flex flex-wrap gap-4">
           <a href="/contact" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:bg-indigo-600">
