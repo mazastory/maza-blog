@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { displayNiche } from '../lib/niche';
 import Header from '../components/Header.astro';
 import SEO from '../components/SEO.astro';
 import Schema from '../components/Schema.astro';
@@ -92,7 +93,8 @@ uniqueCategories = [primaryCategory];
 
 // 각 페이지에서 캐시 설정을 관리합니다 (Layout에서는 중복 설정하지 않음)
 const siteTitle = siteConfig?.blog_name || "Maza Blog";
-const siteDesc = siteConfig?.niche || "MazaStudio Subdomain Blog - High Quality AI Content";
+// niche 는 분야명이 아니라 설명문인 경우가 많다. 표시용으로 줄여 쓴다(lib/niche.ts).
+const siteDesc = displayNiche(siteConfig?.niche, siteConfig?.metadata?.language || siteConfig?.metadata?.lang || 'ko') || "MazaStudio Subdomain Blog - High Quality AI Content";
 
 const { 
 	title, 

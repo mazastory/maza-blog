@@ -2,14 +2,16 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { getSiteConfig, getRequestDomain } from '../lib/api';
+import { displayNiche, subject } from '../lib/niche';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
 const blogName = siteConfig?.blog_name || "Maza Blog";
-const niche = siteConfig?.niche || '';
 const currentYear = new Date().getFullYear();
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+// 표시용 분야명 — DB 값은 설명문인 경우가 많다(lib/niche.ts).
+const niche = displayNiche(siteConfig?.niche, lang);
 const dateLocale = lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'ko-KR';
 const lastUpdated = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -20,7 +22,7 @@ const COPY: Record<string, any> = {
     badge: 'Legal',
     operatedBy: '운영 사이트',
     lastUpdatedLabel: '최종 업데이트',
-    lead: `${blogName}(${domain})${niche ? `은 ${niche} 분야의 정보를 제공하는 블로그로서,` : '은'} 방문자의 개인정보를 소중히 여기며 최소한의 정보만 수집합니다. 아래에서 수집 정보와 활용 방식을 투명하게 안내합니다.`,
+    lead: `${subject(`${blogName}(${domain})`)}${niche ? ` ${niche} 분야의 정보를 제공하는 블로그로서,` : ''} 방문자의 개인정보를 소중히 여기며 최소한의 정보만 수집합니다. 아래에서 수집 정보와 활용 방식을 투명하게 안내합니다.`,
     collectedTitle: '수집되는 정보',
     collected: [
       '접속 IP 주소 (트래픽 분석, 보안 목적)',

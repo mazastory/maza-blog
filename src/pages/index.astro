@@ -4,6 +4,7 @@ if (Astro.url.pathname === '/debug-index') {
   return new Response(JSON.stringify({ path: Astro.url.pathname }), { status: 200 });
 }
 import Layout from '../layouts/Layout.astro';
+import { displayNiche, subject } from '../lib/niche';
 import PostCard from '../components/PostCard.astro';
 import HeroModern from '../components/hero/HeroModern.astro';
 import HeroClassic from '../components/hero/HeroClassic.astro';
@@ -57,20 +58,20 @@ try {
 }
 
 let blogName = siteConfig?.blog_name || "Maza Blog";
-let blogDescription = siteConfig?.metadata?.site_description || siteConfig?.niche || "Welcome to our blog.";
+// niche 를 그대로 쓰면 248자짜리 설명문이 메타 description 으로 나간다(lib/niche.ts).
+let blogDescription = siteConfig?.metadata?.site_description || displayNiche(siteConfig?.niche, lang) || "Welcome to our blog.";
 
 // [FIX] meta description이 내부 코드값(ai_tools, career 등) 그대로 노출되는 것 방지
 // 최소 50자 이상의 의미있는 설명문으로 업그레이드
 if (blogDescription.length < 50) {
-  const niche = siteConfig?.niche || '';
-  const nicheLabel = niche.replace(/_/g, ' ').trim();
+  const nicheLabel = displayNiche(siteConfig?.niche, lang).replace(/_/g, ' ').trim();
   if (nicheLabel) {
     if (lang === 'en') {
       blogDescription = `${blogName} provides practical and in-depth content in the field of ${nicheLabel}. Discover expert analysis, latest trends, and practical guides.`;
     } else if (lang === 'ja') {
       blogDescription = `${blogName}は${nicheLabel}分野の実用的で詳細なコンテンツを提供します。専門家の視点で分析した最新トレンドと実践ガイドをご覧ください。`;
     } else {
-      blogDescription = `${blogName}는 ${nicheLabel} 분야의 실용적이고 깊이 있는 콘텐츠를 제공합니다. 전문가의 시각으로 분석한 최신 트렌드와 실전 가이드를 확인해 보세요.`;
+      blogDescription = `${subject(blogName)} ${nicheLabel} 분야의 실용적이고 깊이 있는 콘텐츠를 제공합니다. 전문가의 시각으로 분석한 최신 트렌드와 실전 가이드를 확인해 보세요.`;
     }
   } else {
     if (lang === 'en') {

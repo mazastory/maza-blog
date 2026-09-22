@@ -2,12 +2,12 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { getSiteConfig, getRequestDomain } from '../lib/api';
+import { displayNiche, subject } from '../lib/niche';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
 const blogName = siteConfig?.blog_name || "Maza Blog";
-const niche = siteConfig?.niche || '';
 const aboutContent = siteConfig?.metadata?.about_content || '';
 const foundedYear = siteConfig?.metadata?.founded_year || new Date().getFullYear();
 const authorName = siteConfig?.metadata?.author_name || '';
@@ -17,6 +17,8 @@ const authorPersona = siteConfig?.metadata?.author_persona || '';
 const eeatGuideline = siteConfig?.metadata?.eeat_guideline || '';
 
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+// 표시용 분야명. DB 값은 설명문인 경우가 많아 그대로 문장에 꽂으면 깨진다(lib/niche.ts).
+const niche = displayNiche(siteConfig?.niche, lang);
 
 const COPY: Record<string, any> = {
   ko: {
@@ -24,12 +26,12 @@ const COPY: Record<string, any> = {
     headlinePrefix: '', headlineSuffix: '에 대하여',
     nicheLine: (n: string, d: string) => `${n} 전문 콘텐츠 블로그 · ${d}`,
     nicheDesc: (name: string, n: string) => n
-      ? `${name}은 <strong>${n}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. ${n}에 관심 있는 독자들에게 실용적이고 깊이 있는 정보를 제공하는 것을 목표로 합니다.`
-      : `${name}은 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`,
+      ? `${subject(name)} <strong>${n}</strong> 분야에 특화된 전문 콘텐츠 블로그입니다. 이 주제에 관심 있는 독자에게 실용적이고 깊이 있는 정보를 전하는 것을 목표로 합니다.`
+      : `${subject(name)} 독자에게 신뢰할 수 있는 정보를 제공하는 전문 콘텐츠 블로그입니다.`,
     pageDesc: (name: string, n: string) => n ? `${name} — ${n} 전문 블로그. 실용적이고 깊이 있는 콘텐츠를 제공합니다.` : `${name} 소개 페이지`,
     principlesTitle: '우리의 콘텐츠 원칙',
     principles: (n: string) => [
-      { t: '독창적 관점:', d: `인터넷에서 흔히 볼 수 있는 정보를 단순 재조합하지 않습니다. ${n ? `${n} 분야에서` : ''} 독자적인 시각과 실용적인 인사이트를 제공합니다.` },
+      { t: '독창적 관점:', d: `인터넷에서 흔히 볼 수 있는 정보를 단순 재조합하지 않습니다. ${n ? '이 분야에서 ' : ''}독자적인 시각과 실용적인 인사이트를 제공합니다.` },
       { t: '사실 기반 서술:', d: '검증되지 않은 수치나 통계를 사실처럼 제시하지 않습니다. 불확실한 정보는 "일반적으로", "많은 경우" 등 정성적으로 표현합니다.' },
       { t: '독자 우선:', d: '광고보다 콘텐츠가 항상 우선입니다. 독자의 시간을 소중히 여기며, 실질적으로 도움이 되는 정보만 발행합니다.' },
       { t: '투명한 운영:', d: '광고 수익 및 제휴 링크 활용 사실을 명확히 공개합니다.', linkText: '면책 조항', linkSuffix: '에서 자세한 내용을 확인하실 수 있습니다.' },
@@ -50,12 +52,12 @@ const COPY: Record<string, any> = {
     headlinePrefix: 'About ', headlineSuffix: '',
     nicheLine: (n: string, d: string) => `Specialized content blog on ${n} · ${d}`,
     nicheDesc: (name: string, n: string) => n
-      ? `${name} is a specialized content blog focusing on <strong>${n}</strong>. We aim to provide practical and in-depth information to readers interested in ${n}.`
+      ? `${name} is a specialized content blog focusing on <strong>${n}</strong>. We aim to give readers practical, in-depth information on the subject.`
       : `${name} is a specialized content blog providing reliable information to our readers.`,
     pageDesc: (name: string, n: string) => n ? `${name} — Expert blog for ${n}. Providing practical and in-depth content.` : `About ${name}`,
     principlesTitle: 'Our Content Principles',
     principles: (n: string) => [
-      { t: 'Original perspective:', d: `We don't simply recombine information that's already common online. We provide an independent point of view and practical insight${n ? ` on ${n}` : ''}.` },
+      { t: 'Original perspective:', d: `We don't simply recombine information that's already common online. We provide an independent point of view and practical insight in this field.` },
       { t: 'Fact-based writing:', d: 'We don\'t present unverified figures or statistics as fact. Uncertain information is qualified with language like "generally" or "in many cases."' },
       { t: 'Readers first:', d: 'Content always comes before advertising. We value your time and only publish information that is genuinely useful.' },
       { t: 'Transparent operations:', d: 'We clearly disclose our use of advertising revenue and affiliate links.', linkText: 'Disclaimer', linkSuffix: ' page.' },
@@ -76,12 +78,12 @@ const COPY: Record<string, any> = {
     headlinePrefix: '', headlineSuffix: 'について',
     nicheLine: (n: string, d: string) => `${n}専門コンテンツブログ · ${d}`,
     nicheDesc: (name: string, n: string) => n
-      ? `${name}は<strong>${n}</strong>分野に特化した専門コンテンツブログです。${n}に関心のある読者に、実用的で深みのある情報を提供することを目指しています。`
+      ? `${name}は<strong>${n}</strong>分野に特化した専門コンテンツブログです。このテーマに関心のある読者へ、実用的で深みのある情報をお届けすることを目指しています。`
       : `${name}は読者に信頼できる情報を提供する専門コンテンツブログです。`,
     pageDesc: (name: string, n: string) => n ? `${name} — ${n}専門ブログ。実用的で深みのあるコンテンツを提供します。` : `${name}について`,
     principlesTitle: '私たちのコンテンツ原則',
     principles: (n: string) => [
-      { t: '独自の視点:', d: `インターネット上でよく見られる情報を単純に再構成することはありません。${n ? `${n}分野において` : ''}独自の視点と実用的なインサイトを提供します。` },
+      { t: '独自の視点:', d: `インターネット上でよく見られる情報を単純に再構成することはありません。${n ? 'この分野において' : ''}独自の視点と実用的なインサイトを提供します。` },
       { t: '事実に基づく記述:', d: '検証されていない数値や統計を事実として提示することはありません。不確かな情報は「一般的に」「多くの場合」など、定性的な表現を用います。' },
       { t: '読者第一:', d: '広告よりもコンテンツを常に優先します。読者の時間を大切にし、実質的に役立つ情報のみを発信します。' },
       { t: '透明な運営:', d: '広告収益およびアフィリエイトリンクの活用について明確に開示しています。', linkText: '免責事項', linkSuffix: 'で詳細をご確認いただけます。' },

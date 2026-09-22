@@ -2,15 +2,17 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { getSiteConfig, getRequestDomain } from '../lib/api';
+import { displayNiche } from '../lib/niche';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
 const blogName = siteConfig?.blog_name || "Maza Blog";
-const niche = siteConfig?.niche || '';
 const contactEmail = siteConfig?.metadata?.contact_email || `contact@${domain || 'example.com'}`;
 
 const lang = siteConfig?.metadata?.language || siteConfig?.metadata?.lang || Astro.locals.lang || 'ko';
+// 표시용 분야명 — DB 값은 설명문인 경우가 많다(lib/niche.ts).
+const niche = displayNiche(siteConfig?.niche, lang);
 
 // niche 기반 문의 안내 문구
 const contactDesc = lang === 'en'
