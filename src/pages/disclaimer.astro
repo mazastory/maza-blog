@@ -2,6 +2,7 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { getSiteConfig, getRequestDomain } from '../lib/api';
+import { subject } from '../lib/niche';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
@@ -22,13 +23,13 @@ const COPY: Record<string, any> = {
     aiTitle: 'AI 생성 콘텐츠 고지 (AI Content Disclosure)',
     aiDesc: (name: string) => `${name}의 글은 AI(인공지능)가 작성하며, 발행 전 자동 검사를 거칩니다. 사람이 모든 글을 개별로 검수하지는 않습니다. AI의 특성상 부정확한 정보나 오류가 포함될 가능성을 완전히 배제할 수 없습니다. 본 사이트의 콘텐츠는 참고용으로만 활용하시고, 중요한 결정을 내리기 전에 전문가와 반드시 상담하시기 바랍니다.`,
     monetTitle: '광고 및 제휴 수익 고지 (Advertising & Affiliate Disclosure)',
-    monetIntro: (name: string) => `${name}은 지속적인 운영을 위해 다음과 같은 수익 창출 방식을 활용하고 있습니다. 이 사실을 독자에게 투명하게 공개합니다.`,
+    monetIntro: (name: string) => `${subject(name)} 지속적인 운영을 위해 다음과 같은 수익 창출 방식을 활용하고 있습니다. 이 사실을 독자에게 투명하게 공개합니다.`,
     monetLi1: 'Google AdSense: 본 사이트에는 Google AdSense를 통한 광고가 게재될 수 있습니다. Google은 쿠키를 사용하여 사용자의 관심사에 맞는 광고를 표시할 수 있습니다.',
     monetLi2: '제휴 마케팅: 쿠팡 파트너스 등 제휴 프로그램에 참여하고 있으며, 제휴 링크를 통한 구매 시 소정의 수수료가 발생할 수 있습니다. 이는 구매 가격에 영향을 미치지 않습니다.',
     monetLi3: '스폰서 콘텐츠: 스폰서십이 포함된 콘텐츠는 명시적으로 표시됩니다.',
     monetOutro: '광고 수익은 본 사이트의 운영 및 양질의 콘텐츠 제작을 위해 사용됩니다.',
     linksTitle: '외부 링크 (External Links)',
-    linksDesc: (name: string) => `본 사이트의 콘텐츠에는 외부 웹사이트로 연결되는 링크가 포함될 수 있습니다. 이러한 외부 사이트의 콘텐츠, 개인정보 보호 정책 또는 관행에 대해 ${name}은 책임을 지지 않습니다. 외부 링크를 클릭하기 전에 해당 사이트의 이용약관 및 개인정보 보호 정책을 확인하시기 바랍니다.`,
+    linksDesc: (name: string) => `본 사이트의 콘텐츠에는 외부 웹사이트로 연결되는 링크가 포함될 수 있습니다. 이러한 외부 사이트의 콘텐츠, 개인정보 보호 정책 또는 관행에 대해 ${subject(name)} 책임을 지지 않습니다. 외부 링크를 클릭하기 전에 해당 사이트의 이용약관 및 개인정보 보호 정책을 확인하시기 바랍니다.`,
     accuracyTitle: '정보의 정확성 및 최신성',
     accuracyDesc: (name: string, n: string) => `${name}은${n ? ` ${n} 분야를 포함한` : ''} 각 주제에 대해 정확하고 최신의 정보를 제공하기 위해 노력합니다. 그러나 정보의 변경 속도가 빠른 분야의 특성상, 일부 내용이 최신 상황을 반영하지 못할 수 있습니다. 중요한 사안에 대해서는 반드시 공식 기관 또는 전문가를 통해 최신 정보를 확인하시기 바랍니다.`,
     footerPre: (y: number) => `본 면책 조항은 ${y}년 기준으로 작성되었으며 사전 공지 없이 변경될 수 있습니다. 문의 사항은 `,
