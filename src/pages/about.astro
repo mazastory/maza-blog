@@ -22,6 +22,11 @@ const niche = displayNiche(siteConfig?.niche, lang);
 // 사이트를 운영하는 법인. 글쓴이(편집부)와는 다른 칸이다 —
 // 구글과 전자상거래법이 보는 것은 이쪽이다. 없으면 표시하지 않는다.
 const operator = siteConfig?.metadata?.operator || '';
+// [2026-10-08] 사이트가 소개 글 전체를 직접 쓰는 경우. 있으면 아래 고정 문구(콘텐츠 원칙·AI 고지·푸터)를
+// 쓰지 않고 이 HTML 만 보여준다. **없으면 지금과 100% 같다**(기존 12개 사이트는 이 값이 없다).
+// 왜: 고정 문구는 모든 사이트가 똑같아서 소개 페이지가 서로 75~88% 같았고("독창적 관점" 같은 주장도 사이트마다
+// 복제), 그 사이트의 실제 제작 방식과 안 맞을 수 있다. 사실과 다른 소개는 쓰지 않는다 — 이 값은 사람이 쓴다.
+const aboutOverride = (siteConfig?.metadata?.about_override_html || '') as string;
 
 const COPY: Record<string, any> = {
   ko: {
@@ -121,7 +126,7 @@ const principles = c.principles(niche);
         {c.headlinePrefix}<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">{blogName}</span>{c.headlineSuffix}
       </h1>
 
-      {niche && (
+      {niche && !aboutOverride && (
         <p class="mb-10 text-lg font-semibold text-indigo-600 border-l-4 border-indigo-300 pl-4">
           {c.nicheLine(niche, domain)}
         </p>
@@ -129,6 +134,9 @@ const principles = c.principles(niche);
 
       <div class="prose prose-lg md:prose-xl prose-slate max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 hover:prose-a:text-indigo-700 prose-p:leading-relaxed">
 
+        {aboutOverride ? (
+          <div set:html={aboutOverride} />
+        ) : (<>
         {aboutContent ? (
           <p class="text-xl font-medium text-slate-600" set:html={aboutContent} />
         ) : (
@@ -176,6 +184,7 @@ const principles = c.principles(niche);
         <div class="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
         <p class="text-sm text-slate-500 leading-relaxed" set:html={c.footerNote(foundedYear, domain, operator)} />
+        </>)}
 
         <div class="mt-10 flex flex-wrap gap-4">
           <a href="/contact" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:bg-indigo-600">
