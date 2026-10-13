@@ -108,7 +108,7 @@ const COPY: Record<string, any> = {
 const c = COPY[lang] || COPY.en;
 
 const nicheDesc = c.nicheDesc(blogName, niche);
-const pageDescription = aboutContent ? aboutContent.substring(0, 160) : c.pageDesc(blogName, niche);
+const pageDescription = (siteConfig?.metadata?.about_description as string) || (aboutContent ? aboutContent.substring(0, 160) : c.pageDesc(blogName, niche));
 const principles = c.principles(niche);
 ---
 <Layout title={`${blogName} · About`} description={pageDescription} siteConfig={siteConfig}>
