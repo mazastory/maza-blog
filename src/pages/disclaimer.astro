@@ -6,6 +6,10 @@ import { subject } from '../lib/niche';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
+// [2026-10-14] 사이트가 직접 쓴 페이지가 있으면 그쪽으로 넘긴다(metadata.page_overrides.disclaimer).
+if (siteConfig?.metadata?.page_overrides?.disclaimer?.html) {
+  return Astro.rewrite('/legal-override/disclaimer');
+}
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const niche = siteConfig?.niche || '';

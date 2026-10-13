@@ -1,0 +1,28 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { getRequestDomain, getSiteConfig } from '../../lib/api';
+
+/**
+ * 사이트가 직접 쓴 면책·개인정보·약관 페이지 (2026-10-14).
+ * 고정 문구는 모든 사이트가 같은 말을 하는데(애드센스·AI 작성·세금 블로그 …), 제휴 상품 모음으로 바꾼 사이트에서는
+ * 사실과 다르다. `metadata.page_overrides.<이름>` 에 사람이 쓴 HTML 이 있으면 그 페이지는 이것으로 대체된다.
+ * 없으면 이 경로는 404 — 다른 사이트는 영향이 없다.
+ */
+const { name } = Astro.params;
+const ALLOWED = ['disclaimer', 'privacy', 'terms'];
+const domain = getRequestDomain(Astro.request);
+const siteConfig = await getSiteConfig(domain);
+const ov = siteConfig?.metadata?.page_overrides?.[name as string];
+if (!name || !ALLOWED.includes(name) || !ov?.html) {
+  return new Response('Not Found', { status: 404 });
+}
+const title = (ov.title as string) || name;
+---
+
+<Layout title={title} description={(ov.description as string) || title} siteConfig={siteConfig}>
+  <div class="mx-auto max-w-3xl px-4 py-10 md:px-6 md:py-16">
+    <h1 class="text-3xl md:text-4xl font-black tracking-tight text-slate-900">{title}</h1>
+    <div class="prose prose-slate max-w-none mt-6" set:html={ov.html} />
+  </div>
+</Layout>
