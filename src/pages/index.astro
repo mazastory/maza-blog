@@ -14,6 +14,7 @@ import HeroSplit from '../components/hero/HeroSplit.astro';
 import HeroApp from '../components/hero/HeroApp.astro';
 import HeroCorporate from '../components/hero/HeroCorporate.astro';
 import { getApprovedPosts, getRequestDomain, getSiteConfig } from '../lib/api';
+import { shouldShowAffiliate } from '../lib/affiliateHome';
 import { useTranslation } from '../lib/i18n';
 
 import { generateThemeVars } from '../lib/theme';
@@ -41,6 +42,11 @@ try {
     status: 503,
     headers: { 'Retry-After': '300', 'Content-Type': 'text/plain' },
   });
+}
+
+// [2026-10-14] 제휴 상품 모음으로 바꾼 사이트는 홈을 그쪽으로 넘긴다(metadata.home_mode). 그 밖의 사이트는 그대로다.
+if (shouldShowAffiliate(siteConfig, url)) {
+  return Astro.rewrite('/affiliate-home' + url.search);
 }
 
 const theme = generateThemeVars(siteConfig);
