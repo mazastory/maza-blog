@@ -33,8 +33,8 @@ interface Props {
 
 const domain = getRequestDomain(Astro.request);
 
-const isToomus = domain.includes('autosite.kr') || domain.includes('maza.ai.kr') || domain.includes('toomus');
-const isCanDoKorea = domain.includes('mazastory.com') || domain.includes('mazaus.com');
+const isToomus = domain.includes('toomus');
+const isCanDoKorea = domain.includes('mazastory.com');
 
 const siteConfig = Astro.props.siteConfig || await getSiteConfig(domain);
 const theme = generateThemeVars(siteConfig);
@@ -254,9 +254,13 @@ if (rawNaver) {
 
 		<main class="relative z-10 flex-1">
 			<slot />
-			<div class="mx-auto px-6 max-w-4xl">
-				<NewsletterForm siteId={siteConfig?.id} domain={siteConfig?.domain || domain} lang={siteLang} />
-			</div>
+			{/* [2026-10-14] 사이트별로 구독 칸을 끌 수 있다(metadata.hide_newsletter). 켜 둔 사이트는 그대로다.
+			    이메일을 받는 칸이라 개인정보 안내가 없는 사이트에서는 끈다. */}
+			{siteConfig?.metadata?.hide_newsletter !== true && (
+				<div class="mx-auto px-6 max-w-4xl">
+					<NewsletterForm siteId={siteConfig?.id} domain={siteConfig?.domain || domain} lang={siteLang} />
+				</div>
+			)}
 		</main>
 
 		
