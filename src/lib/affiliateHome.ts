@@ -18,7 +18,18 @@ export interface AffiliateProduct {
   facts: string[];
   url: string;
 }
+export interface AffiliateTool {
+  /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — 이 도구를 홈 가운데에 띄운다 */
+  embed_url: string;
+  /** 접근성용 이름 */
+  title: string;
+  height?: number;
+  /** 위쪽 배너로 보낼 상품 수(나머지는 아래쪽) */
+  top_count?: number;
+}
 export interface AffiliateHomeConfig {
+  /** 있으면 「도구 가운데 + 위아래 배너」 구조, 없으면 상품 목록 */
+  tool?: AffiliateTool;
   title: string;
   intro: string;
   disclosure: string;
