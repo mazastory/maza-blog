@@ -21,8 +21,10 @@ export interface AffiliateProduct {
   slot?: 'top' | 'bottom' | 'left' | 'right';
 }
 export interface AffiliateTool {
-  /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — 이 도구를 홈 가운데에 띄운다 */
-  embed_url: string;
+  /** 마자 블로그에 들어 있는 공용 도구를 페이지의 일부로 넣는다(iframe 아님). 지금은 'planner'. */
+  builtin?: 'planner';
+  /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — builtin 이 없을 때 iframe 으로 띄운다 */
+  embed_url?: string;
   /** 접근성용 이름 */
   title: string;
   height?: number;
@@ -53,7 +55,13 @@ export function homeIsAffiliate(siteConfig: any): boolean {
   return affiliateMode(siteConfig) === 'affiliate';
 }
 
-/** `/affiliate-preview` 를 열어 줄 것인가 — 미리보기 모드이거나 이미 공개한 사이트. */
+/** `/affiliate-preview` 를 열어 줄 것인가 — 미리보기 설정(`affiliate_home_preview`)이 있거나, 미리보기 모드이거나, 이미 공개한 사이트. */
 export function previewAllowed(siteConfig: any): boolean {
-  return affiliateMode(siteConfig) !== null;
+  return !!siteConfig?.metadata?.affiliate_home_preview?.products?.length || affiliateMode(siteConfig) !== null;
+}
+
+/** 미리보기 주소가 보여 줄 설정 — 따로 둔 미리보기 설정이 공개 설정보다 먼저다(공개 홈을 건드리지 않고 새 모양을 확인하려고). */
+export function previewConfig(siteConfig: any): AffiliateHomeConfig | null {
+  const m = siteConfig?.metadata;
+  return (m?.affiliate_home_preview?.products?.length ? m.affiliate_home_preview : m?.affiliate_home) ?? null;
 }

@@ -1,0 +1,300 @@
+---
+/**
+ * 웹 플래너 도구 (마자 블로그 공용) — 2026-10-14
+ * 원본 planner-web(사장님)에서 도구 부분만 옮겼다: 툴바 · D-Day · 캘린더/일일 · 할 일 · 안내 · D-Day 등록창.
+ * 빼낸 것: 상단 메뉴·히어로·AutoPlanner 이름·광고 슬롯·소개/약관 페이지(사이트 껍데기가 맡는다).
+ * 스타일은 `.pw-root` 안에 갇혀 있다(public/tools/planner/planner.css). 아이콘은 lucide(고정 버전, unpkg)를 쓴다.
+ */
+interface Props { class?: string }
+const { class: extra = '' } = Astro.props;
+---
+
+<div class={`pw-root ${extra}`} id="pwPlannerRoot">
+  <link rel="stylesheet" href="/tools/planner/planner.css" />
+
+  <div class="pw-toolbar-row">
+<div class="planner-toolbar">
+          <div class="view-toggle-group">
+            <button class="view-btn active" id="btnViewMonthly">
+              <i data-lucide="calendar" style="width:14px; height:14px;"></i> 월간 보기
+            </button>
+            <button class="view-btn" id="btnViewWeekly">
+              <i data-lucide="calendar-days" style="width:14px; height:14px;"></i> 주간 보기
+            </button>
+          </div>
+
+          <div class="toolbar-actions">
+            <button class="btn-secondary" id="btnToolbarPrint" title="플래너 인쇄 및 PDF 저장">
+              <i data-lucide="printer" style="width:14px; height:14px;"></i> 인쇄/PDF
+            </button>
+            <button class="btn-secondary" id="btnToolbarExport" title="전체 데이터 JSON 백업 다운로드">
+              <i data-lucide="download" style="width:14px; height:14px;"></i> 백업 저장
+            </button>
+            <button class="btn-secondary" id="btnToolbarImport" title="백업 JSON 파일 불러오기">
+              <i data-lucide="upload" style="width:14px; height:14px;"></i> 불러오기
+            </button>
+            <input type="file" id="fileImportInput" accept=".json" style="display:none;">
+            <button class="btn-icon" id="btnToolbarReset" title="플래너 데이터 초기화">
+              <i data-lucide="rotate-ccw" style="width:15px; height:15px;"></i>
+            </button>
+          </div>
+        </div>
+  </div>
+
+<section class="dday-section" id="ddaySection">
+        <div class="section-head">
+          <h2 class="section-title">
+            <i data-lucide="hourglass"></i> 핵심 목표 &amp; D-Day 카운터
+          </h2>
+          <span style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span class="pw-save-status"><span class="pw-save-dot"></span><span id="saveStatusText">이 브라우저에 자동 저장</span></span>
+            <button class="btn-primary" id="btnOpenDDayModal" style="padding: 7px 14px; font-size: 13px;"><i data-lucide="plus" style="width:14px; height:14px;"></i> D-Day 등록</button>
+          </span>
+        </div>
+        <div class="dday-grid" id="ddayGrid">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </section>
+
+<section class="planner-workspace-grid" id="plannerWorkspace">
+
+        <!-- 1. Calendar Card (Monthly / Weekly) -->
+        <div class="calendar-card">
+          <div class="calendar-header-bar">
+            <div class="calendar-current-label" id="currentCalendarLabel">
+              2026년 <span>10월</span>
+            </div>
+            <div class="calendar-nav-controls">
+              <button class="btn-icon" id="btnCalPrev" title="이전">
+                <i data-lucide="chevron-left" style="width:16px; height:16px;"></i>
+              </button>
+              <button class="btn-secondary" id="btnCalToday" style="padding: 6px 12px; font-size: 12px;">
+                오늘
+              </button>
+              <button class="btn-icon" id="btnCalNext" title="다음">
+                <i data-lucide="chevron-right" style="width:16px; height:16px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Monthly View Container -->
+          <div id="calendarMonthlyContainer">
+            <div class="calendar-weekdays">
+              <div class="weekday-col sun">일</div>
+              <div class="weekday-col">월</div>
+              <div class="weekday-col">화</div>
+              <div class="weekday-col">수</div>
+              <div class="weekday-col">목</div>
+              <div class="weekday-col">금</div>
+              <div class="weekday-col sat">토</div>
+            </div>
+            <div class="calendar-days-grid" id="calendarDaysGrid">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+
+          <!-- Weekly View Container -->
+          <div id="calendarWeeklyContainer" style="display:none;">
+            <div class="calendar-weekly-grid" id="calendarWeeklyGrid">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Daily Cockpit & Hourly Timeblock Panel -->
+        <div class="daily-cockpit">
+          <div class="daily-header">
+            <div class="daily-badge">SELECTED DATE FOCUS</div>
+            <h3 class="daily-date-title" id="dailyDateTitle">2026년 10월 14일</h3>
+          </div>
+
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--text-secondary); display:flex; align-items:center; gap:6px;">
+            <i data-lucide="clock" style="width:14px; height:14px; color:var(--accent-1);"></i>
+            일일 시간 블록킹 (08:00 ~ 22:00)
+          </div>
+
+          <div class="timeblock-wrap" id="timeblockWrap">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+      </section>
+
+<section class="todo-card" id="todoSection">
+        <div class="section-head">
+          <h2 class="section-title">
+            <i data-lucide="check-circle-2"></i> 우선순위 투두리스트 (To-Do List)
+          </h2>
+          <div class="todo-progress-stat" id="todoProgressStat">
+            진행률 <span>0%</span> (0/0 완료)
+          </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="todo-add-box">
+          <input type="text" id="todoInput" class="todo-input" placeholder="새로운 할 일을 입력하세요 (엔터키 또는 추가 버튼)">
+          <select id="todoCategory" class="todo-category-select">
+            <option value="업무">💼 업무/비즈니스</option>
+            <option value="개인">🌱 개인/라이프</option>
+            <option value="건강">🏃 건강/운동</option>
+            <option value="학습">📚 학습/성장</option>
+          </select>
+          <select id="todoPriority" class="todo-priority-select">
+            <option value="high">🔴 높음 (High)</option>
+            <option value="medium" selected>🟡 보통 (Medium)</option>
+            <option value="low">🟢 낮음 (Low)</option>
+          </select>
+          <input type="date" id="todoDueDate" class="todo-category-select" style="max-width:140px;">
+          <button class="btn-primary" id="todoAddBtn" style="padding: 0 18px; height: 40px; font-size: 13.5px;">
+            <i data-lucide="plus" style="width:15px; height:15px;"></i> 추가
+          </button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="todo-filter-bar">
+          <div class="todo-filters">
+            <button class="filter-chip active" data-filter="all">전체보기</button>
+            <button class="filter-chip" data-filter="active">진행중</button>
+            <button class="filter-chip" data-filter="completed">완료됨</button>
+          </div>
+          <span style="font-size:11.5px; color:var(--text-muted);">✓ 체크박스를 클릭하여 완료 처리</span>
+        </div>
+
+        <!-- Task List Items -->
+        <div class="todo-list-wrap" id="todoListWrap">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </section>
+
+<section class="guide-section" id="guideSection">
+        <h3 class="guide-title">
+          <i data-lucide="compass" style="color:var(--accent-1);"></i> 생산성을 극대화하는 시간 관리 &amp; 목표 달성 프레임워크
+        </h3>
+        <div class="guide-content">
+          <p>
+            성공적인 프로젝트 완수와 균형 잡힌 일상 관리는 '오늘 해야 할 일'을 무작위로 나열하는 것에서 끝나지 않습니다.
+            주간의 큰 그림을 파악하고 마감 시점을 명확히 인지한 상태에서 일 단위의 집중 시간을 확보하는 3단계 루틴이 핵심입니다.
+          </p>
+
+          <div class="guide-cards-grid">
+            <div class="guide-item">
+              <h4><i data-lucide="target" style="width:16px; height:16px;"></i> 1. D-Day 역산 스케줄링</h4>
+              <p>
+                최종 납기일이나 시험, 런칭 시점을 D-Day로 명시해두면 남은 날짜에 맞춰 주 단위 과제를 분할할 수 있습니다.
+                목표일이 가까워질수록 우선순위를 좁히는 파레토 원칙을 적용하세요.
+              </p>
+            </div>
+            <div class="guide-item">
+              <h4><i data-lucide="layers" style="width:16px; height:16px;"></i> 2. 타임블로킹 (Time Blocking)</h4>
+              <p>
+                시간대별로 구체적인 활동 영역을 미리 지정해두면 멀티태스킹으로 인한 집중력 분산을 방지할 수 있습니다.
+                오전 골든 타임에는 고난도 핵심 과제를, 오후에는 커뮤니케이션을 배치하세요.
+              </p>
+            </div>
+            <div class="guide-item">
+              <h4><i data-lucide="shield-check" style="width:16px; height:16px;"></i> 3. 100% 로컬 프라이버시 보호</h4>
+              <p>
+                사용자의 소중한 일정과 개인 목표 데이터는 외부 데이터베이스로 전송되지 않습니다. 브라우저의 로컬 저장소에
+                안전하게 보관되어 개인정보 유출 걱정 없이 안심하고 사용할 수 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <h4 style="font-size:17px; font-weight:800; margin-top:36px; margin-bottom:12px; color:#fff;">
+          자주 묻는 질문 (FAQ)
+        </h4>
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>웹 플래너는 무료인가요? 별도의 유료 결제가 필요한가요?</span>
+              <i data-lucide="chevron-down" class="faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              AutoSite Planner는 100% 무료 웹 애플리케이션입니다. 모든 주간·월간 캘린더, D-Day 카운터, 투두리스트, 백업 내보내기/가져오기 기능은 영구적으로 무료로 제공됩니다.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>브라우저를 닫거나 컴퓨터를 재부팅해도 일정이 유지되나요?</span>
+              <i data-lucide="chevron-down" class="faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              네, 모든 변경사항은 사용자의 웹 브라우저 로컬 저장소(LocalStorage)에 실시간 자동 저장되므로 브라우저를 종료하거나 새로고침해도 데이터가 완벽하게 유지됩니다. 정기적인 백업을 위해 상단 '백업 저장' 버튼을 활용해 JSON 파일로 보관하는 것을 권장합니다.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>스마트폰이나 태블릿에서도 사용할 수 있나요?</span>
+              <i data-lucide="chevron-down" class="faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              네, 모바일 기기 화면 폭에 맞춰 최적화된 반응형 인터페이스가 자동 적용됩니다. 모바일 화면에서는 상단과 하단에 최적화된 배너 배치가 작동하며, 스마트폰 터치 환경에서도 부드럽게 일정과 할 일을 관리할 수 있습니다.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>인쇄하거나 PDF 파일로 출력할 수 있나요?</span>
+              <i data-lucide="chevron-down" class="faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+              상단 툴바의 '인쇄/PDF' 버튼을 클릭하거나 Ctrl+P (Mac: Cmd+P)를 누르면 광고 배너 및 불필요한 배경 요소가 자동으로 제거된 깔끔한 인쇄 전용 레이아웃으로 출력하거나 PDF 문서로 저장할 수 있습니다.
+            </div>
+          </div>
+        </div>
+      </section>
+
+<div class="modal-overlay" id="ddayModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i data-lucide="calendar-plus" style="color:var(--accent-1); margin-right:6px;"></i> 신규 D-Day 등록
+        </h3>
+        <button class="modal-close-btn" id="btnCloseDDayModal">
+          <i data-lucide="x" style="width:20px; height:20px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
+            목표 또는 이벤트 명
+          </label>
+          <input type="text" id="modalDDayTitle" class="form-input" placeholder="예: 2026 하반기 신규 서비스 런칭">
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
+            목표 마감일 (Target Date)
+          </label>
+          <input type="date" id="modalDDayTarget" class="form-input">
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
+            카테고리 구분
+          </label>
+          <select id="modalDDayCategory" class="form-select">
+            <option value="비즈니스">💼 비즈니스/창업</option>
+            <option value="수익화">💰 수익화</option>
+            <option value="업무">💻 회사/프로젝트</option>
+            <option value="시험/자격증">📝 시험/자격증</option>
+            <option value="개인/기념일">🎉 개인/기념일</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn-secondary" onclick="document.getElementById('ddayModal').classList.remove('active')">취소</button>
+        <button class="btn-primary" id="btnSaveDDayModal">D-Day 등록하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+<script is:inline src="/tools/planner/planner.js" defer></script>
+
+<style is:global>
+  .pw-root { border-radius: 20px; padding: 20px; position: relative; }
+  .pw-root .pw-save-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-tertiary); }
+  .pw-root .pw-save-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; }
+  .pw-root .pw-toolbar-row { margin-bottom: 18px; }
+  @media print { .no-print, header, footer { display: none !important; } body { background: #fff !important; } }
+</style>

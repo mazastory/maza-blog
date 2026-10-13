@@ -67,7 +67,7 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
   const isPremium = siteConfig?.metadata?.tier === 'pro' || siteConfig?.metadata?.tier === 'agency' || siteConfig?.metadata?.unlocked_features?.includes('premium_theme') || false;
   const themeId = siteConfig?.metadata?.theme_id || 'free_default';
 
-  return {
+  const computed: ThemeVars = {
     color: siteConfig?.metadata?.theme_color || colors[absHash % colors.length],
     fontFamily: fonts[getIndex(1, fonts.length)].family,
     fontUrl: fonts[getIndex(1, fonts.length)].url,
@@ -89,4 +89,7 @@ export function generateThemeVars(siteConfig: any): ThemeVars {
     isPremium,
     themeId,
   };
+  // [2026-10-14] 사이트가 직접 정한 값이 해시 값보다 앞선다(예: 어두운 사이트는 헤더·푸터도 어둡게).
+  const o = siteConfig?.metadata?.theme_overrides;
+  return o && typeof o === 'object' ? { ...computed, ...o } : computed;
 }
