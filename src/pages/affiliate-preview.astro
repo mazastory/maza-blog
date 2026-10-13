@@ -1,0 +1,17 @@
+---
+export const prerender = false;
+import AffiliateHomeView from '../components/AffiliateHomeView.astro';
+import { getRequestDomain, getSiteConfig } from '../lib/api';
+import { previewAllowed, type AffiliateHomeConfig } from '../lib/affiliateHome';
+
+const domain = getRequestDomain(Astro.request);
+const siteConfig = await getSiteConfig(domain);
+if (!previewAllowed(siteConfig)) {
+  return new Response('Not Found', { status: 404 });
+}
+// 확인용 주소 — 검색에 올라가지 않게 한다.
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+const cfg = siteConfig!.metadata!.affiliate_home as AffiliateHomeConfig;
+---
+
+<AffiliateHomeView cfg={cfg} siteConfig={siteConfig} />
