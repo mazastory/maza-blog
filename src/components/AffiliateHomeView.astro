@@ -7,12 +7,19 @@ const safeHref = (u: string) => (/^https:\/\/(naver\.me|brandconnect\.naver\.com
 const safeEmbed = (u: string) => (/^https:\/\/(www\.)?setupod\.com\/embed\/[a-z0-9_-]+(\?[^\s"]*)?$/i.test(u) ? u : '');
 const tool = cfg.tool && safeEmbed(cfg.tool.embed_url) ? cfg.tool : null;
 const topCount = tool ? Math.max(0, Math.min(cfg.products.length, tool.top_count ?? 2)) : 0;
-const topBanners = tool ? cfg.products.slice(0, topCount) : [];
-const bottomBanners = tool ? cfg.products.slice(topCount) : [];
+const slotOf = (p: any, i: number) => (p.slot as string) || (i < topCount ? 'top' : 'bottom');
+const bySlot = (slot: string) => (tool ? cfg.products.filter((p, i) => slotOf(p, i) === slot) : []);
+const topBanners = bySlot('top');
+const leftBanners = bySlot('left');
+const rightBanners = bySlot('right');
+const bottomBanners = bySlot('bottom');
+// 폭이 좁으면 옆 배너는 아래로 내려온다(옆 자리는 xl 이상에서만 보인다)
+const sideFallback = [...leftBanners, ...rightBanners];
+const hasSides = leftBanners.length + rightBanners.length > 0;
 ---
 
 <Layout title={cfg.title} description={cfg.intro} siteConfig={siteConfig}>
-  <div class="mx-auto max-w-4xl px-4 py-10 md:px-6 md:py-16">
+  <div class={`mx-auto px-4 py-10 md:px-6 md:py-16 ${hasSides ? "max-w-6xl" : "max-w-4xl"}`}>
     <h1 class="text-3xl md:text-4xl font-black tracking-tight text-slate-900">{cfg.title}</h1>
     <p class="mt-4 text-slate-600 leading-relaxed">{cfg.intro}</p>
 
@@ -37,15 +44,62 @@ const bottomBanners = tool ? cfg.products.slice(topCount) : [];
           </div>
         )}
 
-        <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <iframe
-            src={tool.embed_url}
-            title={tool.title}
-            loading="lazy"
-            style={`width:100%;height:${tool.height ?? 760}px;border:0;`}
-            allow="clipboard-write"
-          ></iframe>
+        <div class={`mt-8 ${hasSides ? "xl:grid xl:grid-cols-[180px_minmax(0,1fr)_180px] xl:gap-6" : ""}`}>
+          {hasSides && (
+            <div class="hidden xl:block">
+              <div class="sticky top-24 space-y-3">
+                {leftBanners.map((p) => (
+                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class="block rounded-xl border border-slate-200 bg-white p-3 shadow-sm hover:border-slate-400">
+                    <div class="text-[11px] font-bold text-slate-400">광고 · {p.store}</div>
+                    <div class="mt-1 text-xs font-bold text-slate-900 leading-snug">{p.name}</div>
+                    <div class="mt-2 text-xs text-slate-500">확인 시점 가격 <strong class="text-slate-900">{p.price}</strong></div>
+                    <div class="mt-2 text-xs font-bold text-slate-900">판매 페이지 →</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <iframe
+              src={tool.embed_url}
+              title={tool.title}
+              loading="lazy"
+              style={`width:100%;height:${tool.height ?? 760}px;border:0;`}
+              allow="clipboard-write"
+            ></iframe>
+          </div>
+
+          {hasSides && (
+            <div class="hidden xl:block">
+              <div class="sticky top-24 space-y-3">
+                {rightBanners.map((p) => (
+                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class="block rounded-xl border border-slate-200 bg-white p-3 shadow-sm hover:border-slate-400">
+                    <div class="text-[11px] font-bold text-slate-400">광고 · {p.store}</div>
+                    <div class="mt-1 text-xs font-bold text-slate-900 leading-snug">{p.name}</div>
+                    <div class="mt-2 text-xs text-slate-500">확인 시점 가격 <strong class="text-slate-900">{p.price}</strong></div>
+                    <div class="mt-2 text-xs font-bold text-slate-900">판매 페이지 →</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {sideFallback.length > 0 && (
+          <div class="mt-8 grid gap-3 sm:grid-cols-2 xl:hidden">
+            {sideFallback.map((p) => (
+              <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class="block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-slate-400">
+                <div class="text-[11px] font-bold text-slate-400">광고 · {p.store}</div>
+                <div class="mt-1 text-sm font-bold text-slate-900 leading-snug">{p.name}</div>
+                <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+                  <span>확인 시점 가격 <strong class="text-slate-900">{p.price}</strong></span>
+                  <span class="font-bold text-slate-900">판매 페이지 →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
 
         {bottomBanners.length > 0 && (
           <div class="mt-8 grid gap-3 sm:grid-cols-2">

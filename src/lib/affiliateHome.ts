@@ -17,6 +17,8 @@ export interface AffiliateProduct {
   price: string;
   facts: string[];
   url: string;
+  /** 도구형 홈에서의 자리. 없으면 앞의 top_count 개는 top, 나머지는 bottom */
+  slot?: 'top' | 'bottom' | 'left' | 'right';
 }
 export interface AffiliateTool {
   /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — 이 도구를 홈 가운데에 띄운다 */
