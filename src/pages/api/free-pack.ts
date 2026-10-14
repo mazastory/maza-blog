@@ -8,6 +8,7 @@
  * 다운로드 주소는 **저장이 확인된 뒤에만** 돌려준다(신청 없이 화면만으로는 열리지 않는다 — 단, 파일 주소 자체는 공개 정적 파일이다).
  */
 import type { APIRoute } from 'astro';
+import { getSiteConfig } from '../../lib/api';
 export const prerender = false;
 
 // 운영 주체별 저장소: sharpinsighthub = 투머스(셋업팟 DB) · mazapost = 캔두코리아(마자 DB). 서로 섞지 않는다.
@@ -17,6 +18,18 @@ const destFor = (domain: string) => (domain === 'mazapost.com' ? 'maza' : 'setup
 const EMAIL_RE = /^[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,}$/;
 // 무료 자료 띠를 쓰는 사이트(같은 앱·같은 PDF). 늘릴 때는 그 사이트의 개인정보 방침도 같이 고친다.
 const ALLOWED_HOSTS = new Set(['sharpinsighthub.com', 'www.sharpinsighthub.com', 'mazapost.com', 'www.mazapost.com']);
+/**
+ * 마자 장학 팟 사이트(`metadata.site_kind === 'pod'` 이고 `affiliate_home.free_pack` 이 있는 줄)도 허용한다 — 수집자는 투머스(셋업팟) 하나다.
+ * 도메인 이름으로 허용하지 않고 **그 호스트의 sites 줄**이 말하게 한다: 줄이 없거나 팟이 아니면 404 다.
+ */
+async function isPodHost(host: string): Promise<boolean> {
+  if (!/^[a-z0-9.-]{3,253}$/.test(host)) return false;
+  try {
+    const cfg: any = await getSiteConfig(host.replace(/^www\./, ''));
+    const m = cfg?.metadata;
+    return m?.site_kind === 'pod' && Array.isArray(m?.affiliate_home?.free_pack?.items) && m.affiliate_home.free_pack.items.length > 0;
+  } catch { return false; }
+}
 const CONSENT_DATE = '2026-10-14';
 
 const hits = new Map<string, number[]>();
@@ -33,9 +46,13 @@ const json = (body: unknown, status = 200) =>
 export const POST: APIRoute = async ({ request }) => {
   try {
     const host = (request.headers.get('host') || '').split(':')[0].toLowerCase();
-    if (!ALLOWED_HOSTS.has(host)) return json({ success: false, error: 'Not available on this site' }, 404);
+    const staticHost = ALLOWED_HOSTS.has(host);
+    if (!staticHost && !(await isPodHost(host))) return json({ success: false, error: 'Not available on this site' }, 404);
     const origin = request.headers.get('origin');
-    if (origin && !ALLOWED_HOSTS.has(origin.replace(/^https?:\/\//, '').toLowerCase())) return json({ success: false, error: 'Bad origin' }, 403);
+    if (origin) {
+      const o = origin.replace(/^https?:\/\//, '').toLowerCase();
+      if (staticHost ? !ALLOWED_HOSTS.has(o) : o !== host) return json({ success: false, error: 'Bad origin' }, 403);
+    }
 
     const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
     if (tooMany(ip)) return json({ success: false, error: 'Too many requests' }, 429);
