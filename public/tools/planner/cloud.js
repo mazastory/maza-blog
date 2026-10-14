@@ -42,7 +42,13 @@
   // 비교용: 화면 위치 같은 값은 빼고 내용만
   function core(s) {
     if (!s) return '';
-    return JSON.stringify({ t: s.tasks || [], d: s.ddays || [], b: s.timeblocks || {} });
+    // 서버(jsonb)는 항목의 순서를 바꿔 돌려주므로, 키를 정렬해서 비교한다 — 안 그러면 같은 내용도 다르다고 나온다
+    function canon(v) {
+      if (Array.isArray(v)) return v.map(canon);
+      if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = canon(v[k]); }); return o; }
+      return v;
+    }
+    return JSON.stringify(canon({ t: s.tasks || [], d: s.ddays || [], b: s.timeblocks || {} }));
   }
   function counts(s) {
     s = s || {};
