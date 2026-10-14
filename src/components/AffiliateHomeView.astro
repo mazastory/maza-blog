@@ -7,6 +7,7 @@ interface Props { cfg: AffiliateHomeConfig; siteConfig: any; }
 const { cfg, siteConfig } = Astro.props;
 const safeHref = (u: string) => (/^https:\/\/(naver\.me|brandconnect\.naver\.com)\//.test(u) ? u : '#');
 const safeEmbed = (u: string) => (/^https:\/\/(www\.)?setupod\.com\/embed\/[a-z0-9_-]+(\?[^\s"]*)?$/i.test(u) ? u : '');
+const safeImg = (u?: string) => (u && /^https:\/\/[A-Za-z0-9.-]+\/[^\s"'<>]*$/.test(u) ? u : '');
 const dark = siteConfig?.metadata?.page_theme === 'dark';
 const tool = cfg.tool && (cfg.tool.builtin === 'planner' || (cfg.tool.embed_url && safeEmbed(cfg.tool.embed_url))) ? cfg.tool : null;
 // 사이트가 어두우면 카드·글자도 어둡게 — 도구가 「남의 것」처럼 보이지 않게 한다
@@ -71,15 +72,17 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
                 {leftBanners.map((p) => (
-                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`flex min-h-[270px] flex-col justify-between rounded-xl border p-4 shadow-sm no-print ${C.box} ${C.boxHover}`}>
-                    <div>
-                      <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
-                      <div class={`mt-3 text-sm font-bold leading-snug ${C.name}`}>{p.name}</div>
-                    </div>
-                    <div>
-                      <div class={`text-xs ${C.sub}`}>확인 시점 가격</div>
-                      <div class={`text-lg font-black ${C.strong}`}>{p.price}</div>
-                      <div class={`mt-3 rounded-lg border px-3 py-2 text-center text-xs font-bold ${C.box} ${C.strong}`}>판매 페이지 보기 →</div>
+                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`group block overflow-hidden rounded-xl border shadow-sm no-print ${C.box} ${C.boxHover}`}>
+                    {safeImg(p.image) && (
+                      <img src={safeImg(p.image)} alt={p.name} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="h-[100px] w-full object-cover" />
+                    )}
+                    <div class="p-3">
+                      <div class={`text-[10px] font-bold ${C.tag}`}>광고 · {p.store}</div>
+                      <div class={`mt-1 text-xs font-bold leading-snug line-clamp-2 ${C.name}`}>{p.name}</div>
+                      <div class="mt-2 flex items-end justify-between gap-1">
+                        <span class={`text-sm font-black ${C.strong}`}>{p.price}</span>
+                        <span class={`text-[11px] font-bold ${C.sub} group-hover:underline`}>보기 →</span>
+                      </div>
                     </div>
                   </a>
                 ))}
@@ -105,15 +108,17 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
                 {rightBanners.map((p) => (
-                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`flex min-h-[270px] flex-col justify-between rounded-xl border p-4 shadow-sm no-print ${C.box} ${C.boxHover}`}>
-                    <div>
-                      <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
-                      <div class={`mt-3 text-sm font-bold leading-snug ${C.name}`}>{p.name}</div>
-                    </div>
-                    <div>
-                      <div class={`text-xs ${C.sub}`}>확인 시점 가격</div>
-                      <div class={`text-lg font-black ${C.strong}`}>{p.price}</div>
-                      <div class={`mt-3 rounded-lg border px-3 py-2 text-center text-xs font-bold ${C.box} ${C.strong}`}>판매 페이지 보기 →</div>
+                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`group block overflow-hidden rounded-xl border shadow-sm no-print ${C.box} ${C.boxHover}`}>
+                    {safeImg(p.image) && (
+                      <img src={safeImg(p.image)} alt={p.name} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="h-[100px] w-full object-cover" />
+                    )}
+                    <div class="p-3">
+                      <div class={`text-[10px] font-bold ${C.tag}`}>광고 · {p.store}</div>
+                      <div class={`mt-1 text-xs font-bold leading-snug line-clamp-2 ${C.name}`}>{p.name}</div>
+                      <div class="mt-2 flex items-end justify-between gap-1">
+                        <span class={`text-sm font-black ${C.strong}`}>{p.price}</span>
+                        <span class={`text-[11px] font-bold ${C.sub} group-hover:underline`}>보기 →</span>
+                      </div>
                     </div>
                   </a>
                 ))}

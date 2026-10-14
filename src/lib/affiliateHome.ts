@@ -17,6 +17,8 @@ export interface AffiliateProduct {
   price: string;
   facts: string[];
   url: string;
+  /** 카드에 보일 상품 이미지(https). 없으면 글자만. 쇼핑 커넥트가 제공하거나 사용을 허용한 이미지만 쓴다 */
+  image?: string;
   /** 도구형 홈에서의 자리. 없으면 앞의 top_count 개는 top, 나머지는 bottom */
   slot?: 'top' | 'bottom' | 'left' | 'right';
 }
