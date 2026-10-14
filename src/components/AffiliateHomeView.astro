@@ -46,7 +46,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
     <h1 class={`text-3xl md:text-4xl font-black tracking-tight ${C.h1}`}>{cfg.title}</h1>
     <p class={`mt-4 leading-relaxed ${C.p}`}>{cfg.intro}</p>
 
-    <p class={`mt-3 text-xs no-print ${C.note}`} role="note">ⓘ {cfg.disclosure}</p>
+    <p class={`mt-3 text-sm font-bold ${dark ? 'text-amber-300' : 'text-amber-700'}`} role="note">{cfg.disclosure}</p>
 
     {tool ? (
       <>
