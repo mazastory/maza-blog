@@ -156,14 +156,16 @@
     setStatus('이 기기에만 저장 중');
   }
 
+  // 플래너 데이터와 동의 기록만 지운다. 마자 계정(회원)은 그대로 둔다 — 마자 회원 탈퇴는 마자 스튜디오에서 한다.
   async function deleteAccount() {
-    if (!window.confirm('클라우드에 저장된 일정과 계정을 모두 삭제합니다. 이 기기에 저장된 내용은 남습니다. 계속할까요?')) return;
-    var r = await client.rpc('delete_my_planner_account');
+    if (!window.confirm('클라우드에 저장된 일정과 이 서비스의 동의 기록을 삭제하고 로그아웃합니다. 이 기기에 저장된 내용은 남습니다. (마자 스튜디오 회원 계정은 삭제되지 않습니다.) 계속할까요?')) return;
+    var r = await client.rpc('delete_my_planner_data');
     if (r.error) { setStatus('삭제하지 못했습니다. 잠시 뒤에 다시 시도해 주세요.', 'error'); return; }
+    clearTimeout(uploadTimer);
     await client.auth.signOut();
     user = null; lastKnownServerAt = null;
     close('pwCloudMenu');
-    setStatus('클라우드 데이터를 삭제했습니다');
+    setStatus('클라우드 일정 데이터를 삭제했습니다');
   }
 
   // ── 시작 ──────────────────────────────────────────────────────────────────
