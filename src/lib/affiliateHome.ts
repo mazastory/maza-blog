@@ -37,8 +37,11 @@ export interface AffiliateTool {
 }
 /** 쿠팡 파트너스 다이나믹 배너. 쿠팡이 만들어 준 코드의 값만 받는다(id 숫자·trackingCode·크기) — 스크립트는 우리가 만든다 */
 export interface CoupangBanner {
-  id: number | string;
-  tracking_code: string;
+  /** 'iframe' = 「이미지+텍스트」 위젯(src 는 coupa.ng 짧은 주소). 없으면 다이나믹 배너(id·tracking_code) */
+  kind?: 'iframe';
+  src?: string;
+  id?: number | string;
+  tracking_code?: string;
   template?: string;
   width: number | string;
   height: number | string;
