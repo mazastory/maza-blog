@@ -59,9 +59,9 @@ export interface AffiliateHomeConfig {
   free_pack?: { title: string; lead: string; items: { title: string; desc: string; file: string; pages?: number; size?: string }[]; operator?: string; contact?: string };
 }
 
-/** 보여 줄 광고가 하나라도 있는가(네이버 카드 또는 쿠팡 배너) */
+/** 보여 줄 것이 하나라도 있는가(네이버 카드·쿠팡 배너·도구) — 도구만 있는 사이트도 홈이 될 수 있다 */
 export function hasItems(cfg: any): boolean {
-  return !!(cfg?.products?.length || cfg?.coupang?.length);
+  return !!(cfg?.products?.length || cfg?.coupang?.length || cfg?.tool?.tools?.length || cfg?.tool?.builtin || cfg?.tool?.embed_url);
 }
 
 export type AffiliateMode = 'affiliate' | 'affiliate_preview' | null;
