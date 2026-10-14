@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PlannerTool from './tools/PlannerTool.astro';
 import FreePack from './FreePack.astro';
+import AffHero from './AffHero.astro';
 import BreakEvenTool from './tools/BreakEvenTool.astro';
 import type { AffiliateHomeConfig } from '../lib/affiliateHome';
 interface Props { cfg: AffiliateHomeConfig; siteConfig: any; only?: string; }
@@ -34,6 +35,7 @@ const cpBottom = tool ? cpBySlot('bottom') : [];
 const C = dark
   ? { h1: 'text-white', p: 'text-slate-300', note: 'text-slate-400', box: 'border-slate-700/70 bg-slate-900/60', boxHover: 'hover:border-slate-500', tag: 'text-slate-500', name: 'text-slate-100', sub: 'text-slate-400', strong: 'text-white', warn: 'border-amber-500/30 bg-amber-500/10 text-amber-200' }
   : { h1: 'text-slate-900', p: 'text-slate-600', note: 'text-slate-500', box: 'border-slate-200 bg-white', boxHover: 'hover:border-slate-400', tag: 'text-slate-400', name: 'text-slate-900', sub: 'text-slate-500', strong: 'text-slate-900', warn: 'border-amber-200 bg-amber-50 text-amber-900' };
+const heroChips = validTools.some((t: any) => t.builtin === 'planner') ? ['가입 없이 바로 사용', '입력 내용은 이 브라우저에 저장', '인쇄·PDF·백업 파일 지원'] : [];
 const topCount = tool ? Math.max(0, Math.min(cfg.products.length, tool.top_count ?? 2)) : 0;
 const slotOf = (p: any, i: number) => (p.slot as string) || (i < topCount ? 'top' : 'bottom');
 const bySlot = (slot: string) => (tool ? cfg.products.filter((p, i) => slotOf(p, i) === slot) : []);
@@ -54,10 +56,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
 <Layout title={cfg.title} description={cfg.intro} siteConfig={siteConfig}>
   <div class={`mx-auto px-4 py-6 md:px-6 md:py-10 ${hasSides ? "max-w-[1480px]" : "max-w-4xl"}`}>
     <div class={tool && hasSides ? 'xl:hidden' : ''}>
-      <h1 class={`text-3xl md:text-4xl font-black tracking-tight ${C.h1}`}>{cfg.title}</h1>
-      <p class={`mt-4 leading-relaxed ${C.p}`}>{cfg.intro}</p>
-
-      <p class={`mt-3 text-sm font-bold ${dark ? 'text-amber-300' : 'text-amber-700'}`} role="note">{cfg.disclosure}</p>
+      <AffHero title={cfg.title} intro={cfg.intro} disclosure={cfg.disclosure} dark={dark} chips={heroChips} />
     </div>
 
     {tool ? (
@@ -96,7 +95,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
           {hasSides && (
             <div class="hidden xl:block">
               <div class={`${stickyL ? 'sticky top-40 ' : ''}space-y-3`}>
-                {cpLeft.map((b: any) => (<div class="no-print overflow-hidden rounded-xl"><div class={`mb-1 text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
+                {cpLeft.map((b: any) => (<div class={`no-print flex flex-col items-center overflow-hidden rounded-xl border p-2 ${C.box}`}><div class={`mb-1.5 self-start text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
                 {leftBanners.map((p) => (
                   <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" data-aff="naver" data-aff-name={p.name} class={`group block overflow-hidden rounded-xl border shadow-sm no-print ${C.box} ${C.boxHover}`}>
                     {safeImg(p.image) && (
@@ -119,9 +118,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
           <div class="min-w-0 space-y-8">
             {tool && hasSides && (
               <div class="hidden xl:block" aria-hidden="true">
-                <p class={`text-3xl md:text-4xl font-black tracking-tight ${C.h1}`}>{cfg.title}</p>
-                <p class={`mt-4 leading-relaxed ${C.p}`}>{cfg.intro}</p>
-                <p class={`mt-3 text-sm font-bold ${dark ? 'text-amber-300' : 'text-amber-700'}`}>{cfg.disclosure}</p>
+                <AffHero title={cfg.title} intro={cfg.intro} disclosure={cfg.disclosure} dark={dark} chips={heroChips} />
               </div>
             )}
             {hub && (
@@ -149,7 +146,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
           {hasSides && (
             <div class="hidden xl:block">
               <div class={`${stickyR ? 'sticky top-40 ' : ''}space-y-3`}>
-                {cpRight.map((b: any) => (<div class="no-print overflow-hidden rounded-xl"><div class={`mb-1 text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
+                {cpRight.map((b: any) => (<div class={`no-print flex flex-col items-center overflow-hidden rounded-xl border p-2 ${C.box}`}><div class={`mb-1.5 self-start text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
                 {rightBanners.map((p) => (
                   <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" data-aff="naver" data-aff-name={p.name} class={`group block overflow-hidden rounded-xl border shadow-sm no-print ${C.box} ${C.boxHover}`}>
                     {safeImg(p.image) && (
