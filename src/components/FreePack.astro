@@ -16,53 +16,52 @@ const T = dark
   : { box: 'border-sky-200 bg-sky-50', h: 'text-slate-900', p: 'text-slate-600', card: 'border-slate-200 bg-white', name: 'text-slate-900', sub: 'text-slate-500', input: 'border-slate-300 bg-white text-slate-900 placeholder-slate-400', btn: 'bg-slate-900 text-white hover:bg-slate-700', link: 'border-sky-300 bg-white text-sky-800 hover:bg-sky-50', note: 'text-slate-500', err: 'text-rose-700' };
 ---
 {items.length > 0 && (
-  <section id="free-pack" class={`mt-8 rounded-2xl border p-5 md:p-7 no-print ${T.box}`} aria-labelledby="free-pack-title">
-    <div class="md:flex md:items-start md:justify-between md:gap-8">
-      <div class="md:max-w-md">
-        <div class={`text-[11px] font-bold tracking-wider ${T.sub}`}>FREE PDF</div>
-        <h2 id="free-pack-title" class={`mt-1 text-xl md:text-2xl font-black ${T.h}`}>{cfg.title}</h2>
-        <p class={`mt-2 text-sm leading-relaxed ${T.p}`}>{cfg.lead}</p>
-
-        <form id="fp-form" class="mt-4" novalidate>
-          <label for="fp-email" class={`block text-xs font-bold ${T.sub}`}>이메일 주소</label>
-          <div class="mt-1 flex gap-2">
-            <input id="fp-email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="name@example.com"
-              class={`min-w-0 flex-1 rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${T.input}`} />
-            <button id="fp-submit" type="submit" class={`shrink-0 rounded-lg px-4 py-2.5 text-sm font-bold transition ${T.btn} disabled:opacity-50`}>받기</button>
-          </div>
-          <label class={`mt-3 flex items-start gap-2 text-xs leading-relaxed ${T.p}`}>
-            <input id="fp-consent" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0" />
-            <span>[필수] 개인정보 수집·이용에 동의합니다. <a href="#fp-detail" id="fp-more" class="underline">자세히</a></span>
-          </label>
-          <label class={`mt-2 flex items-start gap-2 text-xs leading-relaxed ${T.p}`}>
-            <input id="fp-marketing" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0" />
-            <span>[선택] 새 무료 자료와 소식을 이메일로 받겠습니다. (체크하지 않아도 자료는 받을 수 있습니다)</span>
-          </label>
-          <div id="fp-detail" class={`mt-3 hidden rounded-lg border p-3 text-xs leading-relaxed ${T.card} ${T.p}`}>
-            <p><strong>수집하는 항목</strong> 이메일 주소</p>
-            <p class="mt-1"><strong>이용 목적</strong> 신청하신 무료 자료의 제공, 신청 건수 같은 이용 현황 집계. [선택]에 체크하신 경우에 한해 새 자료·소식 안내.</p>
-            <p class="mt-1"><strong>보유 기간</strong> 신청일로부터 2년 뒤 자동 삭제합니다. 그 전이라도 삭제나 동의 철회를 요청하시면 영업일 7일 이내에 삭제합니다.</p>
-            <p class="mt-1"><strong>동의 거부</strong> 동의하지 않으셔도 사이트(플래너)는 쓰실 수 있습니다. 다만 이 자료는 받으실 수 없습니다.</p>
-            <p class="mt-1"><strong>수집·관리</strong> {cfg.operator || '투머스'}{cfg.contact ? ` · 문의 ${cfg.contact}` : ''} · 자세한 내용은 <a class="underline" href="/privacy">개인정보처리방침</a></p>
-          </div>
-          <p id="fp-error" role="alert" class={`mt-2 hidden text-xs font-bold ${T.err}`}></p>
-        </form>
+  <section id="free-pack" class={`mt-6 rounded-2xl border px-5 py-4 md:px-6 no-print ${T.box}`} aria-labelledby="free-pack-title">
+    <div id="fp-ask" class="md:flex md:items-center md:justify-between md:gap-6">
+      <div class="md:max-w-sm">
+        <h2 id="free-pack-title" class={`text-base md:text-lg font-black ${T.h}`}>🎁 {cfg.title}</h2>
+        <p class={`mt-0.5 text-xs leading-relaxed ${T.p}`}>{cfg.lead}</p>
       </div>
+      <form id="fp-form" class="mt-3 md:mt-0 md:w-[440px] md:shrink-0" novalidate>
+        <div class="flex gap-2">
+          <input id="fp-email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="이메일 주소" aria-label="이메일 주소"
+            class={`min-w-0 flex-1 rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${T.input}`} />
+          <button id="fp-submit" type="submit" class={`shrink-0 rounded-lg px-5 py-2.5 text-sm font-bold transition ${T.btn} disabled:opacity-50`}>받기</button>
+        </div>
+        <label class={`mt-2 flex items-start gap-2 text-[11px] leading-snug ${T.p}`}>
+          <input id="fp-consent" type="checkbox" class="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>[필수] 개인정보 수집·이용 동의 <a href="#fp-detail" id="fp-more" class="underline">자세히</a></span>
+        </label>
+        <label class={`mt-1 flex items-start gap-2 text-[11px] leading-snug ${T.p}`}>
+          <input id="fp-marketing" type="checkbox" class="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>[선택] 새 무료 자료·소식을 이메일로 받기</span>
+        </label>
+        <div id="fp-detail" class={`mt-2 hidden rounded-lg border p-3 text-xs leading-relaxed ${T.card} ${T.p}`}>
+          <p><strong>수집 항목</strong> 이메일 주소</p>
+          <p class="mt-1"><strong>이용 목적</strong> 무료 자료 제공, 신청 건수 같은 이용 현황 집계. [선택]에 체크하신 경우에 한해 새 자료·소식 안내.</p>
+          <p class="mt-1"><strong>보유 기간</strong> 신청일로부터 2년 뒤 자동 삭제합니다. 그 전이라도 삭제·동의 철회를 요청하시면 영업일 7일 이내에 삭제합니다.</p>
+          <p class="mt-1"><strong>동의 거부</strong> 동의하지 않으셔도 플래너는 쓰실 수 있습니다. 다만 이 자료는 받으실 수 없습니다.</p>
+          <p class="mt-1"><strong>수집·관리</strong> {cfg.operator || '투머스'}{cfg.contact ? ` · 문의 ${cfg.contact}` : ''} · <a class="underline" href="/privacy">개인정보처리방침</a></p>
+        </div>
+        <p id="fp-error" role="alert" class={`mt-2 hidden text-xs font-bold ${T.err}`}></p>
+      </form>
+    </div>
 
-      <div class="mt-5 md:mt-0 md:flex-1 md:max-w-md">
-        <ul class="space-y-2">
-          {items.map((it) => (
-            <li class={`flex items-center justify-between gap-3 rounded-xl border p-3 ${T.card}`}>
-              <div class="min-w-0">
-                <div class={`truncate text-sm font-bold ${T.name}`}>{it.title}</div>
-                <div class={`text-xs ${T.sub}`}>{it.desc}{it.pages ? ` · ${it.pages}쪽` : ''}{it.size ? ` · ${it.size}` : ''}</div>
-              </div>
-              <a data-fp-file={safeFile(it.file)} aria-disabled="true" tabindex="-1" class={`fp-dl pointer-events-none shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold opacity-40 ${T.link}`}>PDF</a>
-            </li>
-          ))}
-        </ul>
-        <p id="fp-status" class={`mt-2 text-xs ${T.note}`}>이메일을 입력하고 동의하시면 내려받기 버튼이 열립니다.</p>
-      </div>
+    <div id="fp-done" class="hidden">
+      <p id="fp-thanks" class={`text-sm font-bold ${T.h}`}>🎁 아래 버튼으로 내려받으세요.</p>
+      <ul class="mt-3 grid gap-2 md:grid-cols-3">
+        {items.map((it) => (
+          <li>
+            <a href={safeFile(it.file)} download class={`flex items-center justify-between gap-3 rounded-xl border p-3 transition ${T.link}`}>
+              <span class="min-w-0">
+                <span class={`block truncate text-sm font-bold ${T.name}`}>{it.title}</span>
+                <span class={`block text-xs ${T.sub}`}>{it.desc}{it.pages ? ` · ${it.pages}쪽` : ''}{it.size ? ` · ${it.size}` : ''}</span>
+              </span>
+              <span class="shrink-0 text-xs font-black">내려받기 ↓</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   </section>
 )}
@@ -73,19 +72,15 @@ const T = dark
   if (!form) return;
   var KEY = 'fp_requested_v1';
   var $ = function (id) { return document.getElementById(id); };
-  var err = $('fp-error'), status = $('fp-status'), btn = $('fp-submit');
+  var err = $('fp-error'), btn = $('fp-submit');
   var EMAIL_RE = /^[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,}$/;
-  function unlock() {
-    document.querySelectorAll('.fp-dl').forEach(function (a) {
-      a.setAttribute('href', a.getAttribute('data-fp-file'));
-      a.setAttribute('download', '');
-      a.removeAttribute('aria-disabled'); a.removeAttribute('tabindex');
-      a.classList.remove('pointer-events-none', 'opacity-40');
-    });
-    status.textContent = '아래 버튼으로 내려받으실 수 있습니다.';
+  function unlock(again) {
+    $('fp-ask').classList.add('hidden');
+    $('fp-done').classList.remove('hidden');
+    if (again) $('fp-thanks').textContent = '🎁 이미 신청하셨습니다. 아래 버튼으로 내려받으세요.';
   }
   function show(msg) { err.textContent = msg; err.classList.remove('hidden'); }
-  try { if (localStorage.getItem(KEY) === '1') { unlock(); status.textContent = '이미 신청하셨습니다. 아래 버튼으로 내려받으실 수 있습니다.'; } } catch (e) {}
+  try { if (localStorage.getItem(KEY) === '1') unlock(true); } catch (e) {}
   $('fp-more').addEventListener('click', function (e) { e.preventDefault(); $('fp-detail').classList.toggle('hidden'); });
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -102,7 +97,7 @@ const T = dark
         if (x.ok && x.j && x.j.success) {
           try { localStorage.setItem(KEY, '1'); } catch (e) {}
           $('fp-email').value = '';
-          unlock();
+          unlock(false);
         } else if (x.j && x.j.error === 'Too many requests') show('잠시 뒤에 다시 시도해 주세요.');
         else show('신청을 저장하지 못했습니다. 잠시 뒤에 다시 시도해 주세요.');
       })
