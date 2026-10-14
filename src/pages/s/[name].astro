@@ -8,7 +8,7 @@
  *
  *  · mazapost.com 에서만 열린다(다른 도메인은 404)
  *  · 이름은 소문자·숫자·하이픈 1~32자만
- *  · 공개 모드 전에는 검색에서 제외(noindex)
+ *  · 항상 검색에서 제외(noindex) — 홈과 같은 내용이라 중복 주소가 되지 않게
  */
 export const prerender = false;
 import AffiliateHomeView from '../../components/AffiliateHomeView.astro';
@@ -24,7 +24,8 @@ if (!PATH_SITE_HOSTS.has(domain) || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(name)) {
 const siteConfig = await getSiteConfig(domain);
 const isPublic = affiliateMode(siteConfig) === 'affiliate';
 if (!isPublic && !previewAllowed(siteConfig)) return new Response('Not Found', { status: 404 });
-if (!isPublic) Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+// 시험 경로이므로 공개 전환 뒤에도 검색에는 올리지 않는다(홈과 같은 내용의 중복 주소가 되지 않게)
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 const cfg = (isPublic ? siteConfig!.metadata!.affiliate_home : previewConfig(siteConfig)) as AffiliateHomeConfig;
 ---
 
