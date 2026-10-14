@@ -1,0 +1,31 @@
+---
+/**
+ * 경로 방식 사이트 시험용 (2026-10-14) — `mazapost.com/s/<이름>`.
+ *
+ * 쇼핑 커넥트 채널 등록이 「도메인/경로」 주소를 받아 주는지 확인하려고 만든 **최소 구현**이다.
+ * 지금은 이름과 상관없이 마자 포스트의 같은 홈을 보여 준다(이름별 내용·설정은 아직 없다).
+ * 이 시험 결과가 나오기 전에는 이름별 사이트 구분을 만들지 않는다.
+ *
+ *  · mazapost.com 에서만 열린다(다른 도메인은 404)
+ *  · 이름은 소문자·숫자·하이픈 1~32자만
+ *  · 공개 모드 전에는 검색에서 제외(noindex)
+ */
+export const prerender = false;
+import AffiliateHomeView from '../../components/AffiliateHomeView.astro';
+import { getRequestDomain, getSiteConfig } from '../../lib/api';
+import { affiliateMode, previewAllowed, previewConfig, type AffiliateHomeConfig } from '../../lib/affiliateHome';
+
+const PATH_SITE_HOSTS = new Set(['mazapost.com', 'www.mazapost.com']);
+const name = String(Astro.params.name || '');
+const domain = getRequestDomain(Astro.request);
+if (!PATH_SITE_HOSTS.has(domain) || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(name)) {
+  return new Response('Not Found', { status: 404 });
+}
+const siteConfig = await getSiteConfig(domain);
+const isPublic = affiliateMode(siteConfig) === 'affiliate';
+if (!isPublic && !previewAllowed(siteConfig)) return new Response('Not Found', { status: 404 });
+if (!isPublic) Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+const cfg = (isPublic ? siteConfig!.metadata!.affiliate_home : previewConfig(siteConfig)) as AffiliateHomeConfig;
+---
+
+<AffiliateHomeView cfg={cfg} siteConfig={siteConfig} />
