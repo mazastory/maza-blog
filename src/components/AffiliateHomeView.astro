@@ -46,8 +46,8 @@ const sideFallback = [...leftBanners, ...rightBanners];
 const narrowTop = sideFallback.slice(0, 2);
 const narrowBottom = sideFallback.slice(2);
 // 옆 칸이 화면보다 길면 따라다니지 않게 한다(광고가 헤더 밑으로 가려지는 것을 막는다) — 쿠팡 위젯 약 270px, 네이버 카드 약 210px
-const stickyL = cpLeft.length * 270 + leftBanners.length * 210 <= 640;
-const stickyR = cpRight.length * 270 + rightBanners.length * 210 <= 640;
+const stickyL = cpLeft.length * 270 + leftBanners.length * 210 <= 820;
+const stickyR = cpRight.length * 270 + rightBanners.length * 210 <= 820;
 const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRight.length > 0;
 ---
 

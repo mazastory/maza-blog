@@ -60,6 +60,7 @@
 
   function setStatus(msg, kind) {
     if (els.status) { els.status.textContent = msg; els.status.setAttribute('data-kind', kind || ''); }
+    var mm = $('pwCloudMenuStatus'); if (mm) { mm.textContent = msg; mm.setAttribute('data-kind', kind || ''); }
     if (els.btn) els.btn.textContent = user ? (kind === 'error' ? '☁ 저장 실패' : '☁ 저장됨') : '☁ 클라우드에 저장 (선택)';
   }
 
@@ -191,7 +192,7 @@
         case 'pwCloudGoogle': signIn(); break;
         case 'pwCloudSignOut': signOut(); break;
         case 'pwCloudDelete': deleteAccount(); break;
-        case 'pwCloudSaveNow': clearTimeout(uploadTimer); push().then(function () { setStatus('저장됨 · 방금'); }).catch(function () { setStatus('저장하지 못했습니다(이 기기에는 저장됨)', 'error'); }); break;
+        case 'pwCloudSaveNow': clearTimeout(uploadTimer); setStatus('저장 중…'); push().then(function () { setStatus('저장됨 · 방금'); }).catch(function () { setStatus('저장하지 못했습니다(이 기기에는 저장됨)', 'error'); }); break;
       }
     });
   }
@@ -204,6 +205,11 @@
     if (!els.btn) return false;
     root.dataset.pwCloudReady = '1';
     // 개별 버튼이 아니라 문서 한 곳에서 받는다 — 화면이 바뀌어 요소가 새로 만들어져도 동작한다
+    var menu = $('pwCloudMenu');
+    if (menu && !$('pwCloudMenuStatus')) {
+      var card = menu.querySelector('.pw-cloud-card'), acts = menu.querySelector('.pw-cloud-actions');
+      if (card && acts) { var p = el('p', { id: 'pwCloudMenuStatus', class: 'pw-cloud-status', 'aria-live': 'polite' }); card.insertBefore(p, acts); }
+    }
     setStatus(user ? '저장됨' : '이 기기에만 저장 중');
     return true;
   }
