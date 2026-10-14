@@ -19,16 +19,17 @@ const toolList = only ? validTools.filter((t) => t.builtin === only) : hub ? [] 
 const tool = toolList.length || hub ? cfg.tool : null;
 // 쿠팡 배너: 값만 받아서 우리가 스크립트를 만든다(숫자·정해진 글자만 통과)
 const cpOk = (b: any) => {
-  if (!/^\d{2,4}$/.test(String(b?.width)) || !/^\d{2,4}$/.test(String(b?.height))) return false;
+  if (!/^(\d{2,4}|100%)$/.test(String(b?.width)) || !/^\d{2,4}$/.test(String(b?.height))) return false;
   if (b?.kind === 'iframe') return /^https:\/\/coupa\.ng\/[A-Za-z0-9]{3,20}$/.test(String(b?.src));
   return /^\d{1,12}$/.test(String(b?.id)) && /^[A-Za-z0-9_-]{1,40}$/.test(String(b?.tracking_code)) && /^[a-z]{3,20}$/.test(String(b?.template || 'carousel'));
 };
 const cpHtml = (b: any) => b.kind === 'iframe'
-  ? `<iframe src="${b.src}" width="${Number(b.width)}" height="${Number(b.height)}" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" title="쿠팡 파트너스 광고" loading="lazy"></iframe>`
+  ? `<iframe src="${b.src}" width="${/%$/.test(String(b.width)) ? '100%' : Number(b.width)}" height="${Number(b.height)}" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" title="쿠팡 파트너스 광고" loading="lazy"></iframe>`
   : '<script src="https://ads-partners.coupang.com/g.js"><\/script><script>new PartnersCoupang.G(' + JSON.stringify({ id: Number(b.id), template: b.template || 'carousel', trackingCode: String(b.tracking_code), width: String(b.width), height: String(b.height), tsource: '' }) + ')<\/script>';
 const cpBySlot = (slot: string) => (cfg.coupang || []).filter((b: any) => cpOk(b) && (b.slot || 'left') === slot);
 const cpLeft = tool ? cpBySlot('left') : [];
 const cpRight = tool ? cpBySlot('right') : [];
+const cpBottom = tool ? cpBySlot('bottom') : [];
 // 사이트가 어두우면 카드·글자도 어둡게 — 도구가 「남의 것」처럼 보이지 않게 한다
 const C = dark
   ? { h1: 'text-white', p: 'text-slate-300', note: 'text-slate-400', box: 'border-slate-700/70 bg-slate-900/60', boxHover: 'hover:border-slate-500', tag: 'text-slate-500', name: 'text-slate-100', sub: 'text-slate-400', strong: 'text-white', warn: 'border-amber-500/30 bg-amber-500/10 text-amber-200' }
@@ -159,6 +160,12 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
             </div>
           )}
         </div>
+
+        {cpBottom.length > 0 && (
+          <div class="mt-8 space-y-4 no-print">
+            {cpBottom.map((b: any) => (<div class="overflow-x-auto"><div class={`mb-1 text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
+          </div>
+        )}
 
         {cfg.free_pack && <FreePack cfg={cfg.free_pack} dark={dark} />}
 
