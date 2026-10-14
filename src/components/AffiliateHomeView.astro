@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PlannerTool from './tools/PlannerTool.astro';
 import FreePack from './FreePack.astro';
+import BreakEvenTool from './tools/BreakEvenTool.astro';
 import type { AffiliateHomeConfig } from '../lib/affiliateHome';
 interface Props { cfg: AffiliateHomeConfig; siteConfig: any; }
 const { cfg, siteConfig } = Astro.props;
@@ -9,7 +10,16 @@ const safeHref = (u: string) => (/^https:\/\/(naver\.me|brandconnect\.naver\.com
 const safeEmbed = (u: string) => (/^https:\/\/(www\.)?setupod\.com\/embed\/[a-z0-9_-]+(\?[^\s"]*)?$/i.test(u) ? u : '');
 const safeImg = (u?: string) => (u && /^https:\/\/[A-Za-z0-9.-]+\/[^\s"'<>]*$/.test(u) ? u : '');
 const dark = siteConfig?.metadata?.page_theme === 'dark';
-const tool = cfg.tool && (cfg.tool.builtin === 'planner' || (cfg.tool.embed_url && safeEmbed(cfg.tool.embed_url))) ? cfg.tool : null;
+const BUILTIN = ['planner', 'breakeven'];
+const rawTools: any[] = cfg.tool?.tools?.length ? cfg.tool.tools : cfg.tool ? [cfg.tool] : [];
+const toolList = rawTools.filter((t) => (t.builtin && BUILTIN.includes(t.builtin)) || (t.embed_url && safeEmbed(t.embed_url)));
+const tool = toolList.length ? cfg.tool : null;
+// 쿠팡 배너: 값만 받아서 우리가 스크립트를 만든다(숫자·정해진 글자만 통과)
+const cpOk = (b: any) => /^\d{1,12}$/.test(String(b?.id)) && /^[A-Za-z0-9_-]{1,40}$/.test(String(b?.tracking_code)) && /^\d{2,4}$/.test(String(b?.width)) && /^\d{2,4}$/.test(String(b?.height)) && /^[a-z]{3,20}$/.test(String(b?.template || 'carousel'));
+const cpHtml = (b: any) => '<script src="https://ads-partners.coupang.com/g.js"><\/script><script>new PartnersCoupang.G(' + JSON.stringify({ id: Number(b.id), template: b.template || 'carousel', trackingCode: String(b.tracking_code), width: String(b.width), height: String(b.height), tsource: '' }) + ')<\/script>';
+const cpBySlot = (slot: string) => (cfg.coupang || []).filter((b: any) => cpOk(b) && (b.slot || 'left') === slot);
+const cpLeft = tool ? cpBySlot('left') : [];
+const cpRight = tool ? cpBySlot('right') : [];
 // 사이트가 어두우면 카드·글자도 어둡게 — 도구가 「남의 것」처럼 보이지 않게 한다
 const C = dark
   ? { h1: 'text-white', p: 'text-slate-300', note: 'text-slate-400', box: 'border-slate-700/70 bg-slate-900/60', boxHover: 'hover:border-slate-500', tag: 'text-slate-500', name: 'text-slate-100', sub: 'text-slate-400', strong: 'text-white', warn: 'border-amber-500/30 bg-amber-500/10 text-amber-200' }
@@ -25,7 +35,7 @@ const bottomBanners = bySlot('bottom');
 const sideFallback = [...leftBanners, ...rightBanners];
 const narrowTop = sideFallback.slice(0, 2);
 const narrowBottom = sideFallback.slice(2);
-const hasSides = leftBanners.length + rightBanners.length > 0;
+const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRight.length > 0;
 ---
 
 <Layout title={cfg.title} description={cfg.intro} siteConfig={siteConfig}>
@@ -71,6 +81,7 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
           {hasSides && (
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
+                {cpLeft.map((b: any) => (<div class="no-print overflow-hidden rounded-xl"><div class={`mb-1 text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
                 {leftBanners.map((p) => (
                   <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`group block overflow-hidden rounded-xl border shadow-sm no-print ${C.box} ${C.boxHover}`}>
                     {safeImg(p.image) && (
@@ -90,23 +101,22 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
             </div>
           )}
 
-          {tool.builtin === 'planner' ? (
-            <div class="min-w-0"><PlannerTool /></div>
-          ) : (
-            <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}>
-              <iframe
-                src={tool.embed_url}
-                title={tool.title}
-                loading="lazy"
-                style={`width:100%;height:${tool.height ?? 760}px;border:0;`}
-                allow="clipboard-write"
-              ></iframe>
-            </div>
-          )}
+          <div class="min-w-0 space-y-8">
+            {toolList.map((t: any) => t.builtin === 'planner' ? (
+              <PlannerTool />
+            ) : t.builtin === 'breakeven' ? (
+              <BreakEvenTool dark={dark} />
+            ) : (
+              <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}>
+                <iframe src={t.embed_url} title={t.title} loading="lazy" style={`width:100%;height:${t.height ?? 760}px;border:0;`} allow="clipboard-write"></iframe>
+              </div>
+            ))}
+          </div>
 
           {hasSides && (
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
+                {cpRight.map((b: any) => (<div class="no-print overflow-hidden rounded-xl"><div class={`mb-1 text-[10px] font-bold ${C.tag}`}>광고 · 쿠팡 파트너스</div><Fragment set:html={cpHtml(b)} /></div>))}
                 {rightBanners.map((p) => (
                   <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`group block overflow-hidden rounded-xl border shadow-sm no-print ${C.box} ${C.boxHover}`}>
                     {safeImg(p.image) && (

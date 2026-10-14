@@ -1,0 +1,73 @@
+---
+/**
+ * 손익분기 계산기 (2026-10-14). 입력한 숫자로만 계산한다 — 세금·수수료·광고비는 사용자가 비용에 직접 넣는다.
+ * 서버로 아무것도 보내지 않는다. 입력값은 이 브라우저(LocalStorage)에만 남고, 불러올 때 숫자만 받는다.
+ */
+interface Props { dark: boolean; }
+const { dark } = Astro.props;
+const T = dark
+  ? { box: 'border-slate-700/70 bg-slate-900/60', h: 'text-white', p: 'text-slate-300', sub: 'text-slate-400', input: 'border-slate-600 bg-slate-950/60 text-white placeholder-slate-500', out: 'border-emerald-400/30 bg-emerald-500/10', big: 'text-emerald-300', warn: 'text-amber-300' }
+  : { box: 'border-slate-200 bg-white', h: 'text-slate-900', p: 'text-slate-600', sub: 'text-slate-500', input: 'border-slate-300 bg-white text-slate-900 placeholder-slate-400', out: 'border-emerald-300 bg-emerald-50', big: 'text-emerald-700', warn: 'text-amber-700' };
+const fields = [
+  { id: 'price', label: '판매가 (개당, 원)', ph: '예: 30000' },
+  { id: 'cost', label: '변동비 (개당 원가·수수료·배송 등, 원)', ph: '예: 12000' },
+  { id: 'fixed', label: '월 고정비 (원)', ph: '예: 500000' },
+  { id: 'goal', label: '목표 월 순이익 (원, 선택)', ph: '예: 1000000' },
+];
+---
+<section class={`be-root rounded-2xl border p-5 md:p-7 ${T.box}`} aria-labelledby="be-title">
+  <h2 id="be-title" class={`text-xl md:text-2xl font-black ${T.h}`}>손익분기 계산기</h2>
+  <p class={`mt-1 text-sm ${T.p}`}>한 달에 몇 개를 팔아야 본전인지, 목표 이익을 내려면 몇 개가 필요한지 계산합니다. 입력한 숫자로만 계산하며 서버로 보내지 않습니다.</p>
+  <div class="mt-5 grid gap-4 md:grid-cols-2">
+    <div class="space-y-3">
+      {fields.map((f) => (
+        <label class="block">
+          <span class={`text-xs font-bold ${T.sub}`}>{f.label}</span>
+          <input id={`be-${f.id}`} type="text" inputmode="numeric" autocomplete="off" placeholder={f.ph} maxlength="13"
+            class={`mt-1 w-full rounded-lg border px-3 py-2.5 text-base outline-none focus:ring-2 focus:ring-emerald-400 ${T.input}`} />
+        </label>
+      ))}
+      <p class={`text-xs leading-relaxed ${T.sub}`}>세금, 플랫폼 수수료, 광고비 등은 자동으로 반영되지 않습니다. 해당되는 금액을 변동비나 고정비에 직접 더해 넣으세요.</p>
+    </div>
+    <div id="be-out" class={`rounded-xl border p-4 ${T.out}`} aria-live="polite">
+      <p id="be-msg" class={`text-sm ${T.p}`}>판매가와 변동비, 월 고정비를 입력하면 결과가 나옵니다.</p>
+      <dl id="be-res" class="hidden space-y-3">
+        <div><dt class={`text-xs font-bold ${T.sub}`}>개당 남는 금액 (판매가 − 변동비)</dt><dd id="be-margin" class={`text-lg font-black ${T.h}`}></dd></div>
+        <div><dt class={`text-xs font-bold ${T.sub}`}>손익분기 판매 개수 (월)</dt><dd id="be-bep" class={`text-3xl font-black ${T.big}`}></dd></div>
+        <div id="be-goalbox" class="hidden"><dt class={`text-xs font-bold ${T.sub}`}>목표 이익을 내려면 (월)</dt><dd id="be-goalunits" class={`text-2xl font-black ${T.h}`}></dd></div>
+        <div><dt class={`text-xs font-bold ${T.sub}`}>손익분기 월 매출</dt><dd id="be-rev" class={`text-base font-bold ${T.h}`}></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  var KEY = 'be_inputs_v1';
+  var ids = ['price', 'cost', 'fixed', 'goal'];
+  var el = {}; ids.forEach(function (i) { el[i] = document.getElementById('be-' + i); });
+  if (!el.price) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var won = function (n) { return Math.round(n).toLocaleString('ko-KR') + '원'; };
+  var cnt = function (n) { return n.toLocaleString('ko-KR') + '개'; };
+  function num(s) { var t = String(s == null ? '' : s).replace(/[^0-9]/g, ''); if (!t) return null; var v = Number(t.slice(0, 12)); return isFinite(v) ? v : null; }
+  function render() {
+    var p = num(el.price.value), c = num(el.cost.value), f = num(el.fixed.value), g = num(el.goal.value) || 0;
+    var msg = $('be-msg'), res = $('be-res');
+    if (p === null || c === null || f === null) { msg.classList.remove('hidden'); msg.textContent = '판매가와 변동비, 월 고정비를 입력하면 결과가 나옵니다.'; res.classList.add('hidden'); return; }
+    var m = p - c;
+    if (m <= 0) { msg.classList.remove('hidden'); msg.textContent = '개당 남는 금액이 0원 이하입니다. 판매가가 변동비보다 커야 계산할 수 있습니다.'; res.classList.add('hidden'); return; }
+    msg.classList.add('hidden'); res.classList.remove('hidden');
+    var bep = Math.ceil(f / m);
+    $('be-margin').textContent = won(m) + ' (' + (m / p * 100).toFixed(1) + '%)';
+    $('be-bep').textContent = cnt(bep);
+    $('be-rev').textContent = won(bep * p);
+    var gb = $('be-goalbox');
+    if (g > 0) { gb.classList.remove('hidden'); $('be-goalunits').textContent = cnt(Math.ceil((f + g) / m)) + ' · 월 매출 ' + won(Math.ceil((f + g) / m) * p); } else { gb.classList.add('hidden'); }
+  }
+  function save() { try { var o = {}; ids.forEach(function (i) { var v = num(el[i].value); if (v !== null) o[i] = v; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+  try { var o = JSON.parse(localStorage.getItem(KEY) || '{}'); ids.forEach(function (i) { var v = o && typeof o[i] === 'number' && isFinite(o[i]) && o[i] >= 0 && o[i] < 1e12 ? o[i] : null; if (v !== null) el[i].value = v.toLocaleString('ko-KR'); }); } catch (e) {}
+  ids.forEach(function (i) { el[i].addEventListener('input', function () { var v = num(el[i].value); el[i].value = v === null ? '' : v.toLocaleString('ko-KR'); render(); save(); }); });
+  render();
+})();
+</script>

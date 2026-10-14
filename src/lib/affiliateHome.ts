@@ -23,8 +23,10 @@ export interface AffiliateProduct {
   slot?: 'top' | 'bottom' | 'left' | 'right';
 }
 export interface AffiliateTool {
-  /** 마자 블로그에 들어 있는 공용 도구를 페이지의 일부로 넣는다(iframe 아님). 지금은 'planner'. */
-  builtin?: 'planner';
+  /** 마자 블로그에 들어 있는 공용 도구를 페이지의 일부로 넣는다(iframe 아님). 'planner' | 'breakeven'. */
+  builtin?: 'planner' | 'breakeven';
+  /** 도구를 둘 이상 쌓을 때(위에서 아래로). 있으면 builtin·embed_url 은 무시한다 */
+  tools?: { builtin: 'planner' | 'breakeven'; title: string }[];
   /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — builtin 이 없을 때 iframe 으로 띄운다 */
   embed_url?: string;
   /** 접근성용 이름 */
@@ -33,7 +35,18 @@ export interface AffiliateTool {
   /** 위쪽 배너로 보낼 상품 수(나머지는 아래쪽) */
   top_count?: number;
 }
+/** 쿠팡 파트너스 다이나믹 배너. 쿠팡이 만들어 준 코드의 값만 받는다(id 숫자·trackingCode·크기) — 스크립트는 우리가 만든다 */
+export interface CoupangBanner {
+  id: number | string;
+  tracking_code: string;
+  template?: string;
+  width: number | string;
+  height: number | string;
+  slot?: 'top' | 'bottom' | 'left' | 'right';
+}
 export interface AffiliateHomeConfig {
+  /** 쿠팡 배너(없으면 네이버 상품 카드만) */
+  coupang?: CoupangBanner[];
   /** 있으면 「도구 가운데 + 위아래 배너」 구조, 없으면 상품 목록 */
   tool?: AffiliateTool;
   title: string;
@@ -46,11 +59,16 @@ export interface AffiliateHomeConfig {
   free_pack?: { title: string; lead: string; items: { title: string; desc: string; file: string; pages?: number; size?: string }[]; operator?: string; contact?: string };
 }
 
+/** 보여 줄 광고가 하나라도 있는가(네이버 카드 또는 쿠팡 배너) */
+export function hasItems(cfg: any): boolean {
+  return !!(cfg?.products?.length || cfg?.coupang?.length);
+}
+
 export type AffiliateMode = 'affiliate' | 'affiliate_preview' | null;
 
 export function affiliateMode(siteConfig: any): AffiliateMode {
   const m = siteConfig?.metadata;
-  if (!m?.affiliate_home?.products?.length) return null;
+  if (!hasItems(m?.affiliate_home)) return null;
   return m.home_mode === 'affiliate' || m.home_mode === 'affiliate_preview' ? m.home_mode : null;
 }
 
@@ -61,11 +79,11 @@ export function homeIsAffiliate(siteConfig: any): boolean {
 
 /** `/affiliate-preview` 를 열어 줄 것인가 — 미리보기 설정(`affiliate_home_preview`)이 있거나, 미리보기 모드이거나, 이미 공개한 사이트. */
 export function previewAllowed(siteConfig: any): boolean {
-  return !!siteConfig?.metadata?.affiliate_home_preview?.products?.length || affiliateMode(siteConfig) !== null;
+  return hasItems(siteConfig?.metadata?.affiliate_home_preview) || affiliateMode(siteConfig) !== null;
 }
 
 /** 미리보기 주소가 보여 줄 설정 — 따로 둔 미리보기 설정이 공개 설정보다 먼저다(공개 홈을 건드리지 않고 새 모양을 확인하려고). */
 export function previewConfig(siteConfig: any): AffiliateHomeConfig | null {
   const m = siteConfig?.metadata;
-  return (m?.affiliate_home_preview?.products?.length ? m.affiliate_home_preview : m?.affiliate_home) ?? null;
+  return (hasItems(m?.affiliate_home_preview) ? m.affiliate_home_preview : m?.affiliate_home) ?? null;
 }

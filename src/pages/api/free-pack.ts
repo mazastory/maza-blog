@@ -12,8 +12,9 @@ export const prerender = false;
 
 const LEADS_URL = 'https://www.setupod.com/api/leads';
 const EMAIL_RE = /^[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,}$/;
-const ALLOWED_HOSTS = new Set(['sharpinsighthub.com', 'www.sharpinsighthub.com']);
-const CONSENT_VERSION = 'sharpinsighthub-free-pack-2026-10-14';
+// 무료 자료 띠를 쓰는 사이트(같은 앱·같은 PDF). 늘릴 때는 그 사이트의 개인정보 방침도 같이 고친다.
+const ALLOWED_HOSTS = new Set(['sharpinsighthub.com', 'www.sharpinsighthub.com', 'mazapost.com', 'www.mazapost.com']);
+const CONSENT_DATE = '2026-10-14';
 
 const hits = new Map<string, number[]>();
 function tooMany(ip: string, now = Date.now(), limit = 5, windowMs = 10 * 60 * 1000) {
@@ -49,12 +50,12 @@ export const POST: APIRoute = async ({ request }) => {
       body: JSON.stringify({
         email,
         consent: true,
-        consent_version: CONSENT_VERSION,
+        consent_version: `${host.replace(/^www\./, '')}-free-pack-${CONSENT_DATE}`,
         marketing_opt_in: b.marketing_opt_in === true,
         domain: host.replace(/^www\./, ''),
         pod_id: 'free_pack',
         gift_name: '2026 플래너 PDF 3종',
-        source: 'sharpinsighthub_free_pack',
+        source: `${host.replace(/^www\./, '').replace(/\./g, '_')}_free_pack`,
         lead_type: 'free_pdf',
       }),
     });
