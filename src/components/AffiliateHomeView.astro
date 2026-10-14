@@ -21,6 +21,8 @@ const rightBanners = bySlot('right');
 const bottomBanners = bySlot('bottom');
 // 폭이 좁으면 옆 배너는 아래로 내려온다(옆 자리는 xl 이상에서만 보인다)
 const sideFallback = [...leftBanners, ...rightBanners];
+const narrowTop = sideFallback.slice(0, 2);
+const narrowBottom = sideFallback.slice(2);
 const hasSides = leftBanners.length + rightBanners.length > 0;
 ---
 
@@ -50,16 +52,36 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
           </div>
         )}
 
+        {narrowTop.length > 0 && (
+          <div class="mt-8 grid gap-3 sm:grid-cols-2 xl:hidden">
+            {narrowTop.map((p) => (
+              <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`block rounded-xl border p-4 shadow-sm no-print ${C.box} ${C.boxHover}`}>
+                <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
+                <div class={`mt-1 text-sm font-bold leading-snug ${C.name}`}>{p.name}</div>
+                <div class={`mt-2 flex items-center justify-between text-xs ${C.sub}`}>
+                  <span>확인 시점 가격 <strong class={C.strong}>{p.price}</strong></span>
+                  <span class={`font-bold ${C.strong}`}>판매 페이지 →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
         <div class={`mt-8 ${hasSides ? "xl:grid xl:grid-cols-[180px_minmax(0,1fr)_180px] xl:gap-6" : ""}`}>
           {hasSides && (
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
                 {leftBanners.map((p) => (
-                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`block rounded-xl border p-3 shadow-sm no-print ${C.box} ${C.boxHover}`}>
-                    <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
-                    <div class={`mt-1 text-xs font-bold leading-snug ${C.name}`}>{p.name}</div>
-                    <div class={`mt-2 text-xs ${C.sub}`}>확인 시점 가격 <strong class={C.strong}>{p.price}</strong></div>
-                    <div class={`mt-2 text-xs font-bold ${C.strong}`}>판매 페이지 →</div>
+                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`flex min-h-[270px] flex-col justify-between rounded-xl border p-4 shadow-sm no-print ${C.box} ${C.boxHover}`}>
+                    <div>
+                      <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
+                      <div class={`mt-3 text-sm font-bold leading-snug ${C.name}`}>{p.name}</div>
+                    </div>
+                    <div>
+                      <div class={`text-xs ${C.sub}`}>확인 시점 가격</div>
+                      <div class={`text-lg font-black ${C.strong}`}>{p.price}</div>
+                      <div class={`mt-3 rounded-lg border px-3 py-2 text-center text-xs font-bold ${C.box} ${C.strong}`}>판매 페이지 보기 →</div>
+                    </div>
                   </a>
                 ))}
               </div>
@@ -84,11 +106,16 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
                 {rightBanners.map((p) => (
-                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`block rounded-xl border p-3 shadow-sm no-print ${C.box} ${C.boxHover}`}>
-                    <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
-                    <div class={`mt-1 text-xs font-bold leading-snug ${C.name}`}>{p.name}</div>
-                    <div class={`mt-2 text-xs ${C.sub}`}>확인 시점 가격 <strong class={C.strong}>{p.price}</strong></div>
-                    <div class={`mt-2 text-xs font-bold ${C.strong}`}>판매 페이지 →</div>
+                  <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`flex min-h-[270px] flex-col justify-between rounded-xl border p-4 shadow-sm no-print ${C.box} ${C.boxHover}`}>
+                    <div>
+                      <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
+                      <div class={`mt-3 text-sm font-bold leading-snug ${C.name}`}>{p.name}</div>
+                    </div>
+                    <div>
+                      <div class={`text-xs ${C.sub}`}>확인 시점 가격</div>
+                      <div class={`text-lg font-black ${C.strong}`}>{p.price}</div>
+                      <div class={`mt-3 rounded-lg border px-3 py-2 text-center text-xs font-bold ${C.box} ${C.strong}`}>판매 페이지 보기 →</div>
+                    </div>
                   </a>
                 ))}
               </div>
@@ -96,9 +123,9 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
           )}
         </div>
 
-        {sideFallback.length > 0 && (
+        {narrowBottom.length > 0 && (
           <div class="mt-8 grid gap-3 sm:grid-cols-2 xl:hidden">
-            {sideFallback.map((p) => (
+            {narrowBottom.map((p) => (
               <a href={safeHref(p.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class={`block rounded-xl border p-4 shadow-sm no-print ${C.box} ${C.boxHover}`}>
                 <div class={`text-[11px] font-bold ${C.tag}`}>광고 · {p.store}</div>
                 <div class={`mt-1 text-sm font-bold leading-snug ${C.name}`}>{p.name}</div>
