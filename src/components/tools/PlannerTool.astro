@@ -22,7 +22,7 @@ const cloud = (cloudRaw && cloudRaw.enabled === true
 ---
 
 <div class={`pw-root ${extra}`} id="pwPlannerRoot">
-  <link rel="stylesheet" href="/tools/planner/planner.css" />
+  <link rel="stylesheet" href="/tools/planner/planner.css?v=20261014b" />
 
   <div class="pw-toolbar-row">
 <div class="planner-toolbar">
@@ -204,51 +204,49 @@ const cloud = (cloudRaw && cloudRaw.enabled === true
               </p>
             </div>
             <div class="guide-item">
-              <h4><i data-lucide="shield-check" style="width:16px; height:16px;"></i> 3. 100% 로컬 프라이버시 보호</h4>
+              <h4><i data-lucide="shield-check" style="width:16px; height:16px;"></i> 3. 기본은 내 기기에만 저장</h4>
               <p>
-                사용자의 소중한 일정과 개인 목표 데이터는 외부 데이터베이스로 전송되지 않습니다. 브라우저의 로컬 저장소에
-                안전하게 보관되어 개인정보 유출 걱정 없이 안심하고 사용할 수 있습니다.
+                로그인하지 않고 쓰면 일정과 목표는 이 브라우저의 로컬 저장소에만 저장되고 서버로 전송되지 않습니다.
+                여러 기기에서 쓰고 싶을 때만 선택 기능 '클라우드에 저장'을 켜세요.
               </p>
             </div>
           </div>
         </div>
 
         <!-- FAQ Section -->
-        <h4 style="font-size:17px; font-weight:800; margin-top:36px; margin-bottom:12px; color:#fff;">
-          자주 묻는 질문 (FAQ)
-        </h4>
+        <div class="faq-head"><span class="faq-eyebrow">FAQ</span><h4>자주 묻는 질문</h4></div>
         <div class="faq-accordion">
           <div class="faq-item">
             <div class="faq-question">
               <span>웹 플래너는 무료인가요? 별도의 유료 결제가 필요한가요?</span>
-              <i data-lucide="chevron-down" class="faq-arrow"></i>
+              <span class="faq-arrow" aria-hidden="true">+</span>
             </div>
             <div class="faq-answer">
-              AutoSite Planner는 100% 무료 웹 애플리케이션입니다. 모든 주간·월간 캘린더, D-Day 카운터, 투두리스트, 백업 내보내기/가져오기 기능은 영구적으로 무료로 제공됩니다.
+              이 웹 플래너는 무료로 이용하실 수 있고, 별도의 결제가 필요하지 않습니다. 주간·월간 캘린더, D-Day 카운터, 투두리스트, 백업 내보내기/가져오기를 제공합니다. 이 페이지에는 제휴 광고가 포함되어 있으며, 광고를 통한 구매로 운영자가 수수료를 받을 수 있습니다.
             </div>
           </div>
           <div class="faq-item">
             <div class="faq-question">
               <span>브라우저를 닫거나 컴퓨터를 재부팅해도 일정이 유지되나요?</span>
-              <i data-lucide="chevron-down" class="faq-arrow"></i>
+              <span class="faq-arrow" aria-hidden="true">+</span>
             </div>
             <div class="faq-answer">
-              네, 모든 변경사항은 사용자의 웹 브라우저 로컬 저장소(LocalStorage)에 실시간 자동 저장되므로 브라우저를 종료하거나 새로고침해도 데이터가 완벽하게 유지됩니다. 정기적인 백업을 위해 상단 '백업 저장' 버튼을 활용해 JSON 파일로 보관하는 것을 권장합니다.
+              네, 변경 내용은 이 브라우저의 로컬 저장소(LocalStorage)에 자동 저장되어 브라우저를 닫거나 새로고침해도 이어서 보입니다. 다만 브라우저 데이터를 지우거나 다른 기기·시크릿 창에서 열면 보이지 않으니, 상단 '백업 저장'으로 파일을 따로 보관해 두세요. 다른 기기에서도 이어서 쓰고 싶다면 선택 기능인 '클라우드에 저장'(Google 로그인)을 쓰실 수 있습니다.
             </div>
           </div>
           <div class="faq-item">
             <div class="faq-question">
               <span>스마트폰이나 태블릿에서도 사용할 수 있나요?</span>
-              <i data-lucide="chevron-down" class="faq-arrow"></i>
+              <span class="faq-arrow" aria-hidden="true">+</span>
             </div>
             <div class="faq-answer">
-              네, 모바일 기기 화면 폭에 맞춰 최적화된 반응형 인터페이스가 자동 적용됩니다. 모바일 화면에서는 상단과 하단에 최적화된 배너 배치가 작동하며, 스마트폰 터치 환경에서도 부드럽게 일정과 할 일을 관리할 수 있습니다.
+              네, 화면 폭에 맞춰 레이아웃이 자동으로 바뀌는 반응형 화면이라 스마트폰과 태블릿에서도 일정과 할 일을 관리할 수 있습니다.
             </div>
           </div>
           <div class="faq-item">
             <div class="faq-question">
               <span>인쇄하거나 PDF 파일로 출력할 수 있나요?</span>
-              <i data-lucide="chevron-down" class="faq-arrow"></i>
+              <span class="faq-arrow" aria-hidden="true">+</span>
             </div>
             <div class="faq-answer">
               상단 툴바의 '인쇄/PDF' 버튼을 클릭하거나 Ctrl+P (Mac: Cmd+P)를 누르면 광고 배너 및 불필요한 배경 요소가 자동으로 제거된 깔끔한 인쇄 전용 레이아웃으로 출력하거나 PDF 문서로 저장할 수 있습니다.

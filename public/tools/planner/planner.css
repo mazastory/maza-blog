@@ -1494,3 +1494,27 @@
   }
 }
 
+
+
+/* ── 14. 가이드·FAQ 다듬기 (2026-10-14) ── */
+.pw-root .guide-section { position: relative; overflow: hidden; padding: 40px 34px; background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)); }
+.pw-root .guide-section::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(45,212,191,0.7), rgba(56,189,248,0.7), transparent); }
+.pw-root .guide-title { font-size: 22px; line-height: 1.4; margin-bottom: 14px; }
+.pw-root .guide-cards-grid { gap: 14px; margin-top: 22px; counter-reset: guide; }
+.pw-root .guide-item { position: relative; padding: 22px 20px 20px; border-radius: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+.pw-root .guide-item:hover { transform: translateY(-3px); border-color: rgba(45,212,191,0.4); background: rgba(45,212,191,0.05); }
+.pw-root .guide-item h4 { font-size: 15.5px; margin-bottom: 8px; color: #99f6e4; }
+.pw-root .guide-item p { font-size: 13.5px; line-height: 1.75; }
+.pw-root .faq-head { display: flex; align-items: center; gap: 12px; margin: 42px 0 14px; }
+.pw-root .faq-head h4 { margin: 0; font-size: 19px; font-weight: 800; color: #fff; }
+.pw-root .faq-eyebrow { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #5eead4; background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.28); }
+.pw-root .faq-accordion { gap: 10px; margin-top: 0; }
+.pw-root .faq-item { border-radius: 16px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); }
+.pw-root .faq-item:hover { border-color: rgba(148,163,184,0.3); }
+.pw-root .faq-item.active { border-color: rgba(45,212,191,0.45); background: rgba(45,212,191,0.045); }
+.pw-root .faq-question { padding: 18px 22px; gap: 16px; font-size: 15.5px; line-height: 1.5; }
+.pw-root .faq-question:hover { background: transparent; }
+.pw-root .faq-arrow { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 17px; font-weight: 700; line-height: 1; color: #5eead4; background: rgba(45,212,191,0.12); transition: transform .2s ease, background .2s ease; }
+.pw-root .faq-item.active .faq-arrow { transform: rotate(45deg); background: rgba(45,212,191,0.24); }
+.pw-root .faq-answer { padding: 0 22px 20px; font-size: 14px; line-height: 1.85; color: #cbd5e1; }
+@media (max-width: 640px) { .pw-root .guide-section { padding: 28px 18px; } .pw-root .guide-title { font-size: 19px; } .pw-root .faq-question { padding: 16px 16px; font-size: 14.5px; } .pw-root .faq-answer { padding: 0 16px 18px; } }
