@@ -48,7 +48,10 @@
       if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = canon(v[k]); }); return o; }
       return v;
     }
-    return JSON.stringify(canon({ t: s.tasks || [], d: s.ddays || [], b: s.timeblocks || {} }));
+    // id 와 만든 시각은 저장·복원할 때마다 새로 붙을 수 있어 내용 비교에서 뺀다(같은 일정인데 다르다고 나오는 원인)
+    var t = (s.tasks || []).map(function (x) { return { text: x.text, category: x.category, priority: x.priority, dueDate: x.dueDate, completed: x.completed }; });
+    var d = (s.ddays || []).map(function (x) { return { title: x.title, targetDate: x.targetDate, category: x.category }; });
+    return JSON.stringify(canon({ t: t, d: d, b: s.timeblocks || {} }));
   }
   function counts(s) {
     s = s || {};
@@ -72,7 +75,7 @@
     }
     var marketing = !!($('pwCloudMarketing') && $('pwCloudMarketing').checked);
     try { localStorage.setItem(PENDING_KEY, JSON.stringify({ marketing: marketing, v: cfg.consentVersion || 'v1', at: Date.now() })); } catch (e) {}
-    client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } })
+    client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: 'select_account' } } })
       .then(function (r) { if (r && r.error) { var err = $('pwCloudLoginErr'); if (err) { err.textContent = '로그인을 시작하지 못했습니다. 잠시 뒤에 다시 시도해 주세요.'; err.hidden = false; } } });
   }
 
