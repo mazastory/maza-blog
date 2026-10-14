@@ -28,17 +28,14 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
 ---
 
 <Layout title={cfg.title} description={cfg.intro} siteConfig={siteConfig}>
-  <div class={`mx-auto px-4 py-10 md:px-6 md:py-16 ${hasSides ? "max-w-[1480px]" : "max-w-4xl"}`}>
+  <div class={`mx-auto px-4 py-6 md:px-6 md:py-10 ${hasSides ? "max-w-[1480px]" : "max-w-4xl"}`}>
     <h1 class={`text-3xl md:text-4xl font-black tracking-tight ${C.h1}`}>{cfg.title}</h1>
     <p class={`mt-4 leading-relaxed ${C.p}`}>{cfg.intro}</p>
 
-    <aside class={`mt-6 rounded-xl border px-4 py-3 text-sm no-print ${C.warn}`} role="note">
-      {cfg.disclosure}
-    </aside>
+    <p class={`mt-3 text-xs no-print ${C.note}`} role="note">ⓘ {cfg.disclosure}</p>
 
     {tool ? (
       <>
-        {cfg.free_pack && <FreePack cfg={cfg.free_pack} dark={dark} />}
         {topBanners.length > 0 && (
           <div class="mt-8 grid gap-3 sm:grid-cols-2">
             {topBanners.map((p) => (
@@ -69,7 +66,7 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
           </div>
         )}
 
-        <div class={`mt-8 ${hasSides ? "xl:grid xl:grid-cols-[170px_minmax(0,1fr)_170px] xl:gap-6" : ""}`}>
+        <div class={`mt-5 ${hasSides ? "xl:grid xl:grid-cols-[170px_minmax(0,1fr)_170px] xl:gap-6" : ""}`}>
           {hasSides && (
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">
@@ -124,6 +121,8 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
             </div>
           )}
         </div>
+
+        {cfg.free_pack && <FreePack cfg={cfg.free_pack} dark={dark} />}
 
         {narrowBottom.length > 0 && (
           <div class="mt-8 grid gap-3 sm:grid-cols-2 xl:hidden">
