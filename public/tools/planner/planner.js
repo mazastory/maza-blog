@@ -830,10 +830,22 @@
     printPlanner
   };
 
-  // Run on DOM load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initUI);
-  } else {
+  // 시작: 이 사이트는 페이지를 새로 읽지 않고 넘어가는 이동(Astro ClientRouter)을 쓴다.
+  // 그런 이동에서는 외부 스크립트가 다시 실행되지 않아, 새로 들어온 화면의 플래너가 시작되지 않던 문제가 있었다(2026-10-14).
+  // 그래서 「화면에 플래너가 있고 아직 시작하지 않았으면 시작한다」를 처음 로드와 페이지 이동 때마다 부른다.
+  function bootPlanner() {
+    const root = document.querySelector('.pw-root');
+    if (!root || root.dataset.pwReady === '1') return;
+    root.dataset.pwReady = '1';
     initUI();
+  }
+  if (!window.__pwPageLoadBound) {
+    window.__pwPageLoadBound = true;
+    document.addEventListener('astro:page-load', bootPlanner);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootPlanner);
+  } else {
+    bootPlanner();
   }
 })();
