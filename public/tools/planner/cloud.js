@@ -168,6 +168,25 @@
     setStatus('클라우드 일정 데이터를 삭제했습니다');
   }
 
+
+  // 클릭 위임: 요소가 새로 그려져도 항상 동작한다(한 번만 등록)
+  if (!window.__pwCloudClickBound) {
+    window.__pwCloudClickBound = true;
+    document.addEventListener('click', function (ev) {
+      var t = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+      if (!t || !t.id || t.id.indexOf('pwCloud') !== 0) return;
+      switch (t.id) {
+        case 'pwCloudBtn': open(user ? 'pwCloudMenu' : 'pwCloudLogin'); break;
+        case 'pwCloudLoginClose': close('pwCloudLogin'); break;
+        case 'pwCloudMenuClose': close('pwCloudMenu'); break;
+        case 'pwCloudGoogle': signIn(); break;
+        case 'pwCloudSignOut': signOut(); break;
+        case 'pwCloudDelete': deleteAccount(); break;
+        case 'pwCloudSaveNow': clearTimeout(uploadTimer); push().then(function () { setStatus('저장됨 · 방금'); }).catch(function () { setStatus('저장하지 못했습니다(이 기기에는 저장됨)', 'error'); }); break;
+      }
+    });
+  }
+
   // ── 시작 ──────────────────────────────────────────────────────────────────
   function bindUI() {
     var root = document.querySelector('.pw-root');
@@ -175,14 +194,7 @@
     els.btn = $('pwCloudBtn'); els.status = $('pwCloudStatus');
     if (!els.btn) return false;
     root.dataset.pwCloudReady = '1';
-    els.btn.addEventListener('click', function () { user ? open('pwCloudMenu') : open('pwCloudLogin'); });
-    ['pwCloudLoginClose', 'pwCloudMenuClose'].forEach(function (id) {
-      var b = $(id); if (b) b.addEventListener('click', function () { close(id === 'pwCloudLoginClose' ? 'pwCloudLogin' : 'pwCloudMenu'); });
-    });
-    var g = $('pwCloudGoogle'); if (g) g.addEventListener('click', signIn);
-    var so = $('pwCloudSignOut'); if (so) so.addEventListener('click', signOut);
-    var del = $('pwCloudDelete'); if (del) del.addEventListener('click', deleteAccount);
-    var now = $('pwCloudSaveNow'); if (now) now.addEventListener('click', function () { clearTimeout(uploadTimer); push().then(function () { setStatus('저장됨 · 방금'); }).catch(function () { setStatus('저장하지 못했습니다(이 기기에는 저장됨)', 'error'); }); });
+    // 개별 버튼이 아니라 문서 한 곳에서 받는다 — 화면이 바뀌어 요소가 새로 만들어져도 동작한다
     setStatus(user ? '저장됨' : '이 기기에만 저장 중');
     return true;
   }
