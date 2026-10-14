@@ -14,7 +14,7 @@ const cloudRaw = cloudRawProp && cloudRawProp.use_blog_supabase === true
 // 클라우드 저장(선택 기능): 사이트 설정 `planner_cloud.enabled` 가 true 이고 값이 형식에 맞을 때만 켠다. 꺼져 있으면 아무것도 내보내지 않는다.
 const cloud = (cloudRaw && cloudRaw.enabled === true
   && /^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(String(cloudRaw.url))
-  && /^[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}$/.test(String(cloudRaw.anon_key))
+  && (/^[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}$/.test(String(cloudRaw.anon_key)) || /^sb_publishable_[A-Za-z0-9_-]{16,}$/.test(String(cloudRaw.anon_key)))
   && /^[a-z0-9.-]{3,60}$/.test(String(cloudRaw.site))
   && /^\/[A-Za-z0-9/_-]{1,60}$/.test(String(cloudRaw.privacy_path || '/privacy')))
   ? { url: String(cloudRaw.url), anonKey: String(cloudRaw.anon_key), site: String(cloudRaw.site), privacyUrl: String(cloudRaw.privacy_path || '/privacy'), consentVersion: String(cloudRaw.consent_version || 'v1').slice(0, 40) }
