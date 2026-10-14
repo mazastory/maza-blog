@@ -75,7 +75,7 @@ const T = dark
   var err = $('fp-error'), btn = $('fp-submit');
   var EMAIL_RE = /^[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,}$/;
   function unlock(again) {
-    $('fp-ask').classList.add('hidden');
+    $('fp-ask').style.display = 'none'; // md:flex 가 hidden 을 이기므로 style 로 끈다
     $('fp-done').classList.remove('hidden');
     if (again) $('fp-thanks').textContent = '🎁 이미 신청하셨습니다. 아래 버튼으로 내려받으세요.';
   }
