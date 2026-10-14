@@ -45,6 +45,8 @@ export interface CoupangBanner {
   slot?: 'top' | 'bottom' | 'left' | 'right';
 }
 export interface AffiliateHomeConfig {
+  /** 「이 사이트는 이렇게 굴러갑니다」 설명 칸(쇼케이스용). 사실만 적는다 */
+  how?: { title: string; lead?: string; steps: { h: string; p: string }[] };
   /** 쿠팡 배너(없으면 네이버 상품 카드만) */
   coupang?: CoupangBanner[];
   /** 있으면 「도구 가운데 + 위아래 배너」 구조, 없으면 상품 목록 */

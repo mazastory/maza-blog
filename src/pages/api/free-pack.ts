@@ -10,7 +10,10 @@
 import type { APIRoute } from 'astro';
 export const prerender = false;
 
-const LEADS_URL = 'https://www.setupod.com/api/leads';
+// 운영 주체별 저장소: sharpinsighthub = 투머스(셋업팟 DB) · mazapost = 캔두코리아(마자 DB). 서로 섞지 않는다.
+const SETUPOD_LEADS = 'https://www.setupod.com/api/leads';
+const MAZA_LEADS = 'https://mazastudio.kr/api/telemetry/lead';
+const destFor = (domain: string) => (domain === 'mazapost.com' ? 'maza' : 'setupod');
 const EMAIL_RE = /^[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,}$/;
 // 무료 자료 띠를 쓰는 사이트(같은 앱·같은 PDF). 늘릴 때는 그 사이트의 개인정보 방침도 같이 고친다.
 const ALLOWED_HOSTS = new Set(['sharpinsighthub.com', 'www.sharpinsighthub.com', 'mazapost.com', 'www.mazapost.com']);
@@ -44,27 +47,32 @@ export const POST: APIRoute = async ({ request }) => {
     if (email.length > 254 || !EMAIL_RE.test(email)) return json({ success: false, error: 'Invalid email' }, 400);
     if (b.consent !== true) return json({ success: false, error: 'Consent is required' }, 400);
 
-    const res = await fetch(LEADS_URL, {
+    const domain = host.replace(/^www\./, '');
+    const dest = destFor(domain);
+    const common = {
+      email,
+      consent: true,
+      consent_version: `${domain}-free-pack-${CONSENT_DATE}`,
+      marketing_opt_in: b.marketing_opt_in === true,
+      domain,
+      pod_id: 'free_pack',
+      gift_name: '2026 플래너 PDF 3종',
+      source: `${domain.replace(/\./g, '_')}_free_pack`,
+    };
+    // 마자 쪽은 운영자가 곧 마자라서 「마자 제공」 동의는 필수 동의에 포함된다(방침에 적음).
+    const payload = dest === 'maza' ? { ...common, provide_to_maza: true } : { ...common, lead_type: 'free_pdf' };
+    const res = await fetch(dest === 'maza' ? MAZA_LEADS : SETUPOD_LEADS, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': ip },
-      body: JSON.stringify({
-        email,
-        consent: true,
-        consent_version: `${host.replace(/^www\./, '')}-free-pack-${CONSENT_DATE}`,
-        marketing_opt_in: b.marketing_opt_in === true,
-        domain: host.replace(/^www\./, ''),
-        pod_id: 'free_pack',
-        gift_name: '2026 플래너 PDF 3종',
-        source: `${host.replace(/^www\./, '').replace(/\./g, '_')}_free_pack`,
-        lead_type: 'free_pdf',
-      }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      console.error('[free-pack] leads upstream status', res.status);
+      console.error('[free-pack] leads upstream status', dest, res.status);
       return json({ success: false, error: 'Could not save the request' }, res.status === 429 ? 429 : 503);
     }
     const out: any = await res.json().catch(() => ({}));
-    if (out?.saved !== true) return json({ success: false, error: 'Could not save the request' }, 503);
+    // 셋업팟은 saved:true, 마자는 lead_id 로 저장을 알린다
+    if (!(out?.saved === true || (dest === 'maza' && out?.success === true && out?.lead_id))) return json({ success: false, error: 'Could not save the request' }, 503);
     return json({ success: true });
   } catch (e: any) {
     console.error('[free-pack] fatal', e?.message);
