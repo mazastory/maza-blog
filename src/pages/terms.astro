@@ -5,6 +5,10 @@ import { getSiteConfig, getRequestDomain } from '../lib/api';
 
 const domain = getRequestDomain(Astro.request);
 const siteConfig = await getSiteConfig(domain);
+// [2026-10-14] 사이트가 직접 쓴 약관이 있으면 그쪽으로 넘긴다(metadata.page_overrides.terms).
+if (siteConfig?.metadata?.page_overrides?.terms?.html) {
+  return Astro.rewrite('/legal-override/terms');
+}
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400, stale-if-error=86400');
 const blogName = siteConfig?.blog_name || "Maza Blog";
 const currentYear = new Date().getFullYear();
