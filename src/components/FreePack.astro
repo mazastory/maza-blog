@@ -53,7 +53,7 @@ const T = dark
       <ul class="mt-3 grid gap-2 md:grid-cols-3">
         {items.map((it) => (
           <li>
-            <a href={safeFile(it.file)} download class={`flex items-center justify-between gap-3 rounded-xl border p-3 transition ${T.link}`}>
+            <a href={safeFile(it.file)} download data-aff="free_pack" data-aff-name={it.title} class={`flex items-center justify-between gap-3 rounded-xl border p-3 transition ${T.link}`}>
               <span class="min-w-0">
                 <span class={`block truncate text-sm font-bold ${T.name}`}>{it.title}</span>
                 <span class={`block text-xs ${T.sub}`}>{it.desc}{it.pages ? ` · ${it.pages}쪽` : ''}{it.size ? ` · ${it.size}` : ''}</span>
@@ -98,6 +98,7 @@ const T = dark
         if (x.ok && x.j && x.j.success) {
           try { localStorage.setItem(KEY, '1'); } catch (e) {}
           $('fp-email').value = '';
+          if (typeof window.gtag === 'function') window.gtag('event', 'generate_lead', { lead_type: 'free_pdf' });
           unlock(false);
         } else if (x.j && x.j.error === 'Too many requests') show('잠시 뒤에 다시 시도해 주세요.');
         else show('신청을 저장하지 못했습니다. 잠시 뒤에 다시 시도해 주세요.');
