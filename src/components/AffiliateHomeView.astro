@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PlannerTool from './tools/PlannerTool.astro';
+import FreePack from './FreePack.astro';
 import type { AffiliateHomeConfig } from '../lib/affiliateHome';
 interface Props { cfg: AffiliateHomeConfig; siteConfig: any; }
 const { cfg, siteConfig } = Astro.props;
@@ -27,7 +28,7 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
 ---
 
 <Layout title={cfg.title} description={cfg.intro} siteConfig={siteConfig}>
-  <div class={`mx-auto px-4 py-10 md:px-6 md:py-16 ${hasSides ? "max-w-7xl" : "max-w-4xl"}`}>
+  <div class={`mx-auto px-4 py-10 md:px-6 md:py-16 ${hasSides ? "max-w-[1480px]" : "max-w-4xl"}`}>
     <h1 class={`text-3xl md:text-4xl font-black tracking-tight ${C.h1}`}>{cfg.title}</h1>
     <p class={`mt-4 leading-relaxed ${C.p}`}>{cfg.intro}</p>
 
@@ -37,6 +38,7 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
 
     {tool ? (
       <>
+        {cfg.free_pack && <FreePack cfg={cfg.free_pack} dark={dark} />}
         {topBanners.length > 0 && (
           <div class="mt-8 grid gap-3 sm:grid-cols-2">
             {topBanners.map((p) => (
@@ -67,7 +69,7 @@ const hasSides = leftBanners.length + rightBanners.length > 0;
           </div>
         )}
 
-        <div class={`mt-8 ${hasSides ? "xl:grid xl:grid-cols-[180px_minmax(0,1fr)_180px] xl:gap-6" : ""}`}>
+        <div class={`mt-8 ${hasSides ? "xl:grid xl:grid-cols-[170px_minmax(0,1fr)_170px] xl:gap-6" : ""}`}>
           {hasSides && (
             <div class="hidden xl:block">
               <div class="sticky top-40 space-y-3">

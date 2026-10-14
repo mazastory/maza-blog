@@ -40,6 +40,8 @@ export interface AffiliateHomeConfig {
   notice: string;
   checked_at: string;
   products: AffiliateProduct[];
+  /** 무료 자료 받기 띠(이메일+동의 → 내려받기). 없으면 띠를 안 보인다 */
+  free_pack?: { title: string; lead: string; items: { title: string; desc: string; file: string; pages?: number; size?: string }[]; operator?: string; contact?: string };
 }
 
 export type AffiliateMode = 'affiliate' | 'affiliate_preview' | null;
