@@ -296,5 +296,11 @@ const { class: extra = '' } = Astro.props;
   .pw-root .pw-save-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-tertiary); }
   .pw-root .pw-save-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; }
   .pw-root .pw-toolbar-row { margin-bottom: 18px; }
+  /* 칸 폭 기준 반응형 — 원본은 화면 폭(@media)만 봐서, 옆 배너 사이의 좁은 칸에서는 오른쪽 패널이 잘렸다 */
+  .pw-root { container-type: inline-size; }
+  @container (max-width: 920px) {
+    .pw-root .planner-workspace-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  }
+  .pw-root .planner-workspace-grid > * { min-width: 0; }
   @media print { .no-print, header, footer { display: none !important; } body { background: #fff !important; } }
 </style>
