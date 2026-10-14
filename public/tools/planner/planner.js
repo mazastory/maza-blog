@@ -137,6 +137,8 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       indicateSaveStatus();
+      // 클라우드 저장(선택 기능)이 켜진 사이트가 이어 받는다. 꺼진 사이트에서는 아무도 듣지 않는다.
+      try { window.dispatchEvent(new CustomEvent('pw:saved')); } catch (e) {}
     } catch (e) {
       console.error('LocalStorage save failed', e);
     }
@@ -819,7 +821,26 @@
   }
 
   // ── Expose to Global Window ──
+  // 클라우드 저장용: 지금 상태의 정제된 사본 / 정제해서 통째로 바꾸기
+  function getStateSnapshot() {
+    return sanitizeState(JSON.parse(JSON.stringify(state)));
+  }
+  function applyState(src) {
+    const clean = sanitizeState(src);
+    if (!clean) return false;
+    state = { ...state, ...clean };
+    if (!state.selectedDate) state.selectedDate = getTodayStr();
+    saveState();
+    renderDDays();
+    renderCalendar();
+    renderDailyCockpit();
+    renderTasks();
+    return true;
+  }
+
   window.PWPlanner = {
+    getStateSnapshot,
+    applyState,
     toggleTask,
     deleteTask,
     deleteDDay,

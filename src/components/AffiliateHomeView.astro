@@ -127,7 +127,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
               </div>
             )}
             {toolList.map((t: any) => t.builtin === 'planner' ? (
-              <PlannerTool />
+              <PlannerTool cloud={siteConfig?.metadata?.planner_cloud} />
             ) : t.builtin === 'breakeven' ? (
               <BreakEvenTool dark={dark} />
             ) : (

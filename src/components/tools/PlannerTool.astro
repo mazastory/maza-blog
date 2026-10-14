@@ -5,8 +5,17 @@
  * 빼낸 것: 상단 메뉴·히어로·AutoPlanner 이름·광고 슬롯·소개/약관 페이지(사이트 껍데기가 맡는다).
  * 스타일은 `.pw-root` 안에 갇혀 있다(public/tools/planner/planner.css). 아이콘은 lucide(고정 버전, unpkg)를 쓴다.
  */
-interface Props { class?: string }
-const { class: extra = '' } = Astro.props;
+interface Props { class?: string; cloud?: any }
+const { class: extra = '', cloud: cloudRawProp = null } = Astro.props;
+const cloudRaw = cloudRawProp;
+// 클라우드 저장(선택 기능): 사이트 설정 `planner_cloud.enabled` 가 true 이고 값이 형식에 맞을 때만 켠다. 꺼져 있으면 아무것도 내보내지 않는다.
+const cloud = (cloudRaw && cloudRaw.enabled === true
+  && /^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(String(cloudRaw.url))
+  && /^[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}$/.test(String(cloudRaw.anon_key))
+  && /^[a-z0-9.-]{3,60}$/.test(String(cloudRaw.site))
+  && /^\/[A-Za-z0-9/_-]{1,60}$/.test(String(cloudRaw.privacy_path || '/privacy')))
+  ? { url: String(cloudRaw.url), anonKey: String(cloudRaw.anon_key), site: String(cloudRaw.site), privacyUrl: String(cloudRaw.privacy_path || '/privacy'), consentVersion: String(cloudRaw.consent_version || 'v1').slice(0, 40) }
+  : null;
 ---
 
 <div class={`pw-root ${extra}`} id="pwPlannerRoot">
@@ -34,6 +43,7 @@ const { class: extra = '' } = Astro.props;
               <i data-lucide="upload" style="width:14px; height:14px;"></i> 불러오기
             </button>
             <input type="file" id="fileImportInput" accept=".json" style="display:none;">
+            {cloud && (<button class="btn-secondary" id="pwCloudBtn" type="button" title="로그인하면 다른 기기에서도 이어서 쓸 수 있습니다(선택)">☁ 클라우드에 저장 (선택)</button>)}
             <button class="btn-icon" id="btnToolbarReset" title="플래너 데이터 초기화">
               <i data-lucide="rotate-ccw" style="width:15px; height:15px;"></i>
             </button>
@@ -286,7 +296,61 @@ const { class: extra = '' } = Astro.props;
       </div>
     </div>
   </div>
+
+  {cloud && (
+    <div class="pw-cloud">
+      <p id="pwCloudStatus" class="pw-cloud-status" aria-live="polite">이 기기에만 저장 중</p>
+
+      <div id="pwCloudLogin" class="pw-cloud-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pwCloudLoginTitle">
+        <div class="pw-cloud-card">
+          <h3 id="pwCloudLoginTitle">클라우드에 저장 (선택)</h3>
+          <p>로그인하면 일정이 서버에 저장되어 다른 기기에서도 이어서 쓸 수 있습니다. <strong>로그인하지 않아도 모든 기능을 그대로 쓸 수 있고</strong>, 그 경우 내용은 이 기기에만 저장됩니다.</p>
+          <label class="pw-cloud-check"><input type="checkbox" id="pwCloudConsent" /> <span>[필수] 만 14세 이상이며, 로그인 이메일과 일정 내용을 저장·이용하는 데 동의합니다. 탈퇴하면 즉시 삭제되고, 마지막 저장 후 12개월이 지나면 삭제됩니다. <a href={cloud.privacyUrl} target="_blank" rel="noopener">자세히</a></span></label>
+          <label class="pw-cloud-check"><input type="checkbox" id="pwCloudMarketing" /> <span>[선택] 새 무료 자료와 소식을 이메일로 받겠습니다.</span></label>
+          <p id="pwCloudLoginErr" class="pw-cloud-err" hidden></p>
+          <div class="pw-cloud-actions">
+            <button type="button" id="pwCloudGoogle" class="btn-primary">Google로 계속</button>
+            <button type="button" id="pwCloudLoginClose" class="btn-secondary">닫기</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pwCloudMenu" class="pw-cloud-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pwCloudMenuTitle">
+        <div class="pw-cloud-card">
+          <h3 id="pwCloudMenuTitle">클라우드 저장</h3>
+          <p>저장은 일정을 바꾼 뒤 몇 초 안에 자동으로 됩니다. 이 기기의 내용은 로그아웃해도 그대로 남습니다.</p>
+          <div class="pw-cloud-actions">
+            <button type="button" id="pwCloudSaveNow" class="btn-secondary">지금 저장</button>
+            <button type="button" id="pwCloudSignOut" class="btn-secondary">로그아웃</button>
+            <button type="button" id="pwCloudDelete" class="btn-secondary">내 클라우드 데이터 삭제·탈퇴</button>
+            <button type="button" id="pwCloudMenuClose" class="btn-secondary">닫기</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pwCloudConflict" class="pw-cloud-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pwCloudConfTitle">
+        <div class="pw-cloud-card">
+          <h3 id="pwCloudConfTitle">어느 내용을 쓸까요?</h3>
+          <p>이 기기와 클라우드의 내용이 다릅니다. 선택한 쪽으로 덮어쓰며, 합치지는 않습니다.</p>
+          <p><strong>이 기기</strong>: <span id="pwCloudConfLocal"></span></p>
+          <p><strong>클라우드</strong>: <span id="pwCloudConfRemote"></span></p>
+          <div class="pw-cloud-actions">
+            <button type="button" id="pwCloudUseLocal" class="btn-primary">이 기기 내용으로</button>
+            <button type="button" id="pwCloudUseRemote" class="btn-secondary">클라우드 내용으로</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
 </div>
+
+{cloud && (
+  <Fragment>
+    <script is:inline set:html={`window.PW_CLOUD = ${JSON.stringify(cloud).replace(/</g, '\\u003c')};`}></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" crossorigin="anonymous"></script>
+    <script is:inline src="/tools/planner/cloud.js?v=20261014" defer></script>
+  </Fragment>
+)}
 
 <script is:inline src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 <script is:inline src="/tools/planner/planner.js?v=20261014b" defer></script>
@@ -303,4 +367,18 @@ const { class: extra = '' } = Astro.props;
   }
   .pw-root .planner-workspace-grid > * { min-width: 0; }
   @media print { .no-print, header, footer { display: none !important; } body { background: #fff !important; } }
+  /* 클라우드 저장(선택) */
+  .pw-root .pw-cloud-status { margin: 8px 2px 0; font-size: 12px; color: var(--text-tertiary); }
+  .pw-root .pw-cloud-status[data-kind="error"] { color: #fca5a5; }
+  .pw-root .pw-cloud-modal { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 16px; }
+  .pw-root .pw-cloud-modal[hidden] { display: none; }
+  .pw-root .pw-cloud-card { width: min(460px, 100%); max-height: 90vh; overflow: auto; border-radius: 16px; padding: 22px; background: #0b1220; border: 1px solid rgba(148,163,184,0.25); color: #e2e8f0; font-size: 14px; line-height: 1.7; }
+  .pw-root .pw-cloud-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 800; color: #fff; }
+  .pw-root .pw-cloud-card p { margin: 0 0 10px; }
+  .pw-root .pw-cloud-check { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; margin: 8px 0; }
+  .pw-root .pw-cloud-check input { margin-top: 3px; }
+  .pw-root .pw-cloud-check a { text-decoration: underline; }
+  .pw-root .pw-cloud-err { color: #fca5a5; font-size: 12.5px; }
+  .pw-root .pw-cloud-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  @media print { .pw-root .pw-cloud, #pwCloudBtn { display: none !important; } }
 </style>
