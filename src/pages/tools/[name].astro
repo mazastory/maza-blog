@@ -1,0 +1,25 @@
+---
+/**
+ * 도구 한 개만 보여 주는 페이지 (2026-10-14) — `/tools/planner`, `/tools/breakeven`.
+ * 도구가 여럿인 사이트는 홈(`/`)이 도구 고르기 화면이고, 도구마다 이 주소를 갖는다.
+ * 설정은 공개 모드면 공개 설정, 아니면 미리보기 설정(검색 제외)을 쓴다.
+ */
+export const prerender = false;
+import AffiliateHomeView from '../../components/AffiliateHomeView.astro';
+import { getRequestDomain, getSiteConfig } from '../../lib/api';
+import { affiliateMode, previewAllowed, previewConfig, type AffiliateHomeConfig } from '../../lib/affiliateHome';
+
+const domain = getRequestDomain(Astro.request);
+const siteConfig = await getSiteConfig(domain);
+const name = String(Astro.params.name || '');
+const isPublic = affiliateMode(siteConfig) === 'affiliate';
+if (!isPublic && !previewAllowed(siteConfig)) return new Response('Not Found', { status: 404 });
+if (!isPublic) Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+const base = (isPublic ? siteConfig!.metadata!.affiliate_home : previewConfig(siteConfig)) as AffiliateHomeConfig;
+const tools = base?.tool?.tools || [];
+const t = tools.find((x) => x.builtin === name);
+if (!t) return new Response('Not Found', { status: 404 });
+const cfg: AffiliateHomeConfig = { ...base, title: t.title, intro: t.desc || base.intro };
+---
+
+<AffiliateHomeView cfg={cfg} siteConfig={siteConfig} only={name} />

@@ -26,7 +26,7 @@ export interface AffiliateTool {
   /** 마자 블로그에 들어 있는 공용 도구를 페이지의 일부로 넣는다(iframe 아님). 'planner' | 'breakeven'. */
   builtin?: 'planner' | 'breakeven';
   /** 도구를 둘 이상 쌓을 때(위에서 아래로). 있으면 builtin·embed_url 은 무시한다 */
-  tools?: { builtin: 'planner' | 'breakeven'; title: string }[];
+  tools?: { builtin: 'planner' | 'breakeven'; title: string; desc?: string }[];
   /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — builtin 이 없을 때 iframe 으로 띄운다 */
   embed_url?: string;
   /** 접근성용 이름 */

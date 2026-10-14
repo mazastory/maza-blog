@@ -4,16 +4,19 @@ import PlannerTool from './tools/PlannerTool.astro';
 import FreePack from './FreePack.astro';
 import BreakEvenTool from './tools/BreakEvenTool.astro';
 import type { AffiliateHomeConfig } from '../lib/affiliateHome';
-interface Props { cfg: AffiliateHomeConfig; siteConfig: any; }
-const { cfg, siteConfig } = Astro.props;
+interface Props { cfg: AffiliateHomeConfig; siteConfig: any; only?: string; }
+const { cfg, siteConfig, only } = Astro.props;
 const safeHref = (u: string) => (/^https:\/\/(naver\.me|brandconnect\.naver\.com)\//.test(u) ? u : '#');
 const safeEmbed = (u: string) => (/^https:\/\/(www\.)?setupod\.com\/embed\/[a-z0-9_-]+(\?[^\s"]*)?$/i.test(u) ? u : '');
 const safeImg = (u?: string) => (u && /^https:\/\/[A-Za-z0-9.-]+\/[^\s"'<>]*$/.test(u) ? u : '');
 const dark = siteConfig?.metadata?.page_theme === 'dark';
 const BUILTIN = ['planner', 'breakeven'];
 const rawTools: any[] = cfg.tool?.tools?.length ? cfg.tool.tools : cfg.tool ? [cfg.tool] : [];
-const toolList = rawTools.filter((t) => (t.builtin && BUILTIN.includes(t.builtin)) || (t.embed_url && safeEmbed(t.embed_url)));
-const tool = toolList.length ? cfg.tool : null;
+const validTools = rawTools.filter((t) => (t.builtin && BUILTIN.includes(t.builtin)) || (t.embed_url && safeEmbed(t.embed_url)));
+// 도구가 여럿이고 특정 도구를 고르지 않았으면 홈은 「도구 고르기」 화면이다
+const hub = !only && validTools.length > 1;
+const toolList = only ? validTools.filter((t) => t.builtin === only) : hub ? [] : validTools;
+const tool = toolList.length || hub ? cfg.tool : null;
 // 쿠팡 배너: 값만 받아서 우리가 스크립트를 만든다(숫자·정해진 글자만 통과)
 const cpOk = (b: any) => /^\d{1,12}$/.test(String(b?.id)) && /^[A-Za-z0-9_-]{1,40}$/.test(String(b?.tracking_code)) && /^\d{2,4}$/.test(String(b?.width)) && /^\d{2,4}$/.test(String(b?.height)) && /^[a-z]{3,20}$/.test(String(b?.template || 'carousel'));
 const cpHtml = (b: any) => '<script src="https://ads-partners.coupang.com/g.js"><\/script><script>new PartnersCoupang.G(' + JSON.stringify({ id: Number(b.id), template: b.template || 'carousel', trackingCode: String(b.tracking_code), width: String(b.width), height: String(b.height), tsource: '' }) + ')<\/script>';
@@ -102,6 +105,17 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
           )}
 
           <div class="min-w-0 space-y-8">
+            {hub && (
+              <div class="grid gap-4 md:grid-cols-2">
+                {validTools.map((t: any) => t.builtin && (
+                  <a href={`/tools/${t.builtin}`} class={`group block rounded-2xl border p-6 transition ${C.box} ${C.boxHover}`}>
+                    <div class={`text-xl font-black ${C.name}`}>{t.title}</div>
+                    <p class={`mt-2 text-sm leading-relaxed ${C.sub}`}>{t.desc}</p>
+                    <div class={`mt-4 text-sm font-bold ${C.strong} group-hover:underline`}>열기 →</div>
+                  </a>
+                ))}
+              </div>
+            )}
             {toolList.map((t: any) => t.builtin === 'planner' ? (
               <PlannerTool />
             ) : t.builtin === 'breakeven' ? (
