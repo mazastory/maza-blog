@@ -187,13 +187,24 @@
       if (!t || !t.id || t.id.indexOf('pwCloud') !== 0) return;
       switch (t.id) {
         case 'pwCloudBtn': open(user ? 'pwCloudMenu' : 'pwCloudLogin'); break;
-        case 'pwCloudLoginClose': close('pwCloudLogin'); break;
+        case 'pwCloudLoginClose': case 'pwCloudLoginX': close('pwCloudLogin'); break;
         case 'pwCloudMenuClose': close('pwCloudMenu'); break;
         case 'pwCloudGoogle': signIn(); break;
         case 'pwCloudSignOut': signOut(); break;
         case 'pwCloudDelete': deleteAccount(); break;
         case 'pwCloudSaveNow': clearTimeout(uploadTimer); setStatus('저장 중…'); push().then(function () { setStatus('저장됨 · 방금'); }).catch(function () { setStatus('저장하지 못했습니다(이 기기에는 저장됨)', 'error'); }); break;
       }
+    });
+  }
+
+  // 바깥(어두운 배경)을 누르거나 Esc 를 눌러도 닫힌다(충돌 선택 창은 반드시 고르게 둔다)
+  if (!window.__pwCloudDismissBound) {
+    window.__pwCloudDismissBound = true;
+    document.addEventListener('click', function (ev) {
+      var t = ev.target; if (t && t.classList && t.classList.contains('pw-cloud-modal') && t.id !== 'pwCloudConflict') t.hidden = true;
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Escape') return; close('pwCloudLogin'); close('pwCloudMenu');
     });
   }
 
