@@ -93,7 +93,12 @@ const primaryCategory =
 uniqueCategories = [primaryCategory];
 
 // 각 페이지에서 캐시 설정을 관리합니다 (Layout에서는 중복 설정하지 않음)
-const siteTitle = siteConfig?.blog_name || "Maza Blog";
+// [2026-10-16] 장학 팟 사이트(`site_kind: 'pod'`)는 블로그가 아니라 도구 한 개짜리 사이트다 — 옛 블로그 이름·메뉴(홈·소개·문의)를 쓰지 않는다.
+// 이름은 도메인 그대로 보여 준다. 마자 스튜디오가 만든 사이트(`/api/sites/pod`)와 같은 규칙이다.
+// 🔴 `minimal_chrome: true` 가 **함께** 있을 때만 바꾼다 — 마자 스튜디오가 새로 만든 팟 사이트의 표시다. 「분류만 pod 로 표시해 둔」 기존 사이트
+// (sharpinsighthub 의 도구 사이트, 심사 중 내용이 동결된 사이트)는 겉모양이 그대로여야 한다.
+const isPodSite = siteConfig?.metadata?.site_kind === 'pod' && siteConfig?.metadata?.minimal_chrome === true;
+const siteTitle = isPodSite ? domain : (siteConfig?.blog_name || "Maza Blog");
 // [2026-10-14] 사이트별 사업자 정보 줄(metadata.footer_business: 문자열 배열). 없으면 지금과 같다.
 const footerBusiness: string[] = Array.isArray(siteConfig?.metadata?.footer_business) ? siteConfig.metadata.footer_business.filter((l: unknown) => typeof l === 'string' && l.trim()).slice(0, 6) : [];
 // niche 는 분야명이 아니라 설명문인 경우가 많다. 표시용으로 줄여 쓴다(lib/niche.ts).
@@ -255,7 +260,13 @@ if (rawNaver) {
 		{siteConfig?.metadata?.page_theme !== 'dark' && (
 		<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.12),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.1),_transparent_28%),linear-gradient(to_bottom,_rgba(255,255,255,0.92),_rgba(248,250,252,1))]"></div>
 		)}
-		{!hideHeader && <Header siteConfig={siteConfig} categories={affiliateMode(siteConfig) ? [] : uniqueCategories} currentLang={siteLang} />}
+		{isPodSite ? (
+			<header class="relative z-10 border-b border-white/10 bg-[#0b1020]/90 backdrop-blur">
+				<div class="mx-auto flex max-w-6xl items-center justify-center px-4 py-4">
+					<a href="/" class="text-base font-black tracking-tight text-white">{domain}</a>
+				</div>
+			</header>
+		) : (!hideHeader && <Header siteConfig={siteConfig} categories={affiliateMode(siteConfig) ? [] : uniqueCategories} currentLang={siteLang} />)}
 
 		<main class="relative z-10 flex-1">
 			<slot />
