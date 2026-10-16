@@ -4,6 +4,8 @@ import PlannerTool from './tools/PlannerTool.astro';
 import FreePack from './FreePack.astro';
 import AffHero from './AffHero.astro';
 import BreakEvenTool from './tools/BreakEvenTool.astro';
+import PodInline from './PodInline.astro';
+import { findPodSnapshot } from '../lib/podSnapshots';
 import type { AffiliateHomeConfig } from '../lib/affiliateHome';
 interface Props { cfg: AffiliateHomeConfig; siteConfig: any; only?: string; }
 const { cfg, siteConfig, only } = Astro.props;
@@ -13,7 +15,7 @@ const safeImg = (u?: string) => (u && /^https:\/\/[A-Za-z0-9.-]+\/[^\s"'<>]*$/.t
 const dark = siteConfig?.metadata?.page_theme === 'dark';
 const BUILTIN = ['planner', 'breakeven'];
 const rawTools: any[] = cfg.tool?.tools?.length ? cfg.tool.tools : cfg.tool ? [cfg.tool] : [];
-const validTools = rawTools.filter((t) => (t.builtin && BUILTIN.includes(t.builtin)) || (t.embed_url && safeEmbed(t.embed_url)));
+const validTools = rawTools.filter((t) => (t.builtin && BUILTIN.includes(t.builtin)) || (t.snapshot && findPodSnapshot(t.snapshot)) || (t.embed_url && safeEmbed(t.embed_url)));
 // 도구가 여럿이고 특정 도구를 고르지 않았으면 홈은 「도구 고르기」 화면이다
 const hub = !only && validTools.length > 1;
 const toolList = only ? validTools.filter((t) => t.builtin === only) : hub ? [] : validTools;
@@ -136,6 +138,8 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
               <PlannerTool cloud={siteConfig?.metadata?.planner_cloud} />
             ) : t.builtin === 'breakeven' ? (
               <BreakEvenTool dark={dark} />
+            ) : t.snapshot ? (
+              <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}><PodInline engine={t.snapshot} /></div>
             ) : (
               <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}>
                 <iframe src={t.embed_url} title={t.title} loading="lazy" style={`width:100%;height:${t.height ?? 760}px;border:0;`} allow="clipboard-write"></iframe>

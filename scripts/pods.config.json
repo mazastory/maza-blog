@@ -1,0 +1,11 @@
+{
+  "_doc": "셋업팟 엔진 페이지 → 블로그 스냅샷. 한 줄 = 엔진 하나(카탈로그의 여러 팟 번호가 같은 엔진 페이지를 쓴다). `source` 는 셋업팟의 실제 팟 페이지 주소. `aliases` 는 이 엔진을 쓰는 팟 번호(마자 장학 팟 번호 포함).",
+  "engines": [
+    { "engine": "margin",  "source": "https://www.setupod.com/margin",  "aliases": ["calculator", "margin"] },
+    { "engine": "runway",  "source": "https://www.setupod.com/runway",  "aliases": ["runway"] },
+    { "engine": "nomad",   "source": "https://www.setupod.com/nomad",   "aliases": ["nomad"] },
+    { "engine": "fx",      "source": "https://www.setupod.com/fx",      "aliases": ["fx", "fx_calc"] },
+    { "engine": "adsense", "source": "https://www.setupod.com/adsense", "aliases": ["adsense", "adsense_calc"] },
+    { "engine": "secret_room", "source": "https://www.setupod.com/secret_room", "aliases": ["secret_room"] }
+  ]
+}

@@ -1,0 +1,21 @@
+---
+/**
+ * 셋업팟 엔진을 페이지의 일부로 그린다 (2026-10-16) — iframe 두 겹(블로그 → 셋업팟 껍데기 → 팟) 대신.
+ * 내용은 `scripts/sync-pods.mjs` 가 가져와 검토를 통과한 스냅샷이다(src/generated/pods). 요청 때마다 셋업팟을 부르지 않는다.
+ * 스타일은 `.pod-root` 안에 갇혀 있고, 아이콘(lucide)·접속 기록은 우리 쪽 고정본을 쓴다.
+ */
+import { findPodSnapshot } from '../lib/podSnapshots';
+interface Props { engine: string }
+const snap = findPodSnapshot(Astro.props.engine);
+---
+{snap && (
+  <>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <style is:inline set:html={snap.css}></style>
+    <div class="pod-root" data-pod-engine={snap.engine} set:html={snap.html}></div>
+    <script is:inline src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+    <script is:inline src="/pods/maza-telemetry.js"></script>
+    <script is:inline src="/pods/pod-support.js"></script>
+    <script is:inline set:html={snap.js}></script>
+  </>
+)}

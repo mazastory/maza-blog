@@ -27,8 +27,10 @@ export interface AffiliateTool {
   builtin?: 'planner' | 'breakeven';
   /** 도구를 둘 이상 쌓을 때(위에서 아래로). 있으면 builtin·embed_url 은 무시한다 */
   tools?: { builtin: 'planner' | 'breakeven'; title: string; desc?: string }[];
-  /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — builtin 이 없을 때 iframe 으로 띄운다 */
+  /** 셋업팟 임베드 주소(https://www.setupod.com/embed/…) — builtin·snapshot 이 없을 때 iframe 으로 띄운다 */
   embed_url?: string;
+  /** 가져온 셋업팟 엔진 스냅샷(scripts/sync-pods.mjs)을 페이지의 일부로 그린다(iframe 아님). 엔진 이름(margin) 또는 팟 번호(calculator). 없는 이름이면 그리지 않는다 */
+  snapshot?: string;
   /** 접근성용 이름 */
   title: string;
   height?: number;
@@ -66,7 +68,7 @@ export interface AffiliateHomeConfig {
 
 /** 보여 줄 것이 하나라도 있는가(네이버 카드·쿠팡 배너·도구) — 도구만 있는 사이트도 홈이 될 수 있다 */
 export function hasItems(cfg: any): boolean {
-  return !!(cfg?.products?.length || cfg?.coupang?.length || cfg?.tool?.tools?.length || cfg?.tool?.builtin || cfg?.tool?.embed_url);
+  return !!(cfg?.products?.length || cfg?.coupang?.length || cfg?.tool?.tools?.length || cfg?.tool?.builtin || cfg?.tool?.snapshot || cfg?.tool?.embed_url);
 }
 
 export type AffiliateMode = 'affiliate' | 'affiliate_preview' | null;
