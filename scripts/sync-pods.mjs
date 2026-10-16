@@ -23,7 +23,7 @@ import postcss from 'postcss';
 import { tokenizeColors, tokenizeRule, lightBlock } from './pod-theme.mjs';
 
 /** 가져올 때 쓰는 변환 규칙의 버전. 원본이 그대로여도 변환 규칙을 바꾸면 올려서 다시 쓰게 한다. */
-const TRANSFORM_VERSION = 4;   // 2: 색 변수(pod-theme.mjs) · 3: 문구 자리(slots) · 4: 밝은 글자색(--pt-)
+const TRANSFORM_VERSION = 5;   // 2: 색 변수(pod-theme.mjs) · 3: 문구 자리(slots) · 4: 밝은 글자색(--pt-) · 5: 상대 주소를 절대 주소로
 const ROOT = '.pod-root';
 const OUT_DIR = path.resolve('src/generated/pods');
 const cfg = JSON.parse(fs.readFileSync(path.resolve('scripts/pods.config.json'), 'utf-8'));
@@ -69,6 +69,14 @@ function scopeCss(css, engine, ctx) {
   // 페이지 전체를 채우던 값은 사이트 안의 한 칸이 되도록 풀어 준다.
   root.append(postcss.parse(`${ROOT}{min-height:0;width:100%;max-width:100%;overflow-x:hidden;}`));
   return root.toString();
+}
+
+/** 원본 페이지 안의 상대 주소(이미지·링크·CSS url())를 셋업팟의 절대 주소로 바꾼다 — 블로그 안에서는 상대 주소가 엉뚱한 곳을 가리킨다. */
+function absolutize(text, base, kind) {
+  const abs = (v) => { try { return new URL(v, base).toString(); } catch { return v; } };
+  const isRel = (v) => !/^(https?:|\/\/|#|data:|mailto:|tel:|javascript:|var\()/i.test(v.trim());
+  if (kind === 'css') return text.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/g, (m, q, v) => (isRel(v) ? `url(${q}${abs(v)}${q})` : m));
+  return text.replace(/\b(src|href|poster)="([^"]+)"/g, (m, attr, v) => (isRel(v) ? `${attr}="${abs(v)}"` : m));
 }
 
 /** 금지 항목 검사. 엔진 설정 `allow` 에 든 항목(검토를 마친 것)은 통과시킨다. */
@@ -133,9 +141,9 @@ async function importEngine(e) {
 
 function finish(e, { html, sha256, title, styles, bodyHtml, inline, vendored }) {
   const ctx = { vars: new Map(), accent: e.accent ? { hex: e.accent.hex.map((h) => h.toLowerCase()), rgb: e.accent.rgb } : null };
-  const css = scopeCss(styles, e.engine, ctx);
+  const css = scopeCss(absolutize(styles, e.source, 'css'), e.engine, ctx);
   // 본문의 style="…" 안의 색
-  const htmlTok = bodyHtml.replace(/\bstyle="([^"]*)"/g, (_m, v) => `style="${tokenizeColors(v, ctx, { asText: true })}"`);
+  const htmlTok = absolutize(bodyHtml, e.source, 'html').replace(/\bstyle="([^"]*)"/g, (_m, v) => `style="${tokenizeColors(v, ctx, { asText: true })}"`);
   // 스크립트가 글자로 넣는 무채색('#fff' 같은 따옴표 안 색)도 같은 변수로 — 밝은 테마에서 흰 글씨가 남지 않게
   const jsTok = inline.replace(/(['"])(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})\1/g, (_m, q, hex) => {
     const out = tokenizeColors(hex, ctx, { asText: true });
