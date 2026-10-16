@@ -139,7 +139,7 @@ const hasSides = leftBanners.length + rightBanners.length + cpLeft.length + cpRi
             ) : t.builtin === 'breakeven' ? (
               <BreakEvenTool dark={dark} />
             ) : t.snapshot ? (
-              <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}><PodInline engine={t.snapshot} /></div>
+              <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}><PodInline engine={t.snapshot} skin={t.skin} siteDark={dark} /></div>
             ) : (
               <div class={`overflow-hidden rounded-2xl border shadow-sm ${C.box}`}>
                 <iframe src={t.embed_url} title={t.title} loading="lazy" style={`width:100%;height:${t.height ?? 760}px;border:0;`} allow="clipboard-write"></iframe>

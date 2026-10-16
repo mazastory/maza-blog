@@ -7,6 +7,21 @@ export interface PodSnapshot {
   title: string; css: string; html: string; js: string;
   /** 엔진이 같이 부르던 보조 스크립트의 고정본 경로(/pods/vendor/…) */
   scripts?: string[];
+  /** 밝은 테마에서 바꿔 끼울 색 변수(--pn-…) */
+  light?: Record<string, string>;
+  /** 사이트가 갈아 끼울 수 있는 문구 자리의 원래 글자(title·desc·badge) */
+  slots?: Record<string, string>;
+}
+
+/** 사이트가 도구의 겉모습을 바꾸는 값. 모두 선택이다 — 없으면 원본 그대로. */
+export interface PodSkin {
+  /** 'dark'(기본·원본 그대로) | 'light' | 'auto'(사이트가 어두우면 어둡게) */
+  theme?: 'dark' | 'light' | 'auto';
+  /** 대표색 #rrggbb — 엔진의 대표색을 이 색으로 */
+  accent?: string;
+  title?: string; desc?: string; badge?: string;
+  /** 입력칸 기본값 { 입력칸 id: 값 } */
+  defaults?: Record<string, string | number>;
 }
 
 const all = Object.values(

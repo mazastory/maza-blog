@@ -20,7 +20,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import postcss from 'postcss';
+import { tokenizeColors, tokenizeRule, lightBlock } from './pod-theme.mjs';
 
+/** 가져올 때 쓰는 변환 규칙의 버전. 원본이 그대로여도 변환 규칙을 바꾸면 올려서 다시 쓰게 한다. */
+const TRANSFORM_VERSION = 3;   // 2: 색 변수(pod-theme.mjs) · 3: 문구 자리(slots)
 const ROOT = '.pod-root';
 const OUT_DIR = path.resolve('src/generated/pods');
 const cfg = JSON.parse(fs.readFileSync(path.resolve('scripts/pods.config.json'), 'utf-8'));
@@ -50,7 +53,7 @@ function scopeSelector(sel) {
   return `${ROOT} ${s}`;
 }
 
-function scopeCss(css, engine) {
+function scopeCss(css, engine, ctx) {
   // 외부 CSS 는 구글 글꼴만 안다. 다른 @import 는 사람이 먼저 본다.
   for (const m of css.matchAll(/@import\s+(?:url\()?['"]?([^'")\s;]+)/gi)) {
     if (!/^https:\/\/fonts\.googleapis\.com\//.test(m[1])) throw new Error(`[${engine}] CSS 에 모르는 @import 가 있습니다: ${m[1]} — 가져오지 않습니다`);
@@ -60,6 +63,8 @@ function scopeCss(css, engine) {
     const p = rule.parent;
     if (p && p.type === 'atrule' && /keyframes$/i.test(p.name)) return;
     rule.selectors = rule.selectors.map(scopeSelector);
+    // 색을 바꿔 낄 수 있는 변수로(없으면 원래 색이 그대로 나온다). 규칙 하나씩 — 채도 있는 배경 위의 글자색은 건드리지 않는다.
+    tokenizeRule(rule, ctx);
   });
   // 페이지 전체를 채우던 값은 사이트 안의 한 칸이 되도록 풀어 준다.
   root.append(postcss.parse(`${ROOT}{min-height:0;width:100%;max-width:100%;overflow-x:hidden;}`));
@@ -123,7 +128,29 @@ async function importEngine(e) {
   const title = (html.match(/<title>([^<]*)<\/title>/i)?.[1] || e.engine).replace(/\s*\|\s*SETUPOD\s*$/i, '').trim();
   const bodyHtml = body.replace(/<script\b[\s\S]*?<\/script>/gi, '').trim();
 
-  return { engine: e.engine, aliases: e.aliases || [], source: e.source, sha256, fetchedAt: new Date().toISOString(), title, css: scopeCss(styles, e.engine), html: bodyHtml, js: inline.trim(), scripts: vendored, ...(e.reviewed ? { reviewed: e.reviewed } : {}) };
+  return finish(e, { html, sha256, title, styles, bodyHtml, inline, vendored });
+}
+
+function finish(e, { html, sha256, title, styles, bodyHtml, inline, vendored }) {
+  const ctx = { vars: new Map(), accent: e.accent ? { hex: e.accent.hex.map((h) => h.toLowerCase()), rgb: e.accent.rgb } : null };
+  const css = scopeCss(styles, e.engine, ctx);
+  // 본문의 style="…" 안의 색
+  const htmlTok = bodyHtml.replace(/\bstyle="([^"]*)"/g, (_m, v) => `style="${tokenizeColors(v, ctx)}"`);
+  // 스크립트가 글자로 넣는 무채색('#fff' 같은 따옴표 안 색)도 같은 변수로 — 밝은 테마에서 흰 글씨가 남지 않게
+  const jsTok = inline.replace(/(['"])(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})\1/g, (_m, q, hex) => {
+    const out = tokenizeColors(hex, ctx);
+    return out === hex ? _m : `${q}${out}${q}`;
+  });
+  // 사이트가 바꿔 쓸 수 있는 문구 자리(제목·설명·배지). 표식 사이의 글자만 갈아 끼운다 — 못 찾으면 그 자리는 없는 것이다.
+  const slots = {};
+  let marked = htmlTok;
+  const mark = (name, re) => { marked = marked.replace(re, (_m, pre, txt, post) => { slots[name] = txt.trim(); return `${pre}<!--slot:${name}-->${txt}<!--/slot-->${post}`; }); };
+  // 엔진마다 클래스 이름이 조금 다르다(pod-title / 그냥 h1, pod-desc / sub, pod-badge / badge). 못 찾은 자리는 없는 것으로 둔다.
+  mark('title', /(<h1[^>]*>)([^<]+)(<\/h1>)/);
+  mark('desc', /(<p[^>]*class="[^"]*\b(?:pod-desc|sub)\b[^"]*"[^>]*>)([^<]+)(<\/p>)/);
+  mark('badge', /(<div[^>]*class="[^"]*\b(?:pod-badge|badge)\b[^"]*"[^>]*>(?:(?!<\/div>)[\s\S])*?<span>)([^<]+)(<\/span>)/);
+  const themeVars = [...ctx.vars.entries()].map(([name, v]) => [name, v.light]);
+  return { engine: e.engine, aliases: e.aliases || [], source: e.source, sha256, transform: TRANSFORM_VERSION, fetchedAt: new Date().toISOString(), title, css, html: marked.trim(), slots, js: jsTok.trim(), light: Object.fromEntries(themeVars), scripts: vendored, ...(e.reviewed ? { reviewed: e.reviewed } : {}) };
 }
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -134,9 +161,9 @@ for (const e of cfg.engines) {
     const snap = await importEngine(e);
     const file = path.join(OUT_DIR, `${e.engine}.json`);
     const prev = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf-8')) : null;
-    const same = prev && prev.sha256 === snap.sha256;
+    const same = prev && prev.sha256 === snap.sha256 && prev.transform === TRANSFORM_VERSION;
     if (!same) changed++;
-    console.log(`${same ? '=' : '≠'} ${e.engine.padEnd(12)} ${(snap.html.length / 1024).toFixed(1)}KB html · ${(snap.css.length / 1024).toFixed(1)}KB css · ${(snap.js.length / 1024).toFixed(1)}KB js  ${same ? '(변화 없음)' : prev ? '(셋업팟 쪽이 바뀌었습니다)' : '(새로 가져옴)'}`);
+    console.log(`${same ? '=' : '≠'} ${e.engine.padEnd(12)} ${(snap.html.length / 1024).toFixed(1)}KB html · ${(snap.css.length / 1024).toFixed(1)}KB css · ${(snap.js.length / 1024).toFixed(1)}KB js · 문구자리 ${Object.keys(snap.slots).join('/') || '없음'}  ${same ? '(변화 없음)' : prev ? '(원본 또는 변환 규칙이 바뀌었습니다)' : '(새로 가져옴)'}`);
     if (!checkOnly && !same) fs.writeFileSync(file, JSON.stringify(snap, null, 2) + '\n');
   } catch (err) { failed++; console.error(`✗ ${e.engine}: ${err.message}`); }
 }

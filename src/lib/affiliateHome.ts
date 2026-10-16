@@ -31,6 +31,8 @@ export interface AffiliateTool {
   embed_url?: string;
   /** 가져온 셋업팟 엔진 스냅샷(scripts/sync-pods.mjs)을 페이지의 일부로 그린다(iframe 아님). 엔진 이름(margin) 또는 팟 번호(calculator). 없는 이름이면 그리지 않는다 */
   snapshot?: string;
+  /** 가져온 도구의 겉모습(밝기·대표색·문구·기본값). 모두 선택. 자세한 것은 lib/podSnapshots.ts 의 PodSkin */
+  skin?: import('./podSnapshots').PodSkin;
   /** 접근성용 이름 */
   title: string;
   height?: number;

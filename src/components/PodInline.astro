@@ -3,16 +3,53 @@
  * 셋업팟 엔진을 페이지의 일부로 그린다 (2026-10-16) — iframe 두 겹(블로그 → 셋업팟 껍데기 → 팟) 대신.
  * 내용은 `scripts/sync-pods.mjs` 가 가져와 검토를 통과한 스냅샷이다(src/generated/pods). 요청 때마다 셋업팟을 부르지 않는다.
  * 스타일은 `.pod-root` 안에 갇혀 있고, 아이콘(lucide)·접속 기록은 우리 쪽 고정본을 쓴다.
+ *
+ * 사이트가 겉모습을 바꿀 수 있다(`skin`, 모두 선택 — 없으면 원본 그대로): 밝기(theme) · 대표색(accent) · 제목·설명·배지 문구 · 입력칸 기본값.
+ * iframe 으로는 못 하던 것이다. 값은 전부 여기서 검증·이스케이프한다(사이트 설정은 바깥에서 오는 값이다).
  */
-import { findPodSnapshot } from '../lib/podSnapshots';
-interface Props { engine: string }
-const snap = findPodSnapshot(Astro.props.engine);
+import { findPodSnapshot, type PodSkin } from '../lib/podSnapshots';
+interface Props { engine: string; skin?: PodSkin; siteDark?: boolean }
+const { engine, skin = {}, siteDark = false } = Astro.props;
+const snap = findPodSnapshot(engine);
+
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const clean = (t: unknown, max: number) => (typeof t === 'string' ? t.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max) : '');
+
+let html = snap?.html ?? '';
+let themeAttr: 'dark' | 'light' = 'dark';
+let styleVars = '';
+if (snap) {
+  // 밝기: 기본은 원본(어둡게). 'auto' 는 사이트가 어두우면 어둡게, 밝으면 밝게.
+  themeAttr = skin.theme === 'light' ? 'light' : skin.theme === 'auto' ? (siteDark ? 'dark' : 'light') : 'dark';
+  // 대표색
+  const m = /^#([0-9a-fA-F]{6})$/.exec(skin.accent ?? '');
+  if (m) {
+    const n = parseInt(m[1], 16);
+    styleVars = `--pod-accent:#${m[1]};--pod-accent-rgb:${(n >> 16) & 255},${(n >> 8) & 255},${n & 255};`;
+  }
+  // 문구 자리
+  for (const name of ['title', 'desc', 'badge'] as const) {
+    const v = clean((skin as any)[name], name === 'desc' ? 300 : 120);
+    if (!v) continue;
+    html = html.replace(new RegExp(`<!--slot:${name}-->[\\s\\S]*?<!--/slot-->`), `<!--slot:${name}-->${esc(v)}<!--/slot-->`);
+  }
+  // 입력칸 기본값(숫자·짧은 글자만)
+  for (const [id, raw] of Object.entries(skin.defaults ?? {})) {
+    if (!/^[A-Za-z][A-Za-z0-9_-]{0,40}$/.test(id)) continue;
+    const val = typeof raw === 'number' ? String(raw) : clean(raw, 40);
+    if (!/^[\p{L}\p{N} .,%-]{1,40}$/u.test(val)) continue;
+    html = html.replace(new RegExp(`(<input\\b[^>]*\\bid="${id}"[^>]*?)\\bvalue="[^"]*"`), `$1value="${esc(val)}"`);
+  }
+}
+const lightCss = snap?.light && Object.keys(snap.light).length
+  ? `.pod-root[data-theme="light"]{color-scheme:light;${Object.entries(snap.light).map(([k, v]) => `${k}:${v};`).join('')}}`
+  : '';
 ---
 {snap && (
   <>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <style is:inline set:html={snap.css}></style>
-    <div class="pod-root" data-pod-engine={snap.engine} set:html={snap.html}></div>
+    <style is:inline set:html={snap.css + lightCss}></style>
+    <div class="pod-root" data-pod-engine={snap.engine} data-theme={themeAttr} style={styleVars || undefined} set:html={html}></div>
     <script is:inline src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
     <script is:inline src="/pods/maza-telemetry.js"></script>
     <script is:inline src="/pods/pod-support.js"></script>
