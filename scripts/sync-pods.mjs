@@ -31,8 +31,8 @@ const only = args.find((a) => !a.startsWith('--'));
 /** 외부 스크립트는 이 셋만 안다. 나머지가 나오면 사람이 보기 전에는 가져오지 않는다. */
 const ALLOWED_SCRIPT_SRC = [
   /^https:\/\/unpkg\.com\/lucide@latest$/,        // → 블로그 고정본(lucide@0.344.0)으로 바꿔 부른다
-  /^\/js\/maza-telemetry\.js$/,                    // → /pods/maza-telemetry.js
-  /^\/js\/lead-magnet\.js$/,                       // → 쓰지 않는다. 무료 자료 받기는 사이트의 「무료 자료」 띠가 맡는다
+  /^(\.\.\/|\/)js\/maza-telemetry\.js$/,                    // → /pods/maza-telemetry.js
+  /^(\.\.\/|\/)js\/lead-magnet\.js$/,                       // → 쓰지 않는다. 무료 자료 받기는 사이트의 「무료 자료」 띠가 맡는다
 ];
 /** 인라인 스크립트에 있으면 안 되는 것(네트워크·동적 실행·저장소). 있으면 사람이 먼저 본다. */
 const FORBIDDEN_JS = [
@@ -66,6 +66,38 @@ function scopeCss(css, engine) {
   return root.toString();
 }
 
+/** 금지 항목 검사. 엔진 설정 `allow` 에 든 항목(검토를 마친 것)은 통과시킨다. */
+function checkForbidden(e, where, js) {
+  const allow = e.allow || [];
+  for (const [re, label] of FORBIDDEN_JS) {
+    if (!re.test(js)) continue;
+    if (label === '브라우저 저장소' && allow.includes('localStorage')) {
+      if (/sessionStorage|indexedDB/.test(js)) throw new Error(`${where}: localStorage 만 허용했는데 다른 저장소가 있습니다`);
+      continue;
+    }
+    if (allow.includes(label)) continue;
+    throw new Error(`${where}에 ${label} 가 있습니다 — 사람이 먼저 봐야 합니다`);
+  }
+}
+
+/** 엔진이 같은 셋업팟에서 부르는 보조 스크립트(`vendor`)를 받아 public/pods/vendor/ 에 고정본으로 둔다. 금지 항목 검사를 똑같이 한다. */
+async function vendorScripts(e) {
+  const out = [];
+  for (const rel of e.vendor || []) {
+    const abs = new URL(rel.startsWith('/') ? rel : rel.replace(/^\.\.\//, '/'), e.source).toString();
+    const r = await fetch(abs, { headers: { 'User-Agent': 'maza-blog-sync-pods/1.0' } });
+    if (!r.ok) throw new Error(`[${e.engine}] 보조 스크립트 ${abs} → HTTP ${r.status}`);
+    const js = await r.text();
+    checkForbidden(e, `[${e.engine}] 보조 스크립트 ${rel}`, js);
+    const name = rel.split('/').pop();
+    const dir = path.resolve('public/pods/vendor'); fs.mkdirSync(dir, { recursive: true });
+    const header = `/* 셋업팟 보조 스크립트 고정본(${new Date().toISOString().slice(0, 10)}) · 원본 ${abs} · sha256 ${crypto.createHash('sha256').update(js).digest('hex')} */\n`;
+    if (!checkOnly) fs.writeFileSync(path.join(dir, name), header + js);
+    out.push(`/pods/vendor/${name}`);
+  }
+  return out;
+}
+
 async function importEngine(e) {
   const res = await fetch(e.source, { redirect: 'follow', headers: { 'User-Agent': 'maza-blog-sync-pods/1.0' } });
   if (!res.ok) throw new Error(`[${e.engine}] ${e.source} → HTTP ${res.status}`);
@@ -73,21 +105,25 @@ async function importEngine(e) {
   const sha256 = crypto.createHash('sha256').update(html).digest('hex');
 
   for (const m of html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)) {
-    if (!ALLOWED_SCRIPT_SRC.some((re) => re.test(m[1]))) throw new Error(`[${e.engine}] 모르는 외부 스크립트: ${m[1]} — 사람이 먼저 봐야 합니다`);
+    const known = ALLOWED_SCRIPT_SRC.some((re) => re.test(m[1])) || (e.vendor || []).includes(m[1]) || (e.dropScripts || []).some((d) => m[1].includes(d));
+    if (!known) throw new Error(`[${e.engine}] 모르는 외부 스크립트: ${m[1]} — 사람이 먼저 봐야 합니다`);
   }
   const bodyM = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
   if (!bodyM) throw new Error(`[${e.engine}] <body> 를 찾지 못했습니다`);
   const body = bodyM[1];
   if (/<iframe|<form\b|<object|<embed/i.test(body)) throw new Error(`[${e.engine}] 본문에 iframe·form·object·embed 가 있습니다 — 사람이 먼저 봐야 합니다`);
 
-  const inline = [...html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]).join('\n');
-  for (const [re, label] of FORBIDDEN_JS) if (re.test(inline)) throw new Error(`[${e.engine}] 인라인 스크립트에 ${label} 가 있습니다 — 사람이 먼저 봐야 합니다`);
+  // 가져오지 않을 인라인 코드(예: 셋업팟 분석 gtag 설정). 설정 `dropScripts` 에 든 글자가 있으면 그 블록을 통째로 뺀다.
+  const drops = e.dropScripts || [];
+  const inline = [...html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]).filter((js) => !drops.some((d) => js.includes(d))).join('\n');
+  checkForbidden(e, `[${e.engine}] 인라인 스크립트`, inline);
+  const vendored = await vendorScripts(e);
 
   const styles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join('\n');
   const title = (html.match(/<title>([^<]*)<\/title>/i)?.[1] || e.engine).replace(/\s*\|\s*SETUPOD\s*$/i, '').trim();
   const bodyHtml = body.replace(/<script\b[\s\S]*?<\/script>/gi, '').trim();
 
-  return { engine: e.engine, aliases: e.aliases || [], source: e.source, sha256, fetchedAt: new Date().toISOString(), title, css: scopeCss(styles, e.engine), html: bodyHtml, js: inline.trim() };
+  return { engine: e.engine, aliases: e.aliases || [], source: e.source, sha256, fetchedAt: new Date().toISOString(), title, css: scopeCss(styles, e.engine), html: bodyHtml, js: inline.trim(), scripts: vendored, ...(e.reviewed ? { reviewed: e.reviewed } : {}) };
 }
 
 fs.mkdirSync(OUT_DIR, { recursive: true });

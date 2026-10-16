@@ -1,11 +1,69 @@
 {
-  "_doc": "셋업팟 엔진 페이지 → 블로그 스냅샷. 한 줄 = 엔진 하나(카탈로그의 여러 팟 번호가 같은 엔진 페이지를 쓴다). `source` 는 셋업팟의 실제 팟 페이지 주소. `aliases` 는 이 엔진을 쓰는 팟 번호(마자 장학 팟 번호 포함).",
+  "_doc": "셋업팟 엔진 페이지 → 블로그 스냅샷. 한 줄 = 엔진 하나(카탈로그의 여러 팟 번호가 같은 엔진 페이지를 쓴다). `source` 는 셋업팟의 실제 팟 페이지 주소. `aliases` 는 이 엔진을 쓰는 팟 번호(마자 장학 팟 번호 포함). 엔진별 옵션: `allow`(검토를 마친 금지 항목 예외 — 예: localStorage), `vendor`(엔진이 부르는 같은 사이트의 보조 스크립트를 고정본으로 복사), `dropScripts`(가져오지 않을 스크립트·인라인 코드 — 예: 셋업팟의 분석 코드).",
   "engines": [
-    { "engine": "margin",  "source": "https://www.setupod.com/margin",  "aliases": ["calculator", "margin"] },
-    { "engine": "runway",  "source": "https://www.setupod.com/runway",  "aliases": ["runway"] },
-    { "engine": "nomad",   "source": "https://www.setupod.com/nomad",   "aliases": ["nomad"] },
-    { "engine": "fx",      "source": "https://www.setupod.com/fx",      "aliases": ["fx", "fx_calc"] },
-    { "engine": "adsense", "source": "https://www.setupod.com/adsense", "aliases": ["adsense", "adsense_calc"] },
-    { "engine": "secret_room", "source": "https://www.setupod.com/secret_room", "aliases": ["secret_room"] }
+    {
+      "engine": "margin",
+      "source": "https://www.setupod.com/margin",
+      "aliases": [
+        "calculator",
+        "margin"
+      ]
+    },
+    {
+      "engine": "runway",
+      "source": "https://www.setupod.com/runway",
+      "aliases": [
+        "runway"
+      ]
+    },
+    {
+      "engine": "nomad",
+      "source": "https://www.setupod.com/nomad",
+      "aliases": [
+        "nomad"
+      ]
+    },
+    {
+      "engine": "fx",
+      "source": "https://www.setupod.com/fx",
+      "aliases": [
+        "fx",
+        "fx_calc"
+      ]
+    },
+    {
+      "engine": "adsense",
+      "source": "https://www.setupod.com/adsense",
+      "aliases": [
+        "adsense",
+        "adsense_calc"
+      ]
+    },
+    {
+      "engine": "secret_room",
+      "source": "https://www.setupod.com/secret_room",
+      "aliases": [
+        "secret_room"
+      ]
+    },
+    {
+      "engine": "planner",
+      "source": "https://www.setupod.com/planner",
+      "aliases": [
+        "planner"
+      ],
+      "allow": [
+        "localStorage"
+      ],
+      "vendor": [
+        "../js/pro_modal.js",
+        "../js/toast.js"
+      ],
+      "dropScripts": [
+        "googletagmanager.com",
+        "dataLayer"
+      ],
+      "reviewed": "2026-10-16 — localStorage 는 사용자가 입력한 계획을 이 브라우저에 저장하는 3곳(getItem/setItem). 네트워크 호출 없음. 분석(gtag)은 셋업팟 계정이라 가져오지 않는다."
+    }
   ]
 }

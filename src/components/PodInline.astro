@@ -16,6 +16,7 @@ const snap = findPodSnapshot(Astro.props.engine);
     <script is:inline src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
     <script is:inline src="/pods/maza-telemetry.js"></script>
     <script is:inline src="/pods/pod-support.js"></script>
+    {(snap.scripts || []).map((src) => <script is:inline src={src}></script>)}
     <script is:inline set:html={snap.js}></script>
   </>
 )}

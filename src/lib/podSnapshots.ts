@@ -5,6 +5,8 @@
 export interface PodSnapshot {
   engine: string; aliases: string[]; source: string; sha256: string; fetchedAt: string;
   title: string; css: string; html: string; js: string;
+  /** 엔진이 같이 부르던 보조 스크립트의 고정본 경로(/pods/vendor/…) */
+  scripts?: string[];
 }
 
 const all = Object.values(
