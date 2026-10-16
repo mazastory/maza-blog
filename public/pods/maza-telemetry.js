@@ -1,4 +1,4 @@
-/* 셋업팟 접속 기록 SDK — 고정본(2026-10-16). 원본: https://www.setupod.com/js/maza-telemetry.js
+/* 셋업팟 접속 기록 SDK — 고정본(2026-10-16, send() 만 수정: 아래 주석). 원본: https://www.setupod.com/js/maza-telemetry.js
  * sha256: 1071ace8677d28802b5d2c4f3bdd362f18199dbaae36f5237f2efb64ce76c7e7
  * 팟 사이트에서 가져온 도구가 접속·체류·조작 횟수만 마자 서버(mazastudio.kr/api/telemetry/event)로 보낸다. 개인정보는 보내지 않는다. */
 /**
@@ -95,27 +95,16 @@
 
       var jsonStr = JSON.stringify(payload);
 
-      // sendBeacon 시도
-      if (navigator.sendBeacon) {
-        try {
-          var blob = new Blob([jsonStr], { type: 'application/json' });
-          if (navigator.sendBeacon(this.endpoint, blob)) {
-            return;
-          }
-        } catch (e) {
-          // sendBeacon 예외 시 fetch로 폴백
-        }
-      }
-
-      // fetch 폴백
+      // [2026-10-16 고정본에서 고친 곳] 원본은 sendBeacon(application/json) 을 먼저 썼다. sendBeacon 은 **쿠키를 포함하는 요청**이라
+      // 서버의 `Access-Control-Allow-Origin: *` 와 맞지 않아, 다른 도메인의 팟 사이트에서는 사전 확인(OPTIONS 200) 뒤에 본 요청을
+      // 브라우저가 보내지 않았다(셋업팟 도메인 안에서만 기록되던 이유). 쿠키 없이(credentials omit) fetch keepalive 로 보낸다.
       if (typeof fetch === 'function') {
         fetch(this.endpoint, {
           method: 'POST',
           mode: 'cors',
+          credentials: 'omit',
           keepalive: true,
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: jsonStr
         }).catch(function() {
           // 텔레메트리 에러는 사용자 화면에 영향 주지 않도록 무음 처리
