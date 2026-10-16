@@ -23,7 +23,7 @@ import postcss from 'postcss';
 import { tokenizeColors, tokenizeRule, lightBlock } from './pod-theme.mjs';
 
 /** 가져올 때 쓰는 변환 규칙의 버전. 원본이 그대로여도 변환 규칙을 바꾸면 올려서 다시 쓰게 한다. */
-const TRANSFORM_VERSION = 3;   // 2: 색 변수(pod-theme.mjs) · 3: 문구 자리(slots)
+const TRANSFORM_VERSION = 4;   // 2: 색 변수(pod-theme.mjs) · 3: 문구 자리(slots) · 4: 밝은 글자색(--pt-)
 const ROOT = '.pod-root';
 const OUT_DIR = path.resolve('src/generated/pods');
 const cfg = JSON.parse(fs.readFileSync(path.resolve('scripts/pods.config.json'), 'utf-8'));
@@ -135,10 +135,10 @@ function finish(e, { html, sha256, title, styles, bodyHtml, inline, vendored }) 
   const ctx = { vars: new Map(), accent: e.accent ? { hex: e.accent.hex.map((h) => h.toLowerCase()), rgb: e.accent.rgb } : null };
   const css = scopeCss(styles, e.engine, ctx);
   // 본문의 style="…" 안의 색
-  const htmlTok = bodyHtml.replace(/\bstyle="([^"]*)"/g, (_m, v) => `style="${tokenizeColors(v, ctx)}"`);
+  const htmlTok = bodyHtml.replace(/\bstyle="([^"]*)"/g, (_m, v) => `style="${tokenizeColors(v, ctx, { asText: true })}"`);
   // 스크립트가 글자로 넣는 무채색('#fff' 같은 따옴표 안 색)도 같은 변수로 — 밝은 테마에서 흰 글씨가 남지 않게
   const jsTok = inline.replace(/(['"])(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})\1/g, (_m, q, hex) => {
-    const out = tokenizeColors(hex, ctx);
+    const out = tokenizeColors(hex, ctx, { asText: true });
     return out === hex ? _m : `${q}${out}${q}`;
   });
   // 사이트가 바꿔 쓸 수 있는 문구 자리(제목·설명·배지). 표식 사이의 글자만 갈아 끼운다 — 못 찾으면 그 자리는 없는 것이다.

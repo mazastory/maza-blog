@@ -44,6 +44,12 @@ export function isNeutral(c) {
   return Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) < 30 || toHsl(c).s < 0.2;
 }
 
+/** 글자로 쓰인 채도 있는 밝은 색(연한 빨강·연한 초록 등 — 어두운 바탕용)은 밝은 바탕에서 안 읽힌다. 같은 색상으로 진하게 바꾼 값. */
+export function textDarken(c) {
+  const { h, s } = toHsl(c);
+  return fromHsl(h, Math.min(1, s * 0.95), 0.33);
+}
+
 /** 밝은 테마에서 쓸 대응 색. 불투명은 명도를 뒤집고, 반투명은 짙은 남색 바탕 위의 얇은 막으로 바꾼다. */
 export function lightCounterpart(c) {
   const { h, s, l } = toHsl(c);
@@ -58,7 +64,7 @@ const nameOf = (c) => `--pn-${[c.r, c.g, c.b].map((n) => n.toString(16).padStart
  * 한 문자열 안의 색을 바꾼다. `ctx.vars`(이름→{orig,light})에 변수를 모은다.
  * `skipNeutral` 이면 무채색은 건드리지 않는다(채도 있는 배경 위의 글자색 등).
  */
-export function tokenizeColors(text, ctx, { skipNeutral = false } = {}) {
+export function tokenizeColors(text, ctx, { skipNeutral = false, asText = false } = {}) {
   return text.replace(COLOR_RE, (lit) => {
     const c = parseColor(lit);
     if (!c) return lit;
@@ -66,6 +72,12 @@ export function tokenizeColors(text, ctx, { skipNeutral = false } = {}) {
     if (acc && !isNeutral(c)) {
       if (acc.hex.includes(lit.toLowerCase())) return `var(--pod-accent, ${lit})`;
       if (/^rgba?/i.test(lit) && `${c.r},${c.g},${c.b}` === acc.rgb) return `rgba(var(--pod-accent-rgb, ${acc.rgb}), ${c.a})`;
+    }
+    // 글자색으로 쓰인 채도 있는 밝은 색 → 밝은 테마에서 진하게(변수 --pt-…). 대표색은 위에서 이미 처리됐다.
+    if (asText && !isNeutral(c) && c.a >= 0.999 && toHsl(c).l > 0.55) {
+      const name = nameOf(c).replace('--pn-', '--pt-');
+      if (!ctx.vars.has(name)) ctx.vars.set(name, { orig: lit, light: textDarken(c) });
+      return `var(${name}, ${lit})`;
     }
     if (isNeutral(c) && !skipNeutral && c.a > 0) {
       const name = nameOf(c);
@@ -82,7 +94,7 @@ export function tokenizeRule(rule, ctx) {
   rule.walkDecls((d) => {
     if (/^(src|font-family|content|animation|transition)$/i.test(d.prop)) return;
     const skip = hasColoredBg && /^(color|fill|stroke)$/i.test(d.prop);
-    d.value = tokenizeColors(d.value, ctx, { skipNeutral: skip });
+    d.value = tokenizeColors(d.value, ctx, { skipNeutral: skip, asText: /^color$/i.test(d.prop) });
   });
 }
 
